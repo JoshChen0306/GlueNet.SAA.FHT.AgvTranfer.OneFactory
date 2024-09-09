@@ -1,0 +1,4 @@
+E:\agvFleetManager\Release\svrPair.dll
+E:\agvFleetManager\Release\svrPair.pdb
+E:\agvFleetManager\svrPair\obj\Debug\svrPair.dll
+E:\agvFleetManager\svrPair\obj\Debug\svrPair.pdb

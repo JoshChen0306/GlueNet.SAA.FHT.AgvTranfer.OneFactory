@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <ImageButton
+        android:id="@+id/scanStart"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/qrcode"
+        app:layout_constraintEnd_toStartOf="@id/txtStart"
+        app:layout_constraintTop_toTopOf="@+id/txtStart" />
+
+    <ImageButton
+        android:id="@+id/scanWorkOrder"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/qrcode"
+        app:layout_constraintEnd_toStartOf="@id/txtStart"
+        app:layout_constraintTop_toTopOf="@+id/txtWorkOrder" />
+
+    <Spinner
+        android:id="@+id/spnPort"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/edit_text_background"
+        app:layout_constraintTop_toBottomOf="@+id/txtStart"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <EditText
+        android:id="@+id/txtStart"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="StartStation"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText
+        android:id="@+id/txtWorkOrder"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="WorkOrder"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spnPort"/>
+
+    <EditText
+        android:id="@+id/txtRackId"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="RackId"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtWorkOrder"/>
+
+    <ImageButton
+        android:id="@+id/btnRefresh"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/refresh"
+        app:layout_constraintStart_toEndOf="@id/spnPort"
+        app:layout_constraintTop_toTopOf="@id/spnPort"
+        app:layout_constraintBottom_toBottomOf="@id/txtWorkOrder"/>
+
+
+    <!-- Station 2 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.1">
+        <ImageButton
+            android:id="@+id/buttonStationE5"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="E5" />
+    </FrameLayout>
+
+    <!-- Station 3 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.3">
+        <ImageButton
+            android:id="@+id/buttonStationE4"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="E4" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.5">
+        <ImageButton
+            android:id="@+id/buttonStationE3"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="E3" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.7">
+        <ImageButton
+            android:id="@+id/buttonStationE2"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="E2" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.9">
+        <ImageButton
+            android:id="@+id/buttonStationE1"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="E1" />
+    </FrameLayout>
+
+
+
+
+    <Button
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="送單"
+        android:textColor="@color/white"
+        android:textSize="15dp"
+        android:background="@drawable/button_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/btnBack"/>
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="返回"
+        android:textColor="@color/white"
+        android:textSize="15dp"
+        android:background="@drawable/button_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/btnSend"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

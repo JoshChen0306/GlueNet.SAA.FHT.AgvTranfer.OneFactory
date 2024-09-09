@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- 背景地圖 -->
+    <ImageView
+        android:id="@+id/backgroundMap"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/map"
+        android:scaleType="centerCrop"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.05"
+        app:layout_constraintHorizontal_bias="0.9">
+
+        <Button
+            android:id="@+id/buttonStationA"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="上料區A區"
+            android:backgroundTint="@color/black"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+
+
+    <!-- Station 2 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintHorizontal_bias="0.38">
+
+        <Button
+            android:id="@+id/buttonStationC"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="生產區C區"
+            android:backgroundTint="@color/black"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.3"
+        app:layout_constraintHorizontal_bias="0.45">
+
+        <Button
+            android:id="@+id/buttonStationD"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="生產區D區"
+            android:backgroundTint="@color/black"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+
+    <!-- Station 3 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.52"
+        app:layout_constraintHorizontal_bias="0">
+
+        <Button
+            android:id="@+id/buttonStationE"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:text="出料區E區"
+            android:backgroundTint="@color/black"
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:scaleType="fitCenter"/>
+    </FrameLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

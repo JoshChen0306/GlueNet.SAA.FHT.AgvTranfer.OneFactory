@@ -1,0 +1,9 @@
+E:\agvFleetManager\Release\cTest.exe.config
+E:\agvFleetManager\Release\cTest.exe
+E:\agvFleetManager\Release\cTest.pdb
+E:\agvFleetManager\cTest\obj\Debug\cTest.csprojResolveAssemblyReference.cache
+E:\agvFleetManager\cTest\obj\Debug\cTest.frmMain.resources
+E:\agvFleetManager\cTest\obj\Debug\cTest.Properties.Resources.resources
+E:\agvFleetManager\cTest\obj\Debug\cTest.csproj.GenerateResource.Cache
+E:\agvFleetManager\cTest\obj\Debug\cTest.exe
+E:\agvFleetManager\cTest\obj\Debug\cTest.pdb
