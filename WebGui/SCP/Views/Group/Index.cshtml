@@ -1,0 +1,115 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<pGroup>
+<div class="col-lg-12 main-chart">
+    <div class="col-6">
+        <div class="d-flex">
+            <h4 class="mt-3 mb-3 "><strong>群組列表</strong></h4>
+            <div class="ms-auto">
+                <button class="mt-3 btn text-secondary" id="maintain-btn">維護 </button>
+                <button class="mt-3 btn text-secondary d-none" id="maintain-save">儲存 </button>
+                <button class="mt-3 btn text-secondary d-none" id="maintain-cancel">取消 </button>
+            </div>
+        </div>
+        <div class="maintain-table">
+            <table class="table mt-4" id="maintain-table">
+                <thead class="text-center ">
+                    <tr>
+                        <th class="text-secondary">群組代碼</th>
+                        <th class="text-secondary">群組中文名稱</th>
+                        <th class="text-secondary">群組英文名稱</th>
+                        <th class="text-secondary">登出時間(分)</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody class="text-center">
+                    @foreach (var item in Model)
+                    {                      
+                        <tr>
+                            <td class="align-middle">@item.GroupId</td>
+                            <td class="align-middle">@item.GroupCName</td>
+                            <td class="align-middle">@item.GroupEName</td>
+                            <td class="align-middle">@item.LogoutTime</td>
+                            <td class="align-middle">
+                                <button data-bs-toggle="collapse" data-bs-target="#edit-@item.GroupId" aria-expanded="false" aria-controls="@item.GroupId" class="btn edit-btn p-0">
+                                    <i class="fa-solid fa-square-pen fa-xl" style="color: #40B1FF;"></i>
+                                </button>
+                                <button class="btn delete-btn p-0" id="delete-@item.GroupId"><i class="fa-solid fa-square-minus fa-xl" style="color: #E25E3E;"></i></button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="5" class="border-0 p-0">
+                                <div id="edit-@item.GroupId" class="collapse ps-3">
+                                    <form>
+                                        <div class=" d-flex align-items-center mt-3 mb-3">
+                                            <label class="me-5">群組代碼:</label>
+                                            <input class ="form-control-plaintext w-25" name="GroupId" readonly value="@item.GroupId" />
+                                        </div>
+                                        <div class=" d-flex align-items-center mb-3">
+                                            <label class=" me-3">群組中文名稱:</label>
+                                            <input class="form-control p-0 w-25" name="GroupCName" autocomplete="off" value="@item.GroupCName" />
+                                        </div>
+                                        <div class=" d-flex align-items-center mb-3">
+                                            <label class=" me-3">群組英文名稱:</label>
+                                            <input class="form-control p-0 w-25" name="GroupEName" autocomplete="off" value="@item.GroupEName" />
+                                        </div>
+                                        <div class=" d-flex align-items-center mb-3">
+                                            <label class=" me-5">登出時間:</label>
+                                            <input class="form-control p-0" name="LogoutTime" autocomplete="off" value="@item.LogoutTime" style="width:50px;"/>
+                                            <span class="ms-2">分</span>
+                                        </div>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr data-bs-toggle="collapse" data-bs-target="#insertcollapse" id="InsertData">
+                        <td colspan="4" id="insert-btn" class="bg-secondary border-0 bg-opacity-10 text-center d-none" style="cursor: pointer;">
+                            <i class="fa-solid fa-square-plus fa-xl" style="color: #9A9A9A;"></i>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="border-0 p-0">
+                            <div id="insertcollapse" class="collapse ps-3">
+                                <form id="InsertForm">
+                                    <div class=" d-flex align-items-center mt-3 mb-3">
+                                        <label class="me-5">群組代碼:</label>
+                                        <input class="form-control p-0 w-25" name="GroupId" autocomplete="off" required />
+                                    </div>
+                                    <div class=" d-flex align-items-center mb-3">
+                                        <label class=" me-3">群組中文名稱:</label>
+                                        <input class="form-control p-0 w-25" name="GroupCName" autocomplete="off" />
+                                    </div>
+                                    <div class=" d-flex align-items-center mb-3">
+                                        <label class=" me-3">群組英文名稱:</label>
+                                        <input class="form-control p-0 w-25" name="GroupEName" autocomplete="off"  />
+                                    </div>
+                                    <div class=" d-flex align-items-center mb-3">
+                                        <label class=" me-5">登出時間:</label>
+                                        <input class="form-control p-0" name="LogoutTime" autocomplete="off" type="number" style="width:50px;" />
+                                        <span class="ms-2">分</span>
+                                    </div>
+                                </form>
+                            </div>
+                        </td>
+                        <td class="border-0 text-center ">
+                            <button class="btn p-0" id="confirm-btn">
+                                <i class="fa-solid fa-square-check fa-xl" style="color: #4CCD99;"></i>
+                            </button>
+                            <button class="btn  p-0" data-bs-toggle="collapse" data-bs-target="#insertcollapse" id="cancel-btn"><i class="fa-solid fa-square-minus fa-xl" style="color: #E25E3E;"></i></button>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/Group.js"></script>
+}

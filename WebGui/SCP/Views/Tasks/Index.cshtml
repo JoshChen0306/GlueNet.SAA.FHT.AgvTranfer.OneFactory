@@ -1,0 +1,158 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+<div class="col-lg-12 main-chart">
+    <h4 class="mb-5"><strong>@Localizer["HistoricalData"]</strong></h4>
+    <form>
+        <div class="row mb-3">
+            <div class="col-5 d-flex align-items-center">
+                <label for="dateInput" class="col-2 text-secondary">@Localizer["SearchDate"]:</label>
+                <input type="text" name="dates" class="form-control  w-50" />
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-5 d-flex align-items-center">
+                <label for="dateInput" class="col-2 text-secondary">@Localizer["SearchAGV"]:</label>
+                <select class="form-select w-50" id="ShuttleId">
+                    <option value="">@Localizer["Choose"]</option>
+                    <option value="1">AGV-1</option>
+                    <option value="2">AGV-2</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-5">
+            <div class="col-5 d-flex align-items-center">
+                <label for="dateInput" class="col-2 text-secondary">@Localizer["SearchShift"]:</label>
+                <select class="form-select w-50 me-2" id="ShiftId">
+                    <option value="">@Localizer["Choose"]</option>
+                    <option value="0001">早班</option>
+                    <option value="0002">晚班</option>
+                </select>
+                <button type="button" class="btn btn-primary rounded-pill" onclick="GetSearchData()">@Localizer["Search"]</button>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-6">
+            <ul class="nav nav-tabs" id="chart-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="bar-tab" data-bs-toggle="tab" data-bs-target="#Bar" type="button" role="tab" aria-controls="bar" aria-selected="true">@Localizer["BarChart"]</button>
+                </li>
+               @*  <li class="nav-item" role="presentation">
+                    <button class="nav-link " id="pie-tab" data-bs-toggle="tab" data-bs-target="#pie" type="button" role="tab" aria-controls="pie" aria-selected="false">圓餅圖</button>
+                </li> *@
+            </ul>
+            <div class="tab-content" id="chartTabContent">
+                @* 柱狀圖 *@
+                <div class="tab-pane fade show active bg-white" id="Bar" data-title="@Localizer["SearchDate"]" role="tabpanel" aria-labelledby="bar-tab" style="height:553px;"></div>
+                @* 圓餅圖 *@
+                <div class="tab-pane fade  bg-white" id="pie" role="tabpanel" aria-labelledby="pie-tab"></div>
+            </div>
+        </div>
+        <div class="col-6">
+            <ul class="nav nav-tabs" id="task-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#task" type="button" role="tab" aria-controls="task" aria-selected="true">@Localizer["Data"]</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="detial-tab" data-bs-toggle="tab" data-bs-target="#detial" type="button" role="tab" aria-controls="detial" aria-selected="false">@Localizer["Tasks"]</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="taskTabContent">
+                <div class="tab-pane fade show active bg-white" id="task" role="tabpanel" aria-labelledby="bar-tab" style="height:555px">
+                    <div class="row mb-3">
+                        <h5 class="text-secondary mt-4 ms-3">@Localizer["SearchDate"]：<span class="Interval"></span></h5>
+                    </div>
+                    <div class="ps-3 pe-3">
+                        <table class="table table-striped ps-3 pe-3" id="task-table">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>@Localizer["Date"]</th>
+                                    <th>@Localizer["AGV"]</th>
+                                    <th>@Localizer["DayShift"]</th>
+                                    <th>@Localizer["NightShift"]</th>
+                                    <th>@Localizer["TotalTasks"]</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center" id="Data">
+                                <partial name="_TaskDataPartial.cshtml"></partial>
+                            </tbody>
+                        </table>
+                    </div>                   
+                </div>
+                <div class="tab-pane fade bg-white" id="detial" role="tabpanel" aria-labelledby="pie-tab" style="height:555px">
+                    <div class="row mb-3">
+                        <h5 class="text-secondary mt-4 ms-3">@Localizer["SearchDate"]：<span class="Interval"></span></h5>
+                    </div>
+                    <div class="ps-3 pe-3">
+                        <table class="table table-striped ps-3 pe-3" id="detail-table">
+                            <thead>
+                                <tr class="text-center text-nowrap">
+                                    <th>@Localizer["Date"]</th>
+                                    <th>@Localizer["AGV"]</th>
+                                    <th>@Localizer["Shift"]</th>
+                                    <th>@Localizer["PartNo"]</th>
+                                    <th>@Localizer["BeginStation"]</th>
+                                    <th>@Localizer["StartTime"]</th>
+                                    <th>@Localizer["EndStation"]</th>
+                                    <th>@Localizer["EndTime"]</th>
+                                    <th>@Localizer["TotalTime"]</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center text-nowrap" id="Tasks">
+                                <partial name="_TaskDetialPartial.cshtml"></partial>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/js/common/searchdate.js"></script>
+    <script src="~/js/tasks.js"></script>
+    <script>
+
+        // $(function () {
+        //     $("#task-table").DataTable({
+        //         autoWidth: false,
+        //         language: {
+        //         url: "../JSON/zh-HANT.json"
+        //         },
+        //         layout: {
+        //             topStart: {
+        //                 buttons: ['copy', {
+        //                     extend: 'csv',
+        //                     text: 'CSV',
+        //                     bom: true
+        //                 }, 'excel'/* , 'pdf', 'print' */]
+        //             }
+        //         }
+        //     });
+
+        // });
+
+        // var total1 = 0, total2 = 0, total3 = 0;
+
+        // $("#task-table tr td:nth-child(3)").each(function () {
+        //     total1 += Number($(this).text());
+        // });
+
+        // $("#task-table tr td:nth-child(4)").each(function () {
+        //     total2 += Number($(this).text());
+        // });
+
+        // $("#task-table tr td:nth-child(5)").each(function () {
+        //     total3 += Number($(this).text());
+        // });
+
+        // // 在特定的表格的最後新增一個 tr 元素來顯示總和
+        // $("#task-table").append("<tr><td>合計總數</td><td></td><td>" + total1 + "</td><td>" + total2 + "</td><td>" + total3 + "</td></tr>");
+
+
+    </script>
+}

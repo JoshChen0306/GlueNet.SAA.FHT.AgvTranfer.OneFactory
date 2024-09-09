@@ -1,0 +1,90 @@
+﻿@{
+}
+@* @model IEnumerable<AMS.K11Models.PGroup>  *@
+@model AMS.K11Models.PGroup
+
+<div class="col-lg-12 main-chart">
+    <div class="row">
+
+        <div class="form-group col-3">
+
+            <form >
+                <div class="row">
+
+                    <div class="col-4">
+                        <label asp-for="GroupId" class="col-form-label" >群組代號：</label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="GroupId" class="mb-3 form-control"/>
+                    </div>
+                    <div class="col-4">
+                        <label asp-for="GroupCname" class="col-form-label">群組中文名稱：</label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="GroupCname" class="mb-3 form-control" />
+                    </div>
+                    <div class="col-4">
+                        <label asp-for="GroupEname" class="col-form-label">群組英文名稱：</label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="GroupEname"  class="mb-3 form-control" />
+                    </div>
+                    <div class="col-4">
+                        <label asp-for="LogoutTime" class="col-form-label">登出時間：</label>
+                    </div>
+                    <div class="col-8">
+                        <input asp-for="LogoutTime"   class="mb-3 form-control" />
+                    </div>
+                </div>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button  asp-action="CreateGroup" class="btn btn-primary btn-lg">
+                        確認
+                    </button>
+                    <button  asp-action="DeleteGroup" class="btn btn-danger btn-lg">
+                        刪除
+                    </button>
+                </div>
+
+            </form>
+
+
+        </div>
+    </div>
+
+    <h3>資料預覽</h3>
+
+    <div class="table-responsive">
+        <table id="dtBasicExample" class="table table-hover " data-toggle="table">
+            <thead>
+                <tr>
+                    <th scope="col" data-sortable="true">#</th>
+                    <th scope="col" data-sortable="true">群組代號</th>
+                    <th scope="col" data-sortable="true">群組中文名稱</th>
+                    <th scope="col" data-sortable="true">群組英文名稱</th>
+                    <th scope="col" data-sortable="true">登出時間</th>
+                    <th scope="col" data-sortable="true"></th>
+                    @* <th scope="col" data-sortable="true">功能群組</th> *@
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int i = 1;
+                    foreach (var table in ViewBag.data)
+                    {
+                        <tr>
+                            <th scope="row">@i</th>
+                            <td>@table.GroupId</td>
+                            <td>@table.GroupCname</td>
+                            <td>@table.GroupEname</td>
+                            <td>@table.LogoutTime</td>
+                            <td>
+                                <button class="btn btn-primary btn-xs" asp-action="EditGroup" asp-route-groupId=@table.GroupId><i class="fa fa-pencil"></i></button>
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,39 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<table id="dtFunction" class="table table-hover " data-toggle="table" readonly>
+    <thead>
+        <tr class="text-center">
+            <th scope="col" data-sortable="true">#</th>
+            <th scope="col" data-sortable="true">功能編號</th>   
+            <th scope="col" data-sortable="true">功能類型</th>
+            <th scope="col" data-sortable="true">功能中文名稱</th>
+            <th scope="col" data-sortable="true">功能英文名稱</th>
+            <th scope="col" data-sortable="true">是否啟用</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            if (ViewBag.Function != null)
+            {
+                int i = 1;
+
+                foreach (var item in ViewBag.Function)
+                {
+                    <tr class="text-center">
+                        <th scope="row">@i</th>
+                        <td>@item.FunctionNo</td>
+                        <td>@item.FunctionType</td>
+                        <td>@item.FunctionChineseName</td>
+                        <td>@item.FunctionEnglishName</td>
+                        <td>
+                            <input class="form-check-input" type="checkbox" id="@item.FunctionNo" @(item.Checkyn == "Y" ? "checked" : "") disabled>
+                        </td>
+                    </tr>
+                    i = i + 1;
+                }
+            }
+        }
+    </tbody>
+</table>

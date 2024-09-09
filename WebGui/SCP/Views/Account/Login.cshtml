@@ -1,0 +1,42 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var returnUrl = Context.Request.Query["ReturnUrl"];
+}
+@model pUser
+<div id="login-page">
+    <div class="container">
+        <form class="form-login" asp-action="Login" method="post" asp-route-returnUrl="@returnUrl">
+            <h2 class="form-login-heading">
+                <a href="/" class="float-start text-light">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                sign in now
+            </h2>
+            <div class="login-wrap">
+                <input asp-for ="UserId" type="text" class="form-control" placeholder="User ID" autofocus>
+                <br />
+                <input asp-for="Password" type="password" class="form-control mb-3" placeholder="Password">
+                <label class="checkbox text-center">
+                    <span class="text-danger">
+                        @ViewBag.errorMessage
+                    </span>
+                </label>
+                <button class="btn btn-theme btn-block"   type="submit"><i class="fa fa-lock"></i> SIGN IN</button>
+            </div>      
+        </form>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript" src="~/assets/js/jquery.backstretch.min.js"></script>
+    <script>
+        if (window.top !== window.self) { //若自身窗口不等于顶层窗口
+            window.top.location.href = window.self.location.href; //顶层窗口跳转到自身窗口
+        }
+
+        $.backstretch("../assets/img/login.jpg", { speed: 0 });
+    </script>
+}
