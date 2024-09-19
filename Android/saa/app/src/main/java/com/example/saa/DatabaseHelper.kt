@@ -89,6 +89,30 @@ class DatabaseHelper {
         }
     }
 
+    suspend fun checkoNeed(start: String, end: String): Boolean {
+        return withContext(Dispatchers.IO) {
+            var connection: Connection? = null
+            var preparedStatement: PreparedStatement? = null
+            var resultSet: ResultSet? = null
+            try {
+                connection = DriverManager.getConnection(DB_URL, USER, PASS)
+                val sql = "SELECT * FROM oNeed WHERE ObjStation = ? AND EndStation = ?"
+                preparedStatement = connection.prepareStatement(sql)
+                preparedStatement.setString(1, start)
+                preparedStatement.setString(2, end)
+                resultSet = preparedStatement.executeQuery()
+                resultSet.next() // Returns true if there is a match
+            } catch (e: Exception) {
+                e.printStackTrace()
+                false
+            } finally {
+                resultSet?.close()
+                preparedStatement?.close()
+                connection?.close()
+            }
+        }
+    }
+
     fun getCurrentFormattedTime(): String {
         val dateFormat = SimpleDateFormat("yyyyMMddHHmmss")
         val date = Date()

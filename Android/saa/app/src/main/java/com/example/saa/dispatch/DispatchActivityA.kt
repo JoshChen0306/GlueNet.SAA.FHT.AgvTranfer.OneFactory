@@ -84,8 +84,6 @@ class DispatchActivityA : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
-
-        loadSpinnerData()
     }
 
     private fun handleScanResult(contents: String?, editText: EditText) {
@@ -109,6 +107,8 @@ class DispatchActivityA : AppCompatActivity() {
                         txtRackId.setText(it.RackID)
                     }
                 }
+
+                loadSpinnerData()
             }
             else
                 spiltWorkOrder(contents)
@@ -168,11 +168,11 @@ class DispatchActivityA : AppCompatActivity() {
                     dialog.dismiss()
                     // Launch a coroutine to check the port and handle the result
                     CoroutineScope(Dispatchers.Main).launch {
-                        val portResult = checkPort(end)
-                        if (portResult) {
+                        val portResult = checkoNeed(start, end)
+                        if (!portResult) {
                             sendData(start, end, rackId, workOrder)
                         } else {
-                            Toast.makeText(this@DispatchActivityA, "站點錯誤 (Port Error)", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@DispatchActivityA, "資料重覆 (Data duplicated)", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -192,22 +192,21 @@ class DispatchActivityA : AppCompatActivity() {
             } else {
                 Toast.makeText(this@DispatchActivityA, "Date(oNeed) send fail", Toast.LENGTH_SHORT).show()
             }
-            success = dbHelper.change_oPort(end, rackId, "3", "")
+            /*success = dbHelper.change_oPort(end, rackId, "3", "")
             if (success) {
                 Toast.makeText(this@DispatchActivityA, "Data(oPort_End) send success", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(this@DispatchActivityA, "Data(oPort_End) send fail", Toast.LENGTH_SHORT).show()
-            }
+            }*/
 
             viewRefresh()
         }
     }
 
-    private suspend fun checkPort(port: String): Boolean {
+    private suspend fun checkoNeed(start: String, end: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                val oport = dbHelper.get_oport(port)
-                oport.HaveFlag == "0" && oport.BgnToEnd.isNullOrBlank()
+                dbHelper.checkoNeed(start, end)
             } catch (e: Exception) {
                 e.printStackTrace()
                 false
@@ -305,6 +304,6 @@ class DispatchActivityA : AppCompatActivity() {
         txtWorkOrder.text.clear()
         txtBatchNo.text.clear()
         txtPartNo.text.clear()
-        loadSpinnerData()
+        spnPort.adapter = null
     }
 }
