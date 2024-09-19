@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <link rel="stylesheet" href="~/bootstrap/css/bootstrap.css" />
+    <!--external css-->
+    <link href="~/font-awesome/css/all.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="~/assets/css/style.css" rel="stylesheet">
+    <link href="~/assets/css/style-responsive.css" rel="stylesheet">
+    <link href="~/css/daterangepicker.css" rel="stylesheet" />
+    <link href="~/css/datatables.min.css" rel="stylesheet" />
+    <link href="~/css/datatablesbutton.min.css" rel="stylesheet" />
+</head>
+<body>
+    <div>
+        @RenderBody()
+    </div>
+
+    <script src="~/js/common/jquery-3.7.1.min.js"></script>
+    <script class="include" type="text/javascript" src="~/assets/js/jquery.dcjqaccordion.2.7.js"></script>
+    <script src="~/assets/js/jquery.scrollTo.min.js"></script>
+    <script src="~/js/common/signalr.min.js"></script>
+    <!--common script for all pages-->
+    <script src="~/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/js/common-scripts.js"></script>
+    <script src="~/lib/iframe-resizer/iframeresizer.contentwindow.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script src="~/js/common/moment.min.js"></script>
+    <script src="~/js/common/daterangepicker.js"></script>
+    <script src="~/js/common/echarts.js"></script>
+    <script src="~/js/common/datatables.min.js"></script>
+    <script src="~/js/common/datatablesbutton.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+
+</body>
+</html>

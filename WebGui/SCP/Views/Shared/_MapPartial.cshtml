@@ -1,0 +1,48 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<div class="bg-white d-flex">
+    <div class="mx-auto d-block position-relative">
+        <img src="/img/Map9.png" height="500" class="d-block mw-100" />
+        @foreach (var agv in ViewBag.AgvPositions)
+        {
+            <div class="position-absolute agv-transition" id="@agv.GustomerName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@Configuration.GetSection("AgvColor")[@agv.GustomerName]"></i></div>
+        }
+        <div class="position-absolute" style="top:64%; left:12%"><img src="/img/ChargingStation-off.png" /></div>
+        @foreach (var style in ViewBag.positions)
+        {
+            string newbottom = "", newLeft = "";
+            switch (style.Transform)
+            {
+                case "rotate(90deg)":
+                    newbottom = (double.Parse(style.Bottom.Replace("%", ""))).ToString() + "%";
+                    newLeft = (double.Parse(style.Left.Replace("%", "")) - 0.2).ToString() + "%";
+                    break;
+                case "rotate(-90deg)":
+                    newbottom = style.Bottom;
+                    newLeft = (double.Parse(style.Left.Replace("%", "")) + 0.5).ToString() + "%";
+                    break;
+                default:
+                    newbottom = (double.Parse(style.Bottom.Replace("%", ""))-1).ToString() + "%";
+                    newLeft = (double.Parse(style.Left.Replace("%", "")) + 0.2).ToString() + "%";
+                    break;
+            }
+            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
+                <img src="@style.ImgSrc" alt="Icon" />
+            </button>
+            if (style.Reserve == "Y")
+            {
+                <div class="position-absolute" id="R-@style.Name" style='bottom:@newbottom; left:@newLeft; transform:@style.Transform;'>
+                    <img src="/img/reserve.svg" />
+                </div>
+            }
+            else
+            {
+                <div class="position-absolute d-none" id="R-@style.Name" style='bottom:@newbottom; left:@newLeft; transform:@style.Transform;'>
+                    <img src="/img/reserve.svg" />
+                </div>
+            }
+
+        }
+    </div>
+</div>

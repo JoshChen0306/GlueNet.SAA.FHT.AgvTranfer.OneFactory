@@ -1,0 +1,18 @@
+﻿@{
+    string ControllerName = Convert.ToString(Context.Request.RouteValues["controller"]);
+    string ActionName = Convert.ToString(Context.Request.RouteValues["action"]);
+
+    switch (ControllerName.ToUpper())
+    {
+        case "HOME":
+            if(ActionName.ToUpper() == "INDEX")
+                Layout = "_Layout";
+            else
+                Layout = "_IframeLayout";
+            break;
+        default:
+            Layout = "_IframeLayout";
+            break;
+    }
+}
+   

@@ -1,0 +1,21 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    int i = 1;
+    if (ViewBag.Dispatchs != null)
+    {
+        @foreach (var item in ViewBag.Dispatchs)
+        {
+            <tr>
+                <td class="align-middle">@i</td>
+                <td class="align-middle">@item.BeginStation</td>
+                <td class="align-middle">@item.EndStation</td>
+                <td class="align-middle">@item.WorkOrder</td>
+                <td class="align-middle @item.TextColor">@item.Status</td>
+                <td class="align-middle"><button class="btn rounded-pill px-4 btn-secondary">取消</button></td>
+            </tr>
+            i++;
+        }
+    }
+}

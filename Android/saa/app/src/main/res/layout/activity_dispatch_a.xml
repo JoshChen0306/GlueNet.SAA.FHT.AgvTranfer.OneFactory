@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <ImageButton
+        android:id="@+id/scanStart"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/qrcode"
+        app:layout_constraintEnd_toStartOf="@id/txtStart"
+        app:layout_constraintTop_toTopOf="@+id/txtStart" />
+
+    <ImageButton
+        android:id="@+id/scanWorkOrder"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="5dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/qrcode"
+        app:layout_constraintEnd_toStartOf="@id/txtStart"
+        app:layout_constraintTop_toTopOf="@+id/txtWorkOrder" />
+
+    <Spinner
+        android:id="@+id/spnPort"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/edit_text_background"
+        app:layout_constraintTop_toBottomOf="@+id/txtStart"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <EditText
+        android:id="@+id/txtStart"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="StartStation"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText
+        android:id="@+id/txtWorkOrder"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="WorkOrder"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/spnPort"/>
+
+    <EditText
+        android:id="@+id/txtRackId"
+        android:layout_width="800dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:hint="RackId"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtWorkOrder"/>
+
+    <ImageButton
+        android:id="@+id/btnRefresh"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginStart="20dp"
+        android:background="@drawable/button_background"
+        android:scaleType="centerCrop"
+        android:src="@drawable/refresh"
+        app:layout_constraintStart_toEndOf="@id/spnPort"
+        app:layout_constraintTop_toTopOf="@id/spnPort"
+        app:layout_constraintBottom_toBottomOf="@id/txtWorkOrder"/>
+
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0">
+        <ImageButton
+            android:id="@+id/buttonStationA6"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A6" />
+    </FrameLayout>
+
+    <!-- Station 2 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.2">
+        <ImageButton
+            android:id="@+id/buttonStationA5"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A5" />
+    </FrameLayout>
+
+    <!-- Station 3 -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.4">
+        <ImageButton
+            android:id="@+id/buttonStationA4"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A4" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.6">
+        <ImageButton
+            android:id="@+id/buttonStationA3"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A3" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="0.8">
+        <ImageButton
+            android:id="@+id/buttonStationA2"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A2" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintVertical_bias="0.63"
+        app:layout_constraintHorizontal_bias="1">
+        <ImageButton
+            android:id="@+id/buttonStationA1"
+            style="@style/StationButton"
+            android:src="@drawable/agv" />
+        <TextView
+            style="@style/StationLabel"
+            android:text="A1" />
+    </FrameLayout>
+
+
+    <Button
+        android:id="@+id/btnSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send"
+        android:textSize="15dp"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/btnBack"/>
+
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Back"
+        android:textSize="15dp"
+        android:textColor="@color/white"
+        android:background="@drawable/button_background"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@id/btnSend"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

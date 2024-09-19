@@ -1,0 +1,2 @@
+2024/08/13 13:43:08.882	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://192.168.4.9:8182/rcms-dps/rest/queryAgvStatus
+2024/08/13 13:43:09.019	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240813134308878864","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}

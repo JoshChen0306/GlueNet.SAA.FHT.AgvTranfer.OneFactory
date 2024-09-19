@@ -1,0 +1,34 @@
+2024/08/15 07:55:17.402	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://192.168.4.9:8182/rcms-dps/rest/queryAgvStatus
+2024/08/15 07:55:43.610	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075511920223","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 07:55:47.709	[INFO]	Thread:[7]	[MSG] => [Receive Data] : 
+2024/08/15 07:57:11.765	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://127.0.0.1:8182/rcms-dps/rest/queryAgvStatus
+2024/08/15 07:57:12.751	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075511920223","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 07:58:05.784	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075511920223","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 07:58:07.501	[INFO]	Thread:[7]	[MSG] => [Receive Data] : <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN""http://www.w3.org/TR/html4/strict.dtd">
+<HTML><HEAD><TITLE>Bad Request</TITLE>
+<META HTTP-EQUIV="Content-Type" Content="text/html; charset=us-ascii"></HEAD>
+<BODY><h2>Bad Request - Invalid Hostname</h2>
+<hr><p>HTTP Error 400. The request hostname is invalid.</p>
+</BODY></HTML>
+
+2024/08/15 07:58:41.243	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://192.168.4.9:8182/rcms-dps/rest/queryAgvStatus
+2024/08/15 07:58:41.417	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075840845739","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 07:59:37.352	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://127.0.0.1:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 07:59:43.817	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075906713728","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:00:23.596	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://localhost:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:00:24.880	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815075906713728","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:00:41.281	[INFO]	Thread:[7]	[MSG] => [Receive Data] : {"code":"0","data":[{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":["10000,20000,90","20000,30000,-90","20000,30000,180","30000,40000,0"]},{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":[]}],"message":"成功","reqCode":"20240815075906713728"}
+2024/08/15 08:24:37.793	[INFO]	Thread:[19]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://localhost:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:24:38.015	[INFO]	Thread:[19]	[MSG] => [Send Data] : {"reqCode":"20240815082354708577","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:25:08.704	[INFO]	Thread:[19]	[MSG] => [Receive Data] : {"code":"0","data":[{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":["10000,20000,90","20000,30000,-90","20000,30000,180","30000,40000,0"]},{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":[]}],"message":"成功","reqCode":"20240815082354708577"}
+2024/08/15 08:25:17.822	[INFO]	Thread:[19]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://192.168.4.9:8182/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:25:17.829	[INFO]	Thread:[19]	[MSG] => [Send Data] : {"reqCode":"20240815082511186625","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:26:26.552	[INFO]	Thread:[7]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://localhost:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:26:26.880	[INFO]	Thread:[7]	[MSG] => [Send Data] : {"reqCode":"20240815082539885798","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:26:28.787	[INFO]	Thread:[7]	[MSG] => [Receive Data] : {"code":"0","data":[{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":["10000,20000,90","20000,30000,-90","20000,30000,180","30000,40000,0"]},{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":[]}],"message":"成功","reqCode":"20240815082539885798"}
+2024/08/15 08:41:46.591	[INFO]	Thread:[9]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://localhost:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:41:47.302	[INFO]	Thread:[9]	[MSG] => [Send Data] : {"reqCode":"20240815084130949566","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:41:52.777	[INFO]	Thread:[9]	[MSG] => [Receive Data] : {"code":"0","data":[{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":["10000,20000,90","20000,30000,-90","20000,30000,180","30000,40000,0"]},{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":[]}],"message":"成功","reqCode":"20240815084130949566"}
+2024/08/15 08:42:26.256	[INFO]	Thread:[9]	[MSG] => [Function] : queryAgvStatus; [Web URL] : http://localhost:54632/rcms-dps/rest/queryAgvStatus
+2024/08/15 08:42:26.289	[INFO]	Thread:[9]	[MSG] => [Send Data] : {"reqCode":"20240815084218083337","reqTime":"","clientCode":"","tokenCode":"","mapCode":"AA"}
+2024/08/15 08:42:27.809	[INFO]	Thread:[9]	[MSG] => [Receive Data] : {"code":"0","data":[{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":["10000,20000,90","20000,30000,-90","20000,30000,180","30000,40000,0"]},{"robotCode":"1","robotDir":"180","robotIp":"","battery":"80","posX":"1.0","posY":"2.0","mapCode":"","speed":"","status":"1","exclType":"0","stop":"1","podCode":"200001","podDir":"90","path":[]}],"message":"成功","reqCode":"20240815084218083337"}

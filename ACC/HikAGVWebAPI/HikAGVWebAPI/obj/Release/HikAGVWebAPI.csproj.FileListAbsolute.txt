@@ -1,0 +1,13 @@
+C:\Project\AGV\HikAGVWebAPI\bin\HikAGVWebAPI.dll.config
+C:\Project\AGV\HikAGVWebAPI\bin\HikAGVWebAPI.dll
+C:\Project\AGV\HikAGVWebAPI\bin\HikAGVWebAPI.pdb
+C:\Project\AGV\HikAGVWebAPI\obj\Release\HikAGVWebAPI.csproj.AssemblyReference.cache
+C:\Project\AGV\HikAGVWebAPI\obj\Release\HikAGVWebAPI.csproj.CoreCompileInputs.cache
+C:\Project\AGV\HikAGVWebAPI\obj\Release\HikAGVWebAPI.csproj.CopyComplete
+C:\Project\AGV\HikAGVWebAPI\obj\Release\HikAGVWebAPI.dll
+C:\Project\AGV\HikAGVWebAPI\obj\Release\HikAGVWebAPI.pdb
+C:\Project\AGV\HikAGVWebAPI\bin\Config\HikAGV.config
+C:\Project\AGV\HikAGVWebAPI\bin\NLog.config
+C:\Project\AGV\HikAGVWebAPI\bin\HikAGV.dll
+C:\Project\AGV\HikAGVWebAPI\bin\HikAGV.pdb
+C:\Project\AGV\HikAGVWebAPI\bin\NLog.dll

@@ -1,0 +1,88 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+<!-- Modal -->
+<div class="modal fade" id="alarmModalLabel" tabindex="-1" aria-labelledby="alarmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered ">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alarmModalLabel">車號</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-3 gx-2 row">
+                        <label for="recipient-name" class="col-md-3 col-form-label border border-1" id="objStation-name"></label>
+                        <div class="gx-3 col-md-9">
+                            <input type="text" class="form-control" id="objStation" name="shuttleid" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3 gx-2 row">
+                        <label for="recipient-name" class="col-md-3 col-form-label border border-1">警報代碼</label>
+                        <div class="gx-3 col-md-9">
+                            <input type="text" class="form-control" id="alarm-code" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3 gx-2 row">
+                        <label for="recipient-name" class="col-md-3 col-form-label border border-1">警報說明</label>
+                        <div class="gx-3 col-md-9">
+                            <input type="text" class="form-control" id="alarm-text" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3 gx-2 row">
+                        <label for="recipient-name" class="col-md-3 col-form-label border border-1">警報時間</label>
+                        <div class="gx-3 col-md-9">
+                            <input type="text" class="col-md-6 form-control" id="alarm-ontime" readonly>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-danger btn-lg" id="deletealarm" asp-controller="Home" asp-action="AlarmInactive" data-bs-dismiss="modal">解除警報</button>
+                    <button type="button" class="btn btn-secondary btn-lg" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var alarmModalLabel = document.getElementById('alarmModalLabel')
+    alarmModalLabel.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+
+        //取得標籤屬性裡的資料
+        var Objstation = button.getAttribute('objStation')
+        var alarmTitle = button.getAttribute('alarm-title')
+        var alarmCode = button.getAttribute('alarm-code')
+        var alarmText = button.getAttribute('alarm-text')
+        var alarmOnTime = button.getAttribute('alarm-ontime')
+        var ButtonFlag = button.getAttribute('button-flag')
+
+        //選擇彈出視窗標籤欄位
+        var modalTitle = alarmModalLabel.querySelector('.modal-title')
+        var modalObjstationName = alarmModalLabel.querySelector('#objStation-name')
+        var modalObjstation = alarmModalLabel.querySelector('#objStation')
+        var modalalarmCode = alarmModalLabel.querySelector('#alarm-code')
+        var modalalarmText = alarmModalLabel.querySelector('#alarm-text')
+        var modalalarmOnTime = alarmModalLabel.querySelector('#alarm-ontime')
+        var modalbutton = alarmModalLabel.querySelector('#deletealarm')
+
+        //判斷彈出視窗警爆類型決定是否需要"解除警報"按鈕
+        if (ButtonFlag =="false") {
+            deletealarm.style.display = "none"
+        }
+        else{
+            deletealarm.style.display = "bolck"
+        }
+
+        //將標籤值填入彈出視窗欄位
+        modalTitle.textContent = alarmTitle + Objstation
+        modalObjstationName.textContent = alarmTitle
+        modalObjstation.value = Objstation
+        modalalarmCode.value = alarmCode
+        modalalarmText.value = alarmText
+        modalalarmOnTime.value = alarmOnTime
+    })
+</script>

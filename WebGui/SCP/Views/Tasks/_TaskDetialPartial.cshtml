@@ -1,0 +1,22 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@if (ViewBag.Tasks != null)
+{
+    @foreach (var mission in ViewBag.Tasks)
+    {
+        <tr>
+            <td>@mission.Date</td>
+            <td>@mission.AGV</td>
+            <td>@mission.ShiftName</td>
+            <td>@mission.PartNo</td>
+            <td>@mission.BeginStation</td>
+            <td>@mission.BeginTime</td>
+            <td>@mission.EndStation</td>
+            <td>@mission.EndTime</td>
+            <td>@mission.TotalTime</td>
+        </tr>
+    }
+}
+

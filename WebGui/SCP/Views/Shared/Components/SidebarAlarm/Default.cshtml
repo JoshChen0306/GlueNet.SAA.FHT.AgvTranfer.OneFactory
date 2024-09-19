@@ -1,0 +1,110 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+   
+}
+@* @model IEnumerable<aAlarm> *@
+@* 
+<div id="sidebar-right">
+    <div>
+
+        @if (Model.Count() > 0)
+        {
+            <div class="col-md-12 sidebar-right-toggle-box sidebar-right-alarm">
+                <div class="fa fa-bars-progress right" data-placement="right" data-original-title="Toggle Navigation"></div>
+            </div>
+        }
+        else
+        { 
+        <div class="col-md-12 sidebar-right-toggle-box">
+            <div class="fa fa-bars-progress right" data-placement="right" data-original-title="Toggle Navigation"></div>
+        </div>    
+        }
+        <!--logo-->
+        <div class="col-md-12 ds" id="sidebar-alarm" onload="ShowAlarm()">
+            <div class="col" id="sidebar-right-col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th class="text-nowrap">站點</th>
+                            <th>警報代碼</th>
+                            <th>警報說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="equipment-table">
+                        @foreach (aAlarm item in Model)
+                        {
+                            if (item.EquipmentType != "RGV")
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        <span class="btn text-danger p-0 fs-4" data-bs-toggle="modal" data-bs-target="#alarmModalLabel"
+                                              objStation="@item.ObjStation" alarm-code="@item.AlarmCode" alarm-text="@item.AlarmText" alarm-ontime="@item.AlarmOnTime" alarm-title="站點" button-flag="false">
+                                            @item.ObjStation
+                                        </span>
+                                    </td>
+                                    <td>@item.AlarmCode</td>
+                                    <td class="text-nowrap">@item.AlarmText</td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="col" id="sidebar-right-col">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>車號</th>
+                            <th>警報代碼</th>
+                            <th>警報說明</th>
+                        </tr>
+                    </thead>
+                    <tbody id="shuttle-table">
+                         @foreach (aAlarm item in Model)
+                        {
+                            if (item.EquipmentType == "RGV")
+                            {
+                                <tr>
+                                    <td class="">
+                                        <span class="btn text-danger p-0 fs-4" data-bs-toggle="modal" data-bs-target="#alarmModalLabel"
+                                              objStation="@item.ObjStation" alarm-code="@item.AlarmCode" alarm-text="@item.AlarmText" alarm-ontime="@item.AlarmOnTime" alarm-title="車號" button-flag="false">
+                                            @item.ObjStation
+                                        </span>
+                                    </td>
+                                    <td>@item.AlarmCode</td>
+                                    <td class="text-nowrap">@item.AlarmText</td>
+                                </tr>
+                            }
+                        } 
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div> *@
+
+@await Html.PartialAsync("_ModalPartial");
+
+
+<script>
+   
+    setInterval(function () {     
+        
+        $("#sidebar-alarm").load(location.href + " #sidebar-alarm*>", "");
+        
+        if ($("#equipment-table tr").length > 0 || $("#shuttle-table tr").length > 0) {
+            $('.sidebar-right-toggle-box').addClass('sidebar-right-alarm');
+        }
+        else {        
+            $('.sidebar-right-toggle-box').removeClass('sidebar-right-alarm');
+        }
+        
+    }, 2000);
+
+
+
+</script>
+
+

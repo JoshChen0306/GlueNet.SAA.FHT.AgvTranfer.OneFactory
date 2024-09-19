@@ -1,0 +1,64 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+<div class="col-lg-12 main-chart">
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="row">
+                <div class="col-12 mb-3">
+                    <div id="Map"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-3">
+            <div class="row">
+                <div class="col-6 box0 ">
+                    <div class="title">@Localizer["TaskCount"]</div>
+                    <div class="body text-primary" id="TotalTask"></div>
+                </div>
+                <div class="col-6 box0 ">
+                    <div class="title">@Localizer["AlarmCount"]</div>
+                    <div class="body text-danger">0</div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 bg-white" id="AGV-Pie" data-title="@Localizer["Activation"]" style="height:330px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-6 box0 ">
+            <div class="title">@Localizer["TaskStatus"]</div>
+            <div class="ps-4 pe-4" >
+                <table class="table table-borderless">
+                    <thead class="text-center">
+                        <tr>
+                            <th class="align-middle">@Localizer["Car"]</th>
+                            <th class="align-middle">@Localizer["Name"]</th>
+                            <th class="align-middle">@Localizer["Status"]</th>
+                            <th class="align-middle">@Localizer["Battery"]</th>
+                            <th class="align-middle">@Localizer["NowPosition"]</th>
+                            <th class="align-middle">@Localizer["NextPosition"]</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="TaskStatus">
+                        <partial name="_TaskStatusPartial.cshtml"></partial>
+                    </tbody>
+                    
+                </table>
+                
+            </div>
+        </div>
+        <div class="col-6 box0 " id="Task-Bar" data-title="@Localizer["TaskList"]" style="height:320px;">
+            
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="module" src="~/js/map.js"></script>
+    <script type="module" src="~/js/warsituation.js"></script>
+}

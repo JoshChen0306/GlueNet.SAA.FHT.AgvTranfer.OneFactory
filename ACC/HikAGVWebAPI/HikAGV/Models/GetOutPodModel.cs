@@ -1,0 +1,61 @@
+﻿using System.Collections.Generic;
+
+/// <summary>
+/// 料箱出庫 TPS (CTU+分撥牆)
+/// </summary>
+public class GetOutPod
+{
+    /// <summary>
+    /// 请求编号，每个请求都要一个唯一编号， 同一个请求重复提交， 使用同一编号 。
+    /// </summary>
+    public string reqCode { get; set; } = string.Empty;
+    /// <summary>
+    /// 请求时间截 格式 : “yyyy MM dd HH:mm:ss”
+    /// </summary>
+    public string reqTime { get; set; } = string.Empty;
+    /// <summary>
+    /// 客户端编号，如 PDA HCWMS
+    /// </summary>
+    public string clientCode { get; set; } = string.Empty;
+    /// <summary>
+    /// 令牌号, 由调度系统颁发。
+    /// </summary>
+    public string tokenCode { get; set; } = string.Empty;
+    public string taskTyp { get; set; } = string.Empty;
+    public List<OutPodDatas> data { get; set; } = new List<OutPodDatas>();
+    public override string ToString()
+    {
+        return $@"[Request Code] : {reqCode}; [Request Time] : {reqTime}; [Client Code] : {clientCode}; [Token Code] : {tokenCode}; [Task Type] : {taskTyp}; {string.Join(",", data)}";
+    }
+}
+
+/// <summary>
+/// 料箱資料
+/// </summary>
+public class OutPodDatas
+{
+    public string taskCode { get; set; } = string.Empty;
+    public string ctnrCode { get; set; } = string.Empty;
+    public string binCode { get; set; } = string.Empty;
+    public string wbCode { get; set; } = string.Empty;
+    public string agvTyp { get; set; } = string.Empty;
+    public string priority { get; set; } = string.Empty;
+    public override string ToString()
+    {
+        return $@"[Task Code] : {taskCode}; [Container Code] : {ctnrCode}; [Bin Code] : {binCode}; [Wb Code] : {wbCode}; [AGV Type] : {agvTyp}; [Priority] : {priority}";
+    }
+}
+
+/// <summary>
+/// 料箱出庫 TPS (CTU+分撥牆) 回應
+/// </summary>
+public class GetOutPodAck
+{
+    public string code { get; set; }
+    public string message { get; set; }
+    public string reqCode { get; set; }
+    public override string ToString()
+    {
+        return $@"[Code] : {code}; [Message] : {message}; [Request Code] : {reqCode}";
+    }
+}

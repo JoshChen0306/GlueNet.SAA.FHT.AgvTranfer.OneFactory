@@ -1,0 +1,92 @@
+﻿
+@*
+    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    var cookieExpire = "";
+    //判斷是否登入
+    if (User.Identity.IsAuthenticated)
+    {
+        //取得設定cookie時間
+         cookieExpire = ViewBag.LogoutTime;
+    }
+    var requestPath = ViewContext.HttpContext.Request.Path;
+}
+
+<div class="top-menu ">
+    <ul class="nav pull-right top-menu d-flex align-items-center">
+        @if (User.Identity.IsAuthenticated)
+        {
+            <li><i class="fa-solid fa-user fa-xl me-3" style="color: #101720;"></i></li>
+            <li class="text-black me-3">@User.Identity.Name </li>
+            <li class="text-black" id="Logout"></li>
+            
+            <li><a class="logout" href="@Url.Action("Logout","Account")"><i class="fa-solid fa-arrow-right-from-bracket"></i></a></li>
+        }
+        else
+        {
+            <li><i class="fa-solid fa-bell fa-xl me-2" style="color: #fc0303;"></i></li>
+            <li class="dropdown">
+                <!-- 觸發下拉選單的按鈕 -->
+                <button class="btn p-0 btn-light ms-2" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-globe fa-xl"></i>
+                </button>
+                <!-- 下拉選單項目 -->
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href=@Url.Action("ChangeLanguage","Home",new {lang = "zh-TW" ,returnUrl = requestPath })><img src="/img/TW.png" alt="中文" class="me-3">中文</a>
+                    <a class="dropdown-item" href=@Url.Action("ChangeLanguage","Home",new {lang = "en" , returnUrl = requestPath})><img src="/img/UK.png" alt="英文" class="me-3">English</a>
+                </div>
+            </li>
+
+            <li></li>
+            <li><a class="login" href="@Url.Action("Login","Account")"><i class="fa-solid fa-user" ></i></a></li>
+        }        
+    </ul>
+</div>
+
+
+<script>
+
+    var isAuthenticated = '@User.Identity.IsAuthenticated';
+    //判斷是否再登入狀態
+    if (isAuthenticated == "True"){
+        var expiresUtc = localStorage.getItem('cookieExpire');
+        if (expiresUtc === null) {
+            //將時間存入暫存器
+            localStorage.setItem('cookieExpire', new Date('@cookieExpire'));
+        }  
+        LogoutTime();
+     }
+     else{
+        //未登入狀態清除暫存器cookie時間
+        localStorage.removeItem('cookieExpire');
+     }
+
+    function LogoutTime(){
+        // 取得 cookie 的過期時間
+        var expiresUtc = new Date(localStorage.getItem('cookieExpire'));
+
+        //如果 cookie 不存在或過期時間為空，則顯示提示
+        if (!expiresUtc || isNaN(expiresUtc)) {
+            //若沒取得cookie則直接返回
+            return;
+        }
+        var now = new Date();
+        var offsetTime = (expiresUtc - now) / 1000;
+        if (offsetTime <= 0) {  
+            //彈出視窗顯示cookie到期
+            var myModal = new bootstrap.Modal(document.getElementById('myModal'));
+            myModal.show();
+            return;
+        }
+
+        var sec = Math.floor(offsetTime % 60);
+        var min = Math.floor(offsetTime / 60) % 60;
+        var hour = Math.floor(offsetTime / 60 / 60);
+
+        document.getElementById('Logout').innerHTML = "登出倒數:" + hour + '時' + min + '分' + sec + '秒';
+
+        setTimeout('LogoutTime()',1000);
+    }
+
+</script>

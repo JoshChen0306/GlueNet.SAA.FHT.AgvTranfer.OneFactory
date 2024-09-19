@@ -1,0 +1,169 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+
+    <title>@Configuration.GetSection("MyConfig")["SidebarName"]</title>
+
+    <!-- Bootstrap core CSS -->
+    @* <link href="~/assets/css/bootstrap.css" rel="stylesheet"> *@
+    <link rel="stylesheet" href="~/bootstrap/css/bootstrap.css" />
+    <!--external css-->
+    <link href="~/font-awesome/css/all.css" rel="stylesheet" />
+
+    <!-- Custom styles for this template -->
+    <link href="~/assets/css/style.css" rel="stylesheet">
+    <link href="~/assets/css/style-responsive.css" rel="stylesheet">
+    <script src="~/js/common/jquery-3.7.1.min.js"></script>
+    <script src="~/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body>
+    @* onload="ShowTime()" *@
+
+    <div class="modal fade" id="myModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">授權到期</h5>
+                </div>
+                <div class="modal-body">
+                    授權已到期，請重新登入。
+                </div>
+                <div class="modal-footer">
+                    <a asp-controller="Account" asp-action="Logout" class="btn btn-secondary btn-lg">確認</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section id="container">
+        <!-- **********************************************************************************************************************************************************
+        TOP BAR CONTENT & NOTIFICATIONS
+        *********************************************************************************************************************************************************** -->
+        <!--header start-->
+        <header class="header bg-white shadow d-flex  align-items-center">
+            <div class="sidebar-toggle-box">
+                <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
+            </div>
+            <div id="timebox"></div>
+            <!--logo start-->
+            <a href="#" class="logo text-secondary">@Configuration.GetSection("MyConfig")["SystemeName"]<span>v1</span></a>
+            <div class="ms-auto">
+                <partial name="_LoginPartial" />
+            </div>
+        </header>
+        <!--header end-->
+        <!-- **********************************************************************************************************************************************************
+        MAIN SIDEBAR MENU
+        *********************************************************************************************************************************************************** -->
+        <!--sidebar start-->
+        <aside>
+            <div id="sidebar" class="nav-collapse shadow b">
+                <!-- sidebar menu start-->
+                <ul class="sidebar-menu" id="nav-accordion">
+                    <p class="centered"><a href=""><img src=@Configuration.GetSection("MyConfig")["SidebarImg"] class="" width="100"></a></p>
+                    <h5 class="centered text-black mb-5 SidebarName">@Configuration.GetSection("MyConfig")["SidebarName"]</h5>
+                    @{
+                        List<pFunction> pFunctions = ViewBag.Functions;
+                        List<pFunction> MainFun = pFunctions.Where(x => x.RowNo == 0 && x.ControlFlag == "Y").OrderBy(x => x.ColumnNo).ToList();
+                        var currentCulture = CultureInfo.CurrentCulture.Name;
+
+                        foreach (pFunction pFunction in MainFun)
+                        {
+                            List<pFunction> DetailFun = pFunctions.Where(x => x.ColumnNo == pFunction.ColumnNo && !(x.RowNo == 0) && x.ControlFlag == "Y").OrderBy(x => x.RowNo).ToList();
+
+                            <li class="sub-menu">
+                                <a href="javascript:;">
+                                    <i class="@pFunction.WebIcon"></i>
+                                    <span>
+                                        @if (currentCulture.StartsWith("zh"))
+                                        {
+                                            @pFunction.FunctionChineseName
+                                        }
+                                        else
+                                        {
+                                            @pFunction.FunctionEnglishName
+                                        }
+                                    </span>
+                                </a>
+                                <ul class="sub">
+                                    @foreach (pFunction detailfun in DetailFun)
+                                    {
+                                        <li>
+                                            <a href="@detailfun.WebUrl" target="myIframe">
+                                                @if (currentCulture.StartsWith("zh"))
+                                                {
+                                                    @detailfun.FunctionChineseName
+                                                }
+                                                else
+                                                {
+                                                    @detailfun.FunctionEnglishName
+                                                }                                             
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            </li>
+                        }
+                    }
+                </ul>
+                <!-- sidebar menu end-->
+            </div>
+        </aside>
+        <!--sidebar end-->
+        <!-- **********************************************************************************************************************************************************
+                      RIGHT SIDEBAR CONTENT
+             *********************************************************************************************************************************************************** -->
+        <aside>
+            <!--右側警報功能看板-->
+            @* @await Component.InvokeAsync("SidebarAlarm");*@
+        </aside>
+        <!-- **********************************************************************************************************************************************************
+        MAIN CONTENT
+        *********************************************************************************************************************************************************** -->
+        <!--main content start-->
+        <section id="main-content">
+
+            <section class="wrapper">
+
+                @RenderBody()
+
+            </section>
+
+        </section>
+        <!--main content end-->
+        <!--footer start-->
+        @* <footer class="site-footer">
+        <div class="text-center">
+
+        2014 - Alvarez.is
+        <a href="#" class="go-top">
+        <i class="fa fa-angle-up"></i>
+        </a>
+        </div>
+        </footer> *@
+        <!--footer end-->
+    </section>
+    <!-- js placed at the end of the document so the pages load faster -->
+    <script class="include" type="text/javascript" src="~/assets/js/jquery.dcjqaccordion.2.7.js"></script>
+    <script src="~/assets/js/jquery.scrollTo.min.js"></script>
+    <!--common script for all pages-->
+    <script src="~/assets/js/common-scripts.js"></script>
+    <script src="~/js/layout.js"></script>
+</body>
+</html>
+
+
+

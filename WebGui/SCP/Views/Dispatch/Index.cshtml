@@ -1,0 +1,181 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+
+<div class="col-lg-12 main-chart">
+    <h4><strong>@Localizer["Map"]</strong></h4>
+    <div class="mb-4" id="Map"></div>
+    <div class="row">
+        <div class="col-5">
+            <form id="DispatchForm">
+                <h4><strong>@Localizer["Dispatch"]</strong></h4>
+                <div class="row mb-3">
+                    <label class="col-2 col-form-label">@Localizer["Area"]</label>
+                    <div class="col-10">
+                        <select class="form-select w-75" name="Area" id="Area" asp-items=@ViewBag.AreaList required>
+                            <option value="" class="text-secondary" disabled selected hidden>@Localizer["AreaText"]</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-2 col-form-label">@Localizer["BeginStation"]</label>
+                    <div class="col-10">
+                        <select class="form-select w-75 Site" name="BegingStation" id="BeginStation" asp-items=@ViewBag.Site required>
+                            <option value="" disabled selected hidden>@Localizer["StationText"]</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-2 col-form-label">@Localizer["EndStation"]</label>
+                    <div class="col-10">
+                        <select class="form-select w-75 Site" name="EndStation" id="EndStation" asp-items=@ViewBag.Site required>
+                            <option value="" disabled selected hidden>@Localizer["StationText"]</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <label class="col-2 col-form-label">Rack碼</label>
+                    <div class="col-10 d-flex align-items-center">
+                        <input class="form-control me-3 w-75" id="RackId" name="RackId" placeholder="Rack編碼" readonly />
+                    </div>
+                </div>
+                <div class="row position-relative mb-3">
+                    <label class="col-2 col-form-label">@Localizer["WorkOrder"]</label>
+                    <div class="col-10 d-flex align-items-center">
+                        <input class="form-control w-75 me-2" id="WorkOrder" name="WorkOrder" placeholder="@Localizer["BatchText"]" />
+                        <button id="QRStation" class="btn btn-light p-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                            <i class="fa-solid fa-qrcode fa-xl position-absolute" style="color:gray;"></i>
+                        </button>
+                        
+                    </div>
+                </div>
+                <div class="row position-relative">
+                    <label class="col-2 col-form-label"></label>
+                    <div class="col-8 d-flex align-items-center justify-content-end">
+                        <a class="btn btn-primary rounded-pill me-3" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
+                        <a class="btn btn-success rounded-pill me-4" id="UnloadButton" role="button">下料完成</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-7">
+            <h4><strong>@Localizer["Tasks"]</strong></h4>
+            <div class="maintain-table maintain-table-small">
+                <table class="table mt-3">
+                    <thead class="text-center">
+                        <tr>
+                            <th class="text-secondary">#</th>
+                            <th class="text-secondary">@Localizer["BeginStation"]</th>
+                            <th class="text-secondary">@Localizer["EndStation"]</th>
+                            <th class="text-secondary">@Localizer["Batch"]</th>
+                            <th class="text-secondary">@Localizer["Status"]</th>
+                            <th class="text-secondary">@Localizer["Action"]</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-center" id="DispatchStatus">
+                        <Partial name="_DispatchPartial.cshtml"></Partial>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @* Modal視窗 *@
+    <div class="modal fade" id="dispatchModalToggle" aria-hidden="true" aria-labelledby="dispatchModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dispatchModalToggleLabel"><strong>確認派車</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    是否派送任務
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-target="#dispatchModalToggle2" data-bs-toggle="modal">@Localizer["Submit"]</button>
+                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>                 
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="unloadModalToggle" aria-hidden="true" aria-labelledby="unloadModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="unloadModalToggleLabel"><strong>確認站點</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    站點是否下料完成
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-target="#dispatchModalToggle2" data-bs-toggle="modal">@Localizer["Submit"]</button>
+                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="dispatchModalToggle2" aria-hidden="true" aria-labelledby="dispatchModalToggleLabel2" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="dispatchModalToggleLabel2"><strong>確認派車</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    派送成功
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>                 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <!-- 動態視窗元件 垂直置中 ZXing掃描二維碼-->
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="staticBackdropLabel">掃描二維碼</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <section class="container" id="demo-content">
+
+                        <label>二維碼內容:</label>
+                        <pre><code id="result"></code></pre>
+
+                        <div id="sourceSelectPanel">
+                            <select id="sourceSelect" style="display: none;">
+                            </select>
+                        </div>
+
+                        <div class="row" style="padding-top:1em">
+
+                            <div class="col-auto">
+                                <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
+                            </div>
+
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-primary" id="confirm" data-bs-dismiss="modal">確認</button>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+@section scripts {
+    <script type="module" src="~/js/Map.js"></script>
+    <script type="module" src="~/js/dispatch.js"></script>
+    <script src="~/js/common/zxingqr.min.js"></script>
+    <script src="~/js/common/camera.js"></script>
+}
