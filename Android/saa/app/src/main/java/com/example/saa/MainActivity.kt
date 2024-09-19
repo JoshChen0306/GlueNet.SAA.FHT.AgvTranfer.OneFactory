@@ -10,11 +10,17 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
+import com.example.saa.dispatch.DispatchActivityA
+import com.example.saa.dispatch.DispatchActivityC
+import com.example.saa.dispatch.DispatchActivityD
+import com.example.saa.dispatch.DispatchActivityE
+import com.example.saa.dispatch.DispatchActivityNewC
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity()
+{
     private lateinit var etUsername: EditText
     private lateinit var edPassword: EditText
     private lateinit var btnLogin: Button
@@ -22,7 +28,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var connectionStatus: View
     private lateinit var databaseHelper: DatabaseHelper
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
@@ -31,21 +38,22 @@ class MainActivity : ComponentActivity() {
         btnLogin = findViewById(R.id.btnLogin)
         connectionStatus = findViewById(R.id.connectionStatus)
         databaseHelper = DatabaseHelper()
-        cbRememberMe=findViewById(R.id.cbRememberMe )
+        cbRememberMe = findViewById(R.id.cbRememberMe)
 
         checkConnectionStatus()
 
         val sharedPreferences = getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
         val rememberedUsername = sharedPreferences.getString("username", "")
 
-        if (rememberedUsername!!.isNotEmpty()) {
+        if (rememberedUsername!!.isNotEmpty())
+        {
             etUsername.setText(rememberedUsername)
             cbRememberMe.isChecked = true
         }
 
         btnLogin.setOnClickListener {
             val username = etUsername.text.toString()
-            val password = etUsername.text.toString()
+            val password = edPassword.text.toString()
 
             lifecycleScope.launch {
                 if (withContext(Dispatchers.IO) { databaseHelper.checkDatabaseConnection() }) {
@@ -62,7 +70,34 @@ class MainActivity : ComponentActivity() {
                                 apply()
                             }
                         }
-                        val intent = Intent(this@MainActivity, OptionsActivity::class.java)
+
+                        val user = withContext(Dispatchers.IO) { databaseHelper.get_oUser(username, password) }
+                        val intent: Intent
+                        when (user.groupId)
+                        {
+                            "2" -> {//A 區：備料
+                                intent = Intent(this@MainActivity, DispatchActivityA::class.java)
+                            }
+                            "3" -> {//C 區：生產上料
+                                intent = Intent(this@MainActivity, DispatchActivityC::class.java)
+                            }
+                            "4" -> {//D 區：生產下料
+                                intent = Intent(this@MainActivity, DispatchActivityD::class.java)
+                            }
+                            "5" -> {//E 區：下料
+                                intent = Intent(this@MainActivity, DispatchActivityE::class.java)
+                            }
+                            "6" -> {//E 區：下料
+                                intent = Intent(this@MainActivity, DispatchActivityNewC::class.java)
+                            }
+                            else -> {//原始畫面
+                                // 給 intent 賦一個預設值，例如 OptionsActivity
+                                intent = Intent(this@MainActivity, OptionsActivity::class.java)
+                            }
+                        }
+
+                        intent.putExtra("UserModel", user)
+                        //val intent = Intent(this@MainActivity, OptionsActivity::class.java)
                         startActivity(intent)
                         Toast.makeText(this@MainActivity, "Login sucessful.", Toast.LENGTH_SHORT).show()
                     } else {
@@ -75,14 +110,27 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun checkConnectionStatus() {
+    private fun checkConnectionStatus()
+    {
         lifecycleScope.launch {
-            val isConnected = withContext(Dispatchers.IO) { databaseHelper.checkDatabaseConnection() }
-            if (isConnected) {
+            val isConnected = withContext(Dispatchers.IO)
+            {
+                databaseHelper.checkDatabaseConnection()
+            }
+
+            if (isConnected)
+            {
                 connectionStatus.setBackgroundResource(R.drawable.status_online)
-            } else {
+            }
+            else
+            {
                 connectionStatus.setBackgroundResource(R.drawable.status_offline)
             }
         }
+    }
+
+    private fun clearData(){
+        etUsername.text.clear()
+        edPassword.text.clear()
     }
 }

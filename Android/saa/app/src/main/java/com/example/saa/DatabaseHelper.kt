@@ -13,7 +13,8 @@ import java.util.Date
 class DatabaseHelper {
     companion object {
         private const val JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver"
-        private const val DB_URL = "jdbc:jtds:sqlserver://192.168.178.1/agvDB_1400004"
+        private const val DB_URL = "jdbc:jtds:sqlserver://192.168.4.10/agvDB_1400004"
+        //private const val DB_URL = "jdbc:jtds:sqlserver://192.168.0.111/agvDB_1400004"
         private const val USER = "mcs"
         private const val PASS = "Zz123456"
     }
@@ -45,7 +46,7 @@ class DatabaseHelper {
             var resultSet: ResultSet? = null
             try {
                 connection = DriverManager.getConnection(DB_URL, USER, PASS)
-                val sql = "SELECT * FROM oUser WHERE username = ? AND password = ?"
+                val sql = "SELECT * FROM pUser WHERE userId = ? AND password = ?"
                 preparedStatement = connection.prepareStatement(sql)
                 preparedStatement.setString(1, username)
                 preparedStatement.setString(2, password)
@@ -62,7 +63,7 @@ class DatabaseHelper {
         }
     }
 
-    suspend fun send_oNeed(start: String, end: String?,rackId: String?,workOrder:String?): Boolean {
+    suspend fun send_oNeed(start: String, end: String?, rackId: String?, workOrder:String?, assignFlag:String?): Boolean {
         return withContext(Dispatchers.IO) {
             var connection: Connection? = null
             var preparedStatement: PreparedStatement? = null
@@ -74,9 +75,9 @@ class DatabaseHelper {
                 preparedStatement.setString(2, rackId)
                 preparedStatement.setString(3, workOrder)
                 preparedStatement.setString(4, end)
-                preparedStatement.setString(5, "PANEL")
+                preparedStatement.setString(5, "APP")
                 preparedStatement.setString(6, getCurrentFormattedTime()+"000000")
-                preparedStatement.setString(7,null)
+                preparedStatement.setString(7, assignFlag)
                 preparedStatement.executeUpdate() > 0 // Returns true if the insert was successful
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -105,7 +106,6 @@ class DatabaseHelper {
                 val sql = "SELECT RackId FROM oPort WHERE StationNo = ?"
                 preparedStatement = connection.prepareStatement(sql)
                 preparedStatement.setString(1, station)
-
                 resultSet = preparedStatement.executeQuery()
                 if (resultSet.next()) {
                     rackId = resultSet.getString("RackId")
@@ -145,24 +145,167 @@ class DatabaseHelper {
         }
     }
 
-    suspend fun getStationList(): List<StationInfo> {
+    suspend fun get_userGroup(username: String, password: String):String?{
         return withContext(Dispatchers.IO) {
-            val portList = mutableListOf<StationInfo>()
+            var connection: Connection? = null
+            var preparedStatement: PreparedStatement? = null
+            var resultSet: ResultSet? = null
+            var groupId: String? = null
+            try {
+                connection = DriverManager.getConnection(DB_URL, USER, PASS)
+                val sql = "SELECT * FROM pUser WHERE UserId = ? AND Password = ?"
+                preparedStatement = connection.prepareStatement(sql)
+                preparedStatement.setString(1, username)
+                preparedStatement.setString(2, password)
+                resultSet = preparedStatement.executeQuery()
+                if (resultSet.next()) {
+                    groupId = resultSet.getString("groupId")
+                }
+                groupId
+            } catch (e: SQLException) {
+                e.printStackTrace()
+                null
+            } finally {
+                resultSet?.close()
+                preparedStatement?.close()
+                connection?.close()
+            }
+        }
+    }
+
+    fun get_oUser(username: String, password: String): oUserModel {
+        var connection: Connection? = null
+        var preparedStatement: PreparedStatement? = null
+        var resultSet: ResultSet? = null
+        try {
+            connection = DriverManager.getConnection(DB_URL, USER, PASS)
+            val sql = "SELECT * FROM pUser WHERE UserId = ? AND Password = ?"
+            preparedStatement = connection.prepareStatement(sql)
+            preparedStatement.setString(1, username)
+            preparedStatement.setString(2, password)
+            resultSet = preparedStatement.executeQuery()
+            while (resultSet.next()) {
+                val UserId = resultSet.getString("UserId")
+                val UserName = resultSet.getString("UserName")
+                val Password = resultSet.getString("Password")
+                val GroupId = resultSet.getString("GroupId")
+                val Mail = resultSet.getString("Mail")
+                val Tel = resultSet.getString("Tel")
+                val ModifiedTime = resultSet.getString("ModifiedTime")
+                return oUserModel(UserId, UserName, Password, GroupId, Mail, Tel, ModifiedTime)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            resultSet?.close()
+            preparedStatement?.close()
+            connection?.close()
+        }
+
+        return oUserModel("","","","","", "", "")
+    }
+
+    suspend fun get_oport(station: String): oPortModel {
+        return withContext(Dispatchers.IO) {
             var connection: Connection? = null
             var preparedStatement: PreparedStatement? = null
             var resultSet: ResultSet? = null
             try {
                 connection = DriverManager.getConnection(DB_URL, USER, PASS)
-                val sql = "SELECT StationNo, HaveFlag, BgnToEnd, UseFlag, RackId FROM oPort"
+                val sql = "SELECT * FROM oPort WHERE StationNo = ?"
+                preparedStatement = connection.prepareStatement(sql)
+                preparedStatement.setString(1, station)
+                resultSet = preparedStatement.executeQuery()
+                if (resultSet.next()) {
+                    val Area = resultSet.getString("Area")
+                    val Block = resultSet.getString("Block")
+                    val Port = resultSet.getString("Port")
+                    val StationNo = resultSet.getString("StationNo")
+                    val InterfaceName = resultSet.getString("InterfaceName")
+                    val Priority = resultSet.getString("Priority")
+                    val UseFlag = resultSet.getString("UseFlag")
+                    val RackId = resultSet.getString("RackId")
+                    val WorkOrder = resultSet.getString("WorkOrder")
+                    val HaveFlag = resultSet.getString("HaveFlag")
+                    val BgnToEnd = resultSet.getString("BgnToEnd")
+                    val MachineName = resultSet.getString("MachineName")
+                    oPortModel(Area, Block, Port, StationNo, InterfaceName, Priority, UseFlag, RackId, WorkOrder, HaveFlag, BgnToEnd, MachineName)
+                } else {
+                    // Handle the case where no rows are returned, e.g., return a default model
+                    oPortModel("", "", "", "", "", "", "", "", "", "", "", "")
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                oPortModel("", "", "", "", "", "", "", "", "", "", "", "")
+            } finally {
+                resultSet?.close()
+                preparedStatement?.close()
+                connection?.close()
+            }
+        }
+    }
+
+    fun getbyInterface(station: String?): oPortModel {
+        var connection: Connection? = null
+        var preparedStatement: PreparedStatement? = null
+        var resultSet: ResultSet? = null
+        try {
+            connection = DriverManager.getConnection(DB_URL, USER, PASS)
+            val sql = "SELECT * FROM oPort WHERE InterfaceName = ?"
+            preparedStatement = connection.prepareStatement(sql)
+            preparedStatement.setString(1, station)
+            resultSet = preparedStatement.executeQuery()
+            while (resultSet.next()) {
+                val Area = resultSet.getString("Area") ?: ""
+                val Block = resultSet.getString("Block") ?: ""
+                val Port = resultSet.getString("Port") ?: ""
+                val StationNo = resultSet.getString("StationNo") ?: ""
+                val InterfaceName = resultSet.getString("InterfaceName") ?: ""
+                val Priority = resultSet.getString("Priority") ?: ""
+                val UseFlag = resultSet.getString("UseFlag") ?: ""
+                val RackId = resultSet.getString("RackId") ?: ""
+                val WorkOrder = resultSet.getString("WorkOrder") ?: ""
+                val HaveFlag = resultSet.getString("HaveFlag") ?: ""
+                val BgnToEnd = resultSet.getString("BgnToEnd") ?: ""
+                val MachineName = resultSet.getString("MachineName") ?: ""
+                return oPortModel(Area, Block, Port, StationNo, InterfaceName, Priority, UseFlag, RackId, WorkOrder, HaveFlag, BgnToEnd, MachineName)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            resultSet?.close()
+            preparedStatement?.close()
+            connection?.close()
+        }
+
+        return oPortModel("", "", "", "", "", "", "", "", "", "", "", "")
+    }
+
+    suspend fun getAlloPort(): List<oPortModel> {
+        return withContext(Dispatchers.IO) {
+            val portList = mutableListOf<oPortModel>()
+            var connection: Connection? = null
+            var preparedStatement: PreparedStatement? = null
+            var resultSet: ResultSet? = null
+            try {
+                connection = DriverManager.getConnection(DB_URL, USER, PASS)
+                val sql = "SELECT * FROM oPort"
                 preparedStatement = connection.prepareStatement(sql)
                 resultSet = preparedStatement.executeQuery()
                 while (resultSet.next()) {
-                    val stationNo = resultSet.getString("StationNo")
-                    val haveFlag = resultSet.getString("HaveFlag")
-                    val useFlag = resultSet.getString("UseFlag")
-                    val bgnToEnd = resultSet.getString("BgnToEnd")
-                    val rackId = resultSet.getString("RackId")
-                    portList.add(StationInfo(stationNo,haveFlag,bgnToEnd,useFlag,rackId))
+                    val Area = resultSet.getString("Area")
+                    val Block = resultSet.getString("Block")
+                    val Port = resultSet.getString("Port")
+                    val StationNo = resultSet.getString("StationNo")
+                    val InterfaceName = resultSet.getString("InterfaceName")
+                    val Priority = resultSet.getString("Priority")
+                    val UseFlag = resultSet.getString("UseFlag")
+                    val RackId = resultSet.getString("RackId")
+                    val WorkOrder = resultSet.getString("WorkOrder")
+                    val HaveFlag = resultSet.getString("HaveFlag")
+                    val BgnToEnd = resultSet.getString("BgnToEnd")
+                    val MachineName = resultSet.getString("MachineName")
+                    portList.add(oPortModel(Area, Block, Port, StationNo, InterfaceName, Priority, UseFlag, RackId, WorkOrder, HaveFlag, BgnToEnd, MachineName))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -171,6 +314,7 @@ class DatabaseHelper {
                 preparedStatement?.close()
                 connection?.close()
             }
+
             portList
         }
     }

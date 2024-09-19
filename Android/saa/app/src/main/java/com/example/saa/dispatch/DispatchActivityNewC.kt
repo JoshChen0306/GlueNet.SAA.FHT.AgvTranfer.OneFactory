@@ -5,7 +5,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
@@ -14,9 +13,11 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.compose.ui.platform.findViewTreeCompositionContext
 import com.example.saa.DatabaseHelper
 import com.example.saa.R
+import com.example.saa.SpinnerItem
+import com.example.saa.SpinnerItemAdapter
 import com.example.saa.oUserModel
 import com.journeyapps.barcodescanner.CaptureActivity
 import com.journeyapps.barcodescanner.ScanOptions
@@ -26,9 +27,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class DispatchActivityC : AppCompatActivity() {
+class DispatchActivityNewC : AppCompatActivity() {
 
     private var user: oUserModel? = null
+    private lateinit var spnArea: Spinner
     private lateinit var txtStart: EditText
     private lateinit var txtRackId: EditText
     private lateinit var txtWorkOrder:EditText
@@ -52,14 +54,15 @@ class DispatchActivityC : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_dispatch_c)
+        setContentView(R.layout.activity_dispatch_new_c)
 
         user = intent.getParcelableExtra<oUserModel>("UserModel")
+        spnArea = findViewById(R.id.spnArea)
         txtStart = findViewById(R.id.txtStart)
         txtRackId = findViewById(R.id.txtRackId)
-        txtWorkOrder=findViewById(R.id.txtWorkOrder)
-        txtBatchNo=findViewById(R.id.txtBatchNo)
-        txtPartNo=findViewById(R.id.txtPartNo)
+        txtWorkOrder = findViewById(R.id.txtWorkOrder)
+        txtBatchNo = findViewById(R.id.txtBatchNo)
+        txtPartNo = findViewById(R.id.txtPartNo)
         scanStart = findViewById(R.id.scanStart)
         scanWorkOrder = findViewById(R.id.scanWorkOrder)
         btnSend = findViewById(R.id.btnSend)
@@ -87,8 +90,6 @@ class DispatchActivityC : AppCompatActivity() {
             finish()
         }
 
-        loadSpinnerData()
-
         txtWorkOrder.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 // This method is called to notify you that the text is about to be changed
@@ -106,40 +107,101 @@ class DispatchActivityC : AppCompatActivity() {
                 spiltWorkOrder(s.toString())
             }
         })
+
+        // Set the item selected listener
+        spnArea.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                /*// Get the selected item
+                val selectedItem = parent.getItemAtPosition(position) as SpinnerItem
+                // Handle the selected item
+                handleSelectedItem(selectedItem)*/
+                viewRefresh()
+
+                val station = parent.getItemAtPosition(position) as SpinnerItem
+                scanWorkOrder.isEnabled = station.value != "C"
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>) {
+                // Handle the case where no item is selected if needed
+            }
+        }
+
+        initialArea()
+    }
+
+    private fun initialArea() {
+        try {
+            val keyValuePairs = listOf(
+                SpinnerItem("待料上料區", "C"),
+                SpinnerItem("待料下料區", "D")
+            )
+
+            // Create and set the adapter
+            val adapter = SpinnerItemAdapter(this, keyValuePairs)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spnArea.adapter = adapter
+
+            // Set the initial selection (e.g., "待料上料區")
+            spnArea.setSelection(0)
+        } catch (e: Exception) {
+            // Handle exceptions appropriately
+            Toast.makeText(this, "Error selecting item", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun handleScanResult(contents: String?, editText: EditText) {
         if (contents == null) {
             //editText.setText("Cancel scan")
             Toast.makeText(this, "Cancel scan", Toast.LENGTH_SHORT).show()
-        } else {
-            if (editText == txtStart) {
-                val bArea = checkArea(contents)
-                if (!bArea) {
-                    viewRefresh()
-                    Toast.makeText(this, "Scan Wrong Area", Toast.LENGTH_SHORT).show()
-                    return
-                }
+            return
+        }
+        var scanData = contents
+        // Use a single coroutine scope, ideally tied to the lifecycle of the activity or view model
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                // Fetch data from database in the IO dispatcher
+                val oport = withContext(Dispatchers.IO) { dbHelper.getbyInterface(scanData) }
 
-                CoroutineScope(Dispatchers.Main).launch {
-                    val oportList = dbHelper.getAlloPort()
-                    val selectedStation = oportList.find { it.StationNo == contents }
-                    selectedStation?.let {
-                        txtWorkOrder.setText(it.WorkOrder)
-                        txtRackId.setText(it.RackID)
+                if (editText == txtStart) {
+                    var machineName: String? = ""
+                    var bArea = checkArea(oport.StationNo)
+                    if (!bArea) {
+                        bArea = checkArea(scanData)
+                        if (!bArea) {
+                            viewRefresh()
+                            Toast.makeText(this@DispatchActivityNewC, "Scan Wrong Area", Toast.LENGTH_SHORT).show()
+                            return@launch
+                        }
+                    } else {
+                        scanData = oport.StationNo
                     }
-                }
-            }
 
-            editText.setText(contents)
+                    val stationList = withContext(Dispatchers.IO) { dbHelper.getAlloPort() }
+                    val selectedStation = stationList.find { it.StationNo == scanData }
+                    selectedStation?.let {
+                        machineName = it.MachineName
+                        if (scanData!!.substring(0, 1) == "D")
+                            txtRackId.setText(it.RackID)
+                    }
+
+                    loadSpinnerData(scanData!!.substring(0, 1))
+                    editText.contentDescription = scanData
+                    editText.setText(machineName)
+                } else if (editText == txtWorkOrder) {
+                    editText.setText(oport.WorkOrder)
+                }
+            } catch (e: Exception) {
+                // Handle exceptions appropriately
+                Toast.makeText(this@DispatchActivityNewC, "Error processing scan result", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    private fun checkArea(scandata: String): Boolean {
+    private fun checkArea(scandata: String?): Boolean {
         var result = false
         try {
-            val areasub = scandata.substring(0, 1)
-            val area = (64 + user?.groupId!!.toInt()).toChar().toString()
+            var area = (spnArea.selectedItem as SpinnerItem).value
+            val areasub = scandata?.substring(0, 1)
             if (areasub == area)
                 result = true
         }
@@ -166,10 +228,23 @@ class DispatchActivityC : AppCompatActivity() {
 
     private fun showConfirmationDialog() {
         try {
-            val end = txtStart.text.toString()
-            val start = spnPort.selectedItem.toString()
-            val workOrder = txtWorkOrder.text.toString()
-            val rackId = txtRackId.text.toString()
+            val end: String
+            val start: String
+            val workOrder: String
+            val rackId: String
+
+            if (txtStart.contentDescription.toString().substring(0, 1) == "C") {
+                end = txtStart.contentDescription.toString()
+                start = (spnPort.selectedItem as SpinnerItem).value
+            }
+            else
+            {
+                start = txtStart.contentDescription.toString()
+                end = (spnPort.selectedItem as SpinnerItem).value
+            }
+
+            workOrder = txtWorkOrder.text.toString()
+            rackId = txtRackId.text.toString()
 
             if (start.isBlank() or workOrder.isBlank() or rackId.isBlank()) {
                 Toast.makeText(this, "All fields must not be null", Toast.LENGTH_SHORT).show()
@@ -190,7 +265,7 @@ class DispatchActivityC : AppCompatActivity() {
                         if (portResult) {
                             sendData(start, end, rackId, workOrder)
                         } else {
-                            Toast.makeText(this@DispatchActivityC, "站點錯誤 (Port Error)", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@DispatchActivityNewC, "站點錯誤 (Port Error)", Toast.LENGTH_SHORT).show()
                         }
                     }
                 }
@@ -204,17 +279,18 @@ class DispatchActivityC : AppCompatActivity() {
 
     private fun sendData(start: String, end: String,rackId:String,wordOrder:String) {
         CoroutineScope(Dispatchers.Main).launch {
-            var success = dbHelper.send_oNeed(start, end, rackId, wordOrder, "W")
+            val assignFlag = if (start.substring(0, 1) == "B") "W" else null
+            var success = dbHelper.send_oNeed(start, end, rackId, wordOrder, assignFlag)
             if (success) {
-                Toast.makeText(this@DispatchActivityC, "Date(oNeed) send success", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DispatchActivityNewC, "Date(oNeed) send success", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this@DispatchActivityC, "Date(oNeed) send fail", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DispatchActivityNewC, "Date(oNeed) send fail", Toast.LENGTH_SHORT).show()
             }
-            success = dbHelper.change_oPort(end, rackId, "1", wordOrder)
+            success = dbHelper.change_oPort(end, rackId, "3", "")
             if (success) {
-                Toast.makeText(this@DispatchActivityC, "Data(oPort_End) send success", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DispatchActivityNewC, "Data(oPort_End) send success", Toast.LENGTH_SHORT).show()
             } else {
-                Toast.makeText(this@DispatchActivityC, "Data(oPort_End) send fail", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@DispatchActivityNewC, "Data(oPort_End) send fail", Toast.LENGTH_SHORT).show()
             }
 
             viewRefresh()
@@ -225,7 +301,10 @@ class DispatchActivityC : AppCompatActivity() {
         return withContext(Dispatchers.IO) {
             try {
                 val oport = dbHelper.get_oport(port)
-                oport.HaveFlag == "0" && oport.BgnToEnd.isNullOrBlank()
+                if (port.substring(0, 1) == "C")
+                    oport.HaveFlag == "3" && oport.BgnToEnd.isNullOrBlank()
+                else
+                    oport.HaveFlag == "0" && oport.BgnToEnd.isNullOrBlank()
             } catch (e: Exception) {
                 e.printStackTrace()
                 false
@@ -233,28 +312,48 @@ class DispatchActivityC : AppCompatActivity() {
         }
     }
 
-    private fun loadSpinnerData() {
+    private fun loadSpinnerData(block: String) {
         try {
             CoroutineScope(Dispatchers.Main).launch {
+                spnPort.adapter = null
                 val oportList = dbHelper.getAlloPort()
                 // 过滤出符合条件的站点
-                val filteredPorts = oportList.filter {
-                    it.StationNo.startsWith("B") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "3"
+                val filteredPorts = when (block) {
+                    "C" -> oportList.filter {
+                        it.StationNo.startsWith("B") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "3"
+                    }
+                    "D" -> oportList.filter {
+                        it.StationNo.startsWith("E") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
+                    }
+                    else -> emptyList()
                 }
 
                 if (filteredPorts.isNullOrEmpty()) {
-                    Toast.makeText(this@DispatchActivityC, "Failed to retrieve valid station data from the database.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@DispatchActivityNewC, "Failed to retrieve valid station data from the database.", Toast.LENGTH_SHORT).show()
                 } else {
-                    val adapter = ArrayAdapter(this@DispatchActivityC, android.R.layout.simple_spinner_item, filteredPorts.map { it.StationNo })
+                    // Create SpinnerItem list from filteredPorts
+                    val items = filteredPorts.map { SpinnerItem(it.StationNo + getKey(it.WorkOrder!!), it.StationNo) }
+                    // Create and set custom adapter
+                    val adapter = SpinnerItemAdapter(this@DispatchActivityNewC, items)
+
+                    //val adapter = ArrayAdapter(this@DispatchActivityNewC, android.R.layout.simple_spinner_item, filteredPorts.map { it.StationNo })
                     adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                     spnPort.adapter = adapter
-                    spinnerItemSelectChange()
+
+                    //val adapter = ArrayAdapter(this@DispatchActivityNewC, android.R.layout.simple_spinner_item, filteredPorts.map { it.StationNo })
+                    //adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                    //spnPort.adapter = adapter
+                    if (block == "C") {
+                        spinnerItemSelectChange()
+                        spnPort.isEnabled = true
+                    }
+                    else
+                        spnPort.isEnabled = false
+
                     //Toast.makeText(this@DispatchActivityC, "Successfully loaded ${filteredPorts.size} station records.", Toast.LENGTH_SHORT).show()
                 }
             }
-        }
-        catch (e: Exception)
-        {
+        } catch (e: Exception) {
         }
     }
 
@@ -290,12 +389,12 @@ class DispatchActivityC : AppCompatActivity() {
         spnPort.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 // 獲取選中的項目
-                val station = parent?.getItemAtPosition(position)
+                val station = parent?.getItemAtPosition(position) as SpinnerItem
 
                 // 顯示選中的項目
                 CoroutineScope(Dispatchers.Main).launch {
                     val oportList = dbHelper.getAlloPort()
-                    val selectedStation = oportList.find { it.StationNo == station }
+                    val selectedStation = oportList.find { it.StationNo == station.value }
                     selectedStation?.let {
                         txtWorkOrder.setText(it.WorkOrder)
                         txtRackId.setText(it.RackID)
@@ -319,10 +418,12 @@ class DispatchActivityC : AppCompatActivity() {
 
     private fun viewRefresh() {
         txtStart.text.clear()
+        txtStart.contentDescription = ""
         txtRackId.text.clear()
         txtWorkOrder.text.clear()
         txtBatchNo.text.clear()
         txtPartNo.text.clear()
-        loadSpinnerData()
+        spnPort.adapter = null
+        scanWorkOrder.isEnabled = true
     }
 }

@@ -1,206 +1,250 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="15dp" >
+
+    <TextView
+        android:id="@+id/txtViewTitle"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:gravity="center"
+        android:text="生產區"
+        android:textSize="30sp"
+        android:letterSpacing="6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 掃描站 -->
+    <TextView
+        android:id="@+id/txtViewStart"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:gravity="start|center_vertical"
+        android:text="掃描站\n(Scan)"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+
+    <EditText
+        android:id="@+id/txtStart"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        android:hint="StartStation"
+        app:layout_constraintEnd_toStartOf="@+id/scanStart"
+        app:layout_constraintStart_toEndOf="@+id/txtViewStart"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
 
     <ImageButton
         android:id="@+id/scanStart"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginTop="25dp"
         android:background="@drawable/button_background"
         android:scaleType="centerCrop"
         android:src="@drawable/qrcode"
-        app:layout_constraintEnd_toStartOf="@id/txtStart"
-        app:layout_constraintTop_toTopOf="@+id/txtStart" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+    <!-- 掃描站 -->
+
+    <!-- 目標站 -->
+    <TextView
+        android:id="@+id/txtViewEnd"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:gravity="start|center_vertical"
+        android:text="目標站\n(Target)"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewStart" />
+
+    <Spinner
+        android:id="@+id/spnPort"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/edit_text_background"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toStartOf="@+id/scanStart"
+        app:layout_constraintStart_toEndOf="@+id/txtViewEnd"
+        app:layout_constraintTop_toBottomOf="@+id/txtStart" />
+    <!-- 目標站 -->
+
+    <!-- 工單 -->
+    <TextView
+        android:id="@+id/txtViewScanOrder"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:gravity="start|center_vertical"
+        android:text="工單\n(Work Order)"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewEnd" />
+
+    <EditText
+        android:id="@+id/txtWorkOrder"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/edit_text_background"
+        android:editable="false"
+        android:hint="WorkOrder"
+        app:layout_constraintEnd_toStartOf="@+id/btnRefresh"
+        app:layout_constraintStart_toEndOf="@+id/txtViewScanOrder"
+        app:layout_constraintTop_toBottomOf="@+id/spnPort" />
 
     <ImageButton
         android:id="@+id/scanWorkOrder"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="15dp"
+        android:layout_marginTop="25dp"
         android:background="@drawable/button_background"
         android:scaleType="centerCrop"
         android:src="@drawable/qrcode"
-        app:layout_constraintEnd_toStartOf="@id/txtStart"
-        app:layout_constraintTop_toTopOf="@+id/txtWorkOrder" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spnPort" />
+    <!-- 工單 -->
 
-    <Spinner
-        android:id="@+id/spnPort"
-        android:layout_width="800dp"
+
+
+    <!-- 批號 -->
+    <TextView
+        android:id="@+id/txtViewBatchNo"
+        android:layout_width="115dp"
         android:layout_height="50dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/edit_text_background"
-        app:layout_constraintTop_toBottomOf="@+id/txtStart"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="25dp"
+        android:gravity="start|center_vertical"
+        android:text="批號\n(Batch No)"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/txtViewScanOrder" />
 
     <EditText
-        android:id="@+id/txtStart"
-        android:layout_width="800dp"
+        android:id="@+id/txtBatchNo"
+        android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="15dp"
-        android:hint="StartStation"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
         android:editable="false"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:hint="Batch No"
+        app:layout_constraintEnd_toStartOf="@+id/scanStart"
+        app:layout_constraintStart_toEndOf="@+id/txtViewPartNo"
+        app:layout_constraintTop_toBottomOf="@+id/txtWorkOrder" />
+    <!-- 批號 -->
+
+
+    <!-- 料號 -->
+    <TextView
+        android:id="@+id/txtViewPartNo"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginBottom="25dp"
+        android:gravity="start|center_vertical"
+        android:text="料號\n(Part No)"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@+id/txtViewBatchNo" />
 
     <EditText
-        android:id="@+id/txtWorkOrder"
-        android:layout_width="800dp"
+        android:id="@+id/txtPartNo"
+        android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="15dp"
-        android:hint="WorkOrder"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
         android:editable="false"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:hint="Part No"
+        app:layout_constraintEnd_toStartOf="@+id/scanStart"
+        app:layout_constraintStart_toEndOf="@+id/txtViewPartNo"
+        app:layout_constraintTop_toBottomOf="@+id/txtBatchNo" />
+    <!-- 料號 -->
+
+    <!-- 載盤 -->
+    <TextView
+        android:id="@+id/txtViewRack"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
+        android:gravity="start|center_vertical"
+        android:text="載盤\n(Rack ID)"
+        android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/spnPort"/>
+        app:layout_constraintTop_toBottomOf="@+id/txtViewPartNo" />
 
     <EditText
         android:id="@+id/txtRackId"
-        android:layout_width="800dp"
+        android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="15dp"
-        android:hint="RackId"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
         android:editable="false"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtWorkOrder"/>
+        android:hint="RackId"
+        app:layout_constraintEnd_toStartOf="@+id/scanWorkOrder"
+        app:layout_constraintStart_toEndOf="@+id/txtViewRack"
+        app:layout_constraintTop_toBottomOf="@+id/txtPartNo" />
 
     <ImageButton
         android:id="@+id/btnRefresh"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_marginStart="20dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="25dp"
         android:background="@drawable/button_background"
         android:scaleType="centerCrop"
         android:src="@drawable/refresh"
-        app:layout_constraintStart_toEndOf="@id/spnPort"
-        app:layout_constraintTop_toTopOf="@id/spnPort"
-        app:layout_constraintBottom_toBottomOf="@id/txtWorkOrder"/>
-
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.63"
-        app:layout_constraintHorizontal_bias="0.1">
-        <ImageButton
-            android:id="@+id/buttonStationC5"
-            style="@style/StationButton"
-            android:src="@drawable/agv" />
-        <TextView
-            style="@style/StationLabel"
-            android:text="C5" />
-    </FrameLayout>
-
-    <!-- Station 3 -->
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.63"
-        app:layout_constraintHorizontal_bias="0.3">
-        <ImageButton
-            android:id="@+id/buttonStationC4"
-            style="@style/StationButton"
-            android:src="@drawable/agv" />
-        <TextView
-            style="@style/StationLabel"
-            android:text="C4" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.63"
-        app:layout_constraintHorizontal_bias="0.5">
-        <ImageButton
-            android:id="@+id/buttonStationC3"
-            style="@style/StationButton"
-            android:src="@drawable/agv" />
-        <TextView
-            style="@style/StationLabel"
-            android:text="C3" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.63"
-        app:layout_constraintHorizontal_bias="0.7">
-        <ImageButton
-            android:id="@+id/buttonStationC2"
-            style="@style/StationButton"
-            android:src="@drawable/agv" />
-        <TextView
-            style="@style/StationLabel"
-            android:text="C2" />
-    </FrameLayout>
-
-    <FrameLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_bias="0.63"
-        app:layout_constraintHorizontal_bias="0.9">
-        <ImageButton
-            android:id="@+id/buttonStationC1"
-            style="@style/StationButton"
-            android:src="@drawable/agv" />
-        <TextView
-            style="@style/StationLabel"
-            android:text="C1" />
-    </FrameLayout>
+        app:layout_constraintTop_toBottomOf="@+id/txtPartNo" />
+    <!-- 載盤 -->
 
     <Button
         android:id="@+id/btnSend"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="送單"
+        android:layout_marginTop="60dp"
+        android:layout_marginEnd="50dp"
+        android:background="@drawable/button_background"
+        android:text="送出\n(Send)"
         android:textColor="@color/white"
         android:textSize="15dp"
-        android:background="@drawable/button_background"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@id/btnBack"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/btnBack"/>
+        app:layout_constraintTop_toBottomOf="@+id/txtRackId" />
 
     <Button
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="返回"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/button_background"
+        android:text="返回\n(Back)"
         android:textColor="@color/white"
         android:textSize="15dp"
-        android:background="@drawable/button_background"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/btnSend"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintTop_toBottomOf="@+id/txtRackId" />
 </androidx.constraintlayout.widget.ConstraintLayout>

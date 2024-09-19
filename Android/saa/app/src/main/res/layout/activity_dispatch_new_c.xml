@@ -12,12 +12,38 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:gravity="center"
-        android:text="備料區"
+        android:text="生產區"
         android:textSize="30sp"
         android:letterSpacing="6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 區域選單 -->
+    <TextView
+        android:id="@+id/txtViewArea"
+        android:layout_width="115dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="24dp"
+        android:gravity="start|center_vertical"
+        android:text="區域\n(Area)"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+
+    <Spinner
+        android:id="@+id/spnArea"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="15dp"
+        android:background="@drawable/edit_text_background"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toStartOf="@+id/scanStart"
+        app:layout_constraintStart_toEndOf="@+id/txtViewArea"
+        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+    <!-- 區域選單 -->
 
     <!-- 掃描站 -->
     <TextView
@@ -29,7 +55,7 @@
         android:text="掃描站\n(Scan)"
         android:textSize="20sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/txtViewArea" />
 
     <EditText
         android:id="@+id/txtStart"
@@ -39,11 +65,12 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
+        android:contentDescription="Test"
         android:editable="false"
         android:hint="StartStation"
         app:layout_constraintEnd_toStartOf="@+id/scanStart"
         app:layout_constraintStart_toEndOf="@+id/txtViewStart"
-        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/txtViewArea" />
 
     <ImageButton
         android:id="@+id/scanStart"
@@ -54,7 +81,7 @@
         android:scaleType="centerCrop"
         android:src="@drawable/qrcode"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtViewTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/txtViewArea" />
     <!-- 掃描站 -->
 
     <!-- 目標站 -->

@@ -16,10 +16,11 @@
         android:theme="@style/Theme.Saa"
         tools:targetApi="31">
 
-        <activity android:name=".dispatch.DispatchActivityE" android:theme="@style/AppTheme"/>
-        <activity android:name=".dispatch.DispatchActivityC" android:theme="@style/AppTheme" />
-        <activity android:name=".dispatch.DispatchActivityD" android:theme="@style/AppTheme"/>
-        <activity android:name=".dispatch.DispatchActivityA" android:theme="@style/AppTheme" />
+        <activity android:name=".dispatch.DispatchActivityA" android:theme="@style/AppTheme" android:configChanges="orientation|screenSize" />
+        <activity android:name=".dispatch.DispatchActivityNewC" android:theme="@style/AppTheme" android:configChanges="orientation|screenSize" />
+        <activity android:name=".dispatch.DispatchActivityC" android:theme="@style/AppTheme" android:configChanges="orientation|screenSize" />
+        <activity android:name=".dispatch.DispatchActivityD" android:theme="@style/AppTheme" android:configChanges="orientation|screenSize" />
+        <activity android:name=".dispatch.DispatchActivityE" android:theme="@style/AppTheme" android:configChanges="orientation|screenSize" />
         <activity android:name=".OptionsActivity"
             android:theme="@style/AppTheme"></activity>
         <activity

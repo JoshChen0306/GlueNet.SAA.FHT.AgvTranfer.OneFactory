@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.storage.CacheResetOnProcessCanceled.enabled
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
@@ -54,7 +52,6 @@ android {
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -67,10 +64,11 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.recyclerview)
     implementation(libs.androidx.appcompat)
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("net.sourceforge.jtds:jtds:1.3.1")
+    implementation(libs.zxing.android.embedded)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.jtds)
     implementation(libs.material)
+    implementation(libs.androidx.gridlayout)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
