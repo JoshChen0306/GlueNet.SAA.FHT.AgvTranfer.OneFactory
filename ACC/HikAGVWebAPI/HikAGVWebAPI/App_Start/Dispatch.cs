@@ -25,6 +25,7 @@ namespace HikAGVWebAPI
         private SQLData mDB;//SQL Server 連線
         private const int SleepTime = 1000;//執行續執行時間
         private Dictionary<string, DateTime?> dtChargeStartTime = new Dictionary<string, DateTime?>();//充電稼動率
+        private Dictionary<string, DateTime?> dtAbnormalStartTime = new Dictionary<string, DateTime?>();//任務異常動率
         private static readonly HttpClient client = new HttpClient();//上拋客戶端
         private Dictionary<string, Dictionary<string, object>> dicLowBattery = new Dictionary<string, Dictionary<string, object>>();//
 
@@ -53,6 +54,7 @@ namespace HikAGVWebAPI
                 #region 依照 DB oShuttle 表內的車號增加充電稼動率變數
                 List<oShuttleModel> oShuttles = mDB.Select_oShuttle();
                 dtChargeStartTime = oShuttles.Select(x => new KeyValuePair<string, DateTime?>(x.ShuttleId, null)).ToDictionary(x => x.Key, x => x.Value);
+                dtAbnormalStartTime = oShuttles.Select(x => new KeyValuePair<string, DateTime?>(x.ShuttleId, null)).ToDictionary(x => x.Key, x => x.Value);
                 dicLowBattery = oShuttles.Select(x => new KeyValuePair<string, Dictionary<string, object>>(x.ShuttleId, new Dictionary<string, object>())).ToDictionary(x => x.Key, x => x.Value);
                 #endregion 依照 DB oShuttle 表內的車號增加充電稼動率變數
 
@@ -136,33 +138,33 @@ namespace HikAGVWebAPI
 
                     foreach (AGVStatusData agvData in AGVAck?.data)
                     {
-                        mDB.Update_oShuttle(agvData);
-                        mLog.TraceOut($"Update AGV Data! {agvData?.ToString()}", Log.LogType.NONE);
-
-                        //電量低於 40 跟 25 上報 FHt
-                        CheckBattery(agvData);
-
+                        string ShuttleStatus = "I";
                         switch (agvData?.status)
                         {
                             case "4"://任務空閒
                             case "7"://充電狀態
                                 if (agvData?.status == "7" && dtChargeStartTime[agvData?.robotCode] == null)
                                 {
-                                    //mDB.Update_oShuttleStation(oMission, "C");
                                     dtChargeStartTime[agvData?.robotCode] = DateTime.Now;
                                     mLog.TraceOut($"Shuttle Start Charging!", Log.LogType.NONE);
                                 }
 
-                                //if (agvData?.status == "1" || agvData?.status == "4")
                                 if (agvData?.status == "4")
                                     InsertShuttleChargeActivate(agvData?.robotCode);
+
+                                InsertAbnormalActivate(agvData?.robotCode);
                                 break;
                             case "3"://任務異常
-                                SendMissionError(agvData?.robotCode);
+                                ShuttleStatus = "A";
+                                if (dtChargeStartTime[agvData?.robotCode] == null)
+                                    dtAbnormalStartTime[agvData?.robotCode] = DateTime.Now;
+
                                 mLog.TraceOut($"任務異常!", Log.LogType.NONE);
                                 break;
                             case "1"://任務完成
                             case "2"://任務執行中
+                                ShuttleStatus = "R";
+                                break;
                             case "5"://機器人暫停
                             case "6"://舉升貨架狀態
                             case "8"://弧線行走中
@@ -173,6 +175,13 @@ namespace HikAGVWebAPI
                                 mLog.TraceOut($"Default Alarm Status!", Log.LogType.NONE);
                                 break;
                         }
+
+                        agvData.status = ShuttleStatus;
+                        mDB.Update_oShuttle(agvData);
+                        mLog.TraceOut($"Update AGV Data! {agvData?.ToString()}", Log.LogType.NONE);
+
+                        //電量低於 40 跟 25 上報 FHt
+                        CheckBattery(agvData);
                     }
                 }
 
@@ -226,27 +235,6 @@ namespace HikAGVWebAPI
                     string Result = PostData(fHtAPI.ToDictionary());
                     mLog.TraceOut($"Return Data! {Result}", Log.LogType.NONE);
                 }
-            }
-            catch (Exception ex)
-            {
-            }
-        }
-
-        private void SendMissionError(string ShuttleID)
-        {
-            try
-            {
-                FHtAPI fHtAPI = new FHtAPI()
-                {
-                    account = FHtSettings.APIAccount,
-                    api_key = FHtSettings.APIKey,
-                    team_sn = FHtSettings.Teamcode,
-                    text_content = $@"車號：{ShuttleID}，任務異常!",
-                };
-
-                mLog.TraceOut($"Send Data! {fHtAPI.ToString()}", Log.LogType.NONE);
-                string Result = PostData(fHtAPI.ToDictionary());
-                mLog.TraceOut($"Return Data! {Result}", Log.LogType.NONE);
             }
             catch (Exception ex)
             {
@@ -367,6 +355,39 @@ namespace HikAGVWebAPI
         }
 
         /// <summary>
+        /// 任務異常恢復，新增任務異常稼動率
+        /// </summary>
+        /// <param name="ShuttleID"></param>
+        private void InsertAbnormalActivate(string ShuttleID)
+        {
+            try
+            {
+                if (dtAbnormalStartTime[ShuttleID] != null)
+                {
+                    ubActivationModel ubActivation = new ubActivationModel()
+                    {
+                        TaskDateTime = dtAbnormalStartTime[ShuttleID]?.ToString("yyyyMMddHHmmssffffff"),
+                        ShuttleStation = "A",
+                        ShuttleId = ShuttleID,
+                        TaskType = "A",
+                        BeginStation = "A",
+                        EndStation = "A",
+                        ReceivingTime = dtAbnormalStartTime[ShuttleID]?.ToString("yyyyMMddHHmmssffffff"),
+                        BeginTime = dtAbnormalStartTime[ShuttleID]?.ToString("yyyyMMddHHmmssffffff"),
+                        EndTime = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),
+                    };
+
+                    mDB.Insert_ubActivation(ubActivation);
+                    dtAbnormalStartTime[ShuttleID] = null;
+                    mLog.TraceOut($"Insert Abnormal Activate! {ubActivation?.ToString()}", Log.LogType.NONE);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        /// <summary>
         /// 查詢 AGV 狀態
         /// </summary>
         /// <returns></returns>
@@ -411,7 +432,6 @@ namespace HikAGVWebAPI
                     taskTyp = TaskType,
                     positionCodePath = PositionCode.Split(';').Select(x => x.Split(','))
                                                      .Select(x => new CodePath { positionCode = x[0], type = x[1] }).ToList(),
-                    //agvCode = oMission.ShuttleId,
                 };
 
                 ReturnAck = hikAGV.SchedulingTask(AGVStatus);

@@ -149,7 +149,7 @@ namespace HikAGVWebAPI
                 {
                     string sHaveFlag = string.IsNullOrEmpty(oMission.WorkOrder) ? "1" : "3";
                     oMission.OkFlag = "Y";
-                    oMission.EndStation = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+                    oMission.EndTime = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
                     mDB.Update_oPort(oMission, sHaveFlag);
                     mDB.Update_oRequire(oMission);
                     mDB.Update_oMissionEndTime(oMission);

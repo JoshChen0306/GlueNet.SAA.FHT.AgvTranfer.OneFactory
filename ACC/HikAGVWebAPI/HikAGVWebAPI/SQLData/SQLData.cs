@@ -77,6 +77,7 @@ namespace HikAGVWebAPI.App_Start
         {
             string sSQL = $@"update oShuttle
                                 set Battery = '{agvStatus?.battery}'
+                                   ,Status = '{agvStatus?.status}'
                                    ,PosX = '{agvStatus?.posX.PadRight(6, '0')}'
                                    ,PosY = '{agvStatus?.posY.PadRight(6, '0')}'
                                    ,RobotDir = '{agvStatus?.robotDir}'
@@ -99,7 +100,7 @@ namespace HikAGVWebAPI.App_Start
         {
             string sSQL = $@"update oMission
                                 set TaskCode = '{oMission.TaskCode}'
-                                   ,BeginTime = '{oMission.BeginStation}'
+                                   ,BeginTime = '{oMission.BeginTime}'
                                    ,OkFlag = '{oMission.OkFlag}'
                               where TaskDateTime = '{oMission.TaskDateTime}' ";
             mSql.WriteSqlByAutoOpen(sSQL);
