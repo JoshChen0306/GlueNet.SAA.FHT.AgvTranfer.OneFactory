@@ -147,7 +147,7 @@ class DispatchActivityE : AppCompatActivity() {
     private fun showConfirmationDialog() {
         try {
             val start = txtStart.text.toString()
-            val end = spnPort.selectedItem.toString()
+            val end = spnPort?.selectedItem.toString()
             val workOrder = txtWorkOrder.text.toString()
             val rackId = txtRackId.text.toString()
 
