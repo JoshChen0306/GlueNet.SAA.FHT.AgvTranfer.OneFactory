@@ -313,7 +313,12 @@ class DatabaseHelper {
             var resultSet: ResultSet? = null
             try {
                 connection = DriverManager.getConnection(DB_URL, USER, PASS)
-                val sql = "SELECT * FROM oPort"
+                //val sql = "SELECT * FROM oPort"
+                val sql = "SELECT A.* FROM oPort A " +
+                        "LEFT JOIN oNeed B " +
+                        "  ON A.StationNo = B.ObjStation " +
+                        "WHERE B.ObjStation IS NULL " +
+                        "ORDER BY A.Block,A.Port "
                 preparedStatement = connection.prepareStatement(sql)
                 resultSet = preparedStatement.executeQuery()
                 while (resultSet.next()) {
