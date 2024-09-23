@@ -21,10 +21,12 @@ namespace svrPair
         private MsSql mSql;             //讀取資料庫方法的模組
         private DataTable mdtQuery;     //常用臨時資料表
         private DataTable moPairWay;    //存入口站可配對哪些出口站
+        private bool mPanelDoB2C;       //將暫存區 B 的料送到生產區 C 的動作是由平板和WEB作的為True (原本為MCS作的，客戶要求改成平板)
+        private bool mUnloadAuto;
                                         //FHT^N01^批號^料號^製單^列印日期 :::: FHT^N01^238090671^DMT6CVJ1536D^P3804231^202309181158
         private volatile Boolean mGo;   //判斷主執行緒是否在執行中的開關
         private Thread mThread;         //服務模組的主執行緒 
-
+        
         #region [BgnPair == 啟動配對程序]
         public void BgnPair()
         {
@@ -62,6 +64,9 @@ namespace svrPair
                 mIni = new Ini(System.IO.Directory.GetCurrentDirectory() + "\\Recipe.ini");
                 mDbName = mIni.ReadValue("DbName", "Main");
                 mDbIp = mIni.ReadValue("DbIp", "Main");
+                mPanelDoB2C = (mIni.ReadValue("PanelDoB2C", "Main") == "T") ? true : false;         //將暫存區 B 的料送到生產區 C 的動作是由平板和WEB作的為True (原本為MCS作的，客戶要求改成平板)
+                mUnloadAuto = (mIni.ReadValue("UnloadAuto", "Main") == "T") ? true : false;       //下料區的空RACK自動調派
+
                 mSql = new MsSql(mDbName, mDbIp);
             }
             catch (Exception ex) { Console.Write(ex.ToString()); }
@@ -94,17 +99,31 @@ namespace svrPair
                 //由平板產生了oNeed
                 GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 : 尋找oNeed中AssignFlag = NULL的資料，以此產出oRequire關聯資料，而後註冊oPort的起終註記、oNeed中AssignFlag是Y正常或E異常
 
-                GenerateoNeedDataByMCStoC();    //1-1 .主程序 == 提出需要 : 從[B]上料暫存批配料號送至生產[C] 
+                GenerateoNeedDataByMCSAsBtoA();    //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
                 GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
 
-                GenerateoNeedDataByMCStoA();    //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
+                if (mPanelDoB2C == false)//因應客戶要求自行由WEB程式和平板進行處理，故 MCS 不作處理
+                {   
+                    GenerateoNeedDataByMCSAsBtoC();    //1-1 .主程序 == 提出需要 : 從[B]上料暫存批配料號送至生產[C] 
+                }
+                else
+                {   //搜尋來源是oNeed資料中AssignFlag = W(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = A2 >> 指將空RACK送到上料區A 或 暫存區B 或 生產區 D (是否可用) 
+                    GenerateoNeedDataByMCSAsCtoABD();
+                }                
                 GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+
+                if (mUnloadAuto == true)
+                {
+                    GenerateoNeedDataByMCSAsEtoABD();    //1-2 .主程序 == 提出需要 : 將[E]暫存空Rack補至[A、B、D]
+                    GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+                }
 
                 GenerateoMissionByoRequire();   //2-0 .主程序 == 尋找oRequire表中未指派的項目，產生oMission表
                 RecyclingoRequireByOkFlag();    //3-0 .主程序 == 處理oRequire表中的OkFlag欄位，Y=完成，X=異常結束，C=取消
 
                 //這一段不執行，異常的指派需由oMission的OkFlag改變處理，否則會一直輪迴新增刪除
                 //RecyclingoRequireByAssignFlag();//4-0 .主程序 == 處理oRequire表中的 AssignFlag 欄位為 Y、X、C
+
                 RecyclingoNeedByAssignFlag();   //5-0 .主程序 == 處理oNeed表中的 AssignFlag 欄位為 E、X、C
 
 
@@ -156,13 +175,13 @@ namespace svrPair
         #endregion
 
         #region [1-1 .主程序 == GenerateoNeedDataByMCStoC == 尋找oPort表中生產區C中，沒RACK即沒工單(終點) 再從  暫存區B中找有RACK和有工單(起點) == 考慮料號批配問題  ] 
-        private void GenerateoNeedDataByMCStoC()    //從[B]上料暫存批配料號送至生產[C]
+        private void GenerateoNeedDataByMCSAsBtoC()    //從[B]上料暫存批配料號送至生產[C]
         {
-            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("C");
+            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'C'");
             foreach (DataRow dr in mdtQuery.Rows)
             {
                 //ProductionPartNo = X :表不管制  填入其他數值 : 表管制
-                DataTable dt = GetoPort_PartNoTheSame_NoPair_CanWork_Sort_ByBlock("B", dr["ProductionPartNo"].ToString().Trim());
+                DataTable dt = GetoPort_PartNoTheSame_NoPair_CanWork_Sort_ByBlock("'B'", dr["ProductionPartNo"].ToString().Trim());
                 if (dt.Rows.Count > 0)
                 {
                     InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(),dt.Rows[0]["WorkOrder"].ToString(), dr["StationNo"].ToString());
@@ -174,13 +193,13 @@ namespace svrPair
         #endregion
 
         #region [1-2 .主程序 == GenerateoNeedDataByMCStoA == 尋找oPort表中找上料區A缺少Rack的埠口(終點) 再從 暫存區B中找有Rack但沒工單(起點)] 
-        private void GenerateoNeedDataByMCStoA()    //將[B]暫存空Rack補至上料區[A]
+        private void GenerateoNeedDataByMCSAsBtoA()    //將[B]暫存空Rack補至上料區[A]
         {
             //找oPort表某一區域沒架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 >> 找到A區有資料表示要從B區補
-            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("A");
+            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A'");
             foreach (DataRow dr in mdtQuery.Rows)
             {
-                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("B");
+                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("'B'");
                 if (dt.Rows.Count > 0)
                 {
                     InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(), "", dr["StationNo"].ToString());
@@ -189,13 +208,50 @@ namespace svrPair
                 return;
             }
         }
+
+        private void GenerateoNeedDataByMCSAsEtoABD()    //將[E]暫存空Rack補至上料區[A、B、D]
+        {
+            //找oPort表某一區域沒架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 >> 找到A區有資料表示要從B區補
+            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A','B','D'");
+            foreach (DataRow dr in mdtQuery.Rows)
+            {
+                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("'E'");
+                if (dt.Rows.Count > 0)
+                {
+                    InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(), "", dr["StationNo"].ToString());
+                    WriteLog(string.Format("04.產生配對資料 >> E區 -> A、B、D區 ,  ObjStation : {0} , EndStation : {1} :: 將[E]空Rack補至[A、B、D]", dt.Rows[0]["StationNo"].ToString(), dr["StationNo"].ToString()));
+                }
+                return;
+            }
+        }
         #endregion
 
-        #region  [1-3 .副程式 == ProcessoNeedToRequire == 處理各區需求]        
+        #region [1-3 .主程序 == GenerateoNeedDataByMCStoA == 將[C]暫存空Rack補至上料區[A]、暫存區[B]、生產區[D，然後再將前筆AssignFlag= W >> P] 
+        private void GenerateoNeedDataByMCSAsCtoABD()    //將[C]暫存空Rack補至上料區[A]、暫存區[B]、生產區[D，然後再將前筆AssignFlag= W >> P]
+        {
+            //搜尋來源是oNeed資料中AssignFlag = W(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = A2 >> 指將空RACK送到上料區A 或 暫存區B 或 生產區 D (是否可用)
+            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oNeed where AssignFlag ='W' order by TaskDateTime").Tables[0];
+            foreach (DataRow odr in dt.Rows)
+            {
+                mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A','B','D'");
+                foreach (DataRow dr in mdtQuery.Rows)
+                {                    
+                    InsertoNeed(odr["EndStation"].ToString(), odr["RackId"].ToString(), "", dr["StationNo"].ToString());
+                    WriteLog(string.Format("04.產生配對資料 >> C區 -> ABD區 ,  ObjStation : {0} , EndStation : {1} :: 將[C]暫存空Rack補至[A、B、D]", odr["EndStation"].ToString(), dr["StationNo"].ToString()));
+                    UpdateoNeedAssignFlag("P", odr["ObjStation"].ToString(), odr["EndStation"].ToString());
+                    WriteLog(string.Format("04.更新配對資料 >> B區 -> C區 ,  ObjStation : {0} , EndStation : {1} :: 將[B]暫存空Rack補至[C]", odr["ObjStation"].ToString(), odr["EndStation"].ToString()));
+                    return;
+                }
+            }
+
+                
+            
+        }
+        #endregion
+
+        #region  [1-4 .副程式 == ProcessoNeedToRequire == 處理各區需求]        
         private void ProcessoNeedToRequire(string Black, DataRow dr)
         {
-            //WriteLog(string.Format("05.處理各區需求 >> {0} 區資料 ", Black));//寫LOG
-
             string WorkOrder = dr["WorkOrder"].ToString();      string ObjStation = dr["ObjStation"].ToString();
             string RackId = dr["RackId"].ToString();            string EndStation = dr["EndStation"].ToString();
             string TaskDateTime = dr["TaskDateTime"].ToString();
@@ -204,7 +260,6 @@ namespace svrPair
             {
                 if (Black == "A")
                 {
-                    //WriteLog(string.Format("! 程式異常 ! >> 上料區站點 {0} 的工單不得為空白，因為在B區無法用料號配對。", ObjStation));
                     WriteLog(string.Format("06.處理異常資料 >> 資料表 : oNeed ,  BeginStation : {0} , EndStation : {1} , AssignFlag : C = 工單空白造成異常，故取消此項要求", ObjStation, EndStation));
                     UpdateoNeedAssignFlag("C", ObjStation, EndStation);
                     return;
@@ -258,11 +313,11 @@ namespace svrPair
         }
         #endregion
 
-        #region [1-6 .次程序 == GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock == 找oPort表某一區域有架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 ]
+        #region [1-6 .次程序 == GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock == 找oPort表某一區域有架子資料但沒料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 ]
         private DataTable GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock(string Block)   //通常是找B、C、E
         {
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (RackId is not null or RTRIM(RackId) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in('" + Block + "') order by Priority desc").Tables[0];
+            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='1' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
+                                                   " Block in(" + Block + ") order by Priority desc").Tables[0];
             return dt;
         }
         #endregion
@@ -272,7 +327,7 @@ namespace svrPair
         {
             //DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (RackId is null or RTRIM(RackId) ='') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
             DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='0' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in('"+ Block + "') order by Priority desc").Tables[0];
+                                                   " Block in("+ Block + ") order by Priority desc").Tables[0];
             return dt;
         }
         #endregion
@@ -282,7 +337,7 @@ namespace svrPair
         {
             //DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (WorkOrder is not null or RTRIM(RackId) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
             DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='3' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in('" + Block + "') order by Priority desc").Tables[0];
+                                                   " Block in(" + Block + ") order by Priority desc").Tables[0];
             return dt;
         }
         #endregion
@@ -295,14 +350,14 @@ namespace svrPair
             {
                 //dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (WorkOrder is not null or RTRIM(WorkOrder) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
                 dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and  HaveFlag ='3' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in('" + Block + "') order by Priority desc").Tables[0];
+                                                   " Block in(" + Block + ") order by Priority desc").Tables[0];
             }
             else
             {
                 //dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (WorkOrder is not null or RTRIM(WorkOrder) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                //                                   " Block in('" + Block + "') and PartNo ='" + PartNo + "' order by Priority desc").Tables[0];
+                //                                   " Block in(" + Block + ") and PartNo ='" + PartNo + "' order by Priority desc").Tables[0];
                 dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='3' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in('" + Block + "') and WorkOrder like'%" + PartNo + "%' order by Priority desc").Tables[0];
+                                                   " Block in(" + Block + ") and WorkOrder like'%" + PartNo + "%' order by Priority desc").Tables[0];
             }
             
             return dt;
@@ -432,7 +487,13 @@ namespace svrPair
                         
                         DeleteoRequireByOkFlag(dr["TaskDateTime"].ToString(), dr["ObjStation"].ToString(),int.Parse(dr["SerialNo"].ToString()), dr["EndStation"].ToString(), dr["OkFlag"].ToString());
                         WriteLog(string.Format("32.回收oRequire >>  TaskDateTime : {0} ,ObjStation : {1} , SerialNo : {2} , AssignFlag : {3}", dr["TaskDateTime"].ToString(), dr["ObjStation"].ToString(), dr["SerialNo"].ToString(), dr["OkFlag"].ToString()));
-                        break;
+
+                        if (mPanelDoB2C == true)
+                        {
+                            //處理起點為其他筆oNeed的終點，且該筆資料AssignFlag為 P，將該AssignFlag改成NULL
+                            mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag = NULL where AssignFlag ='P' and EndStation='" + dr["ObjStation"].ToString() + "'");
+                        }
+                            break;
                     default:
                         break;
                 }
