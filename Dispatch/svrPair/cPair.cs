@@ -219,7 +219,7 @@ namespace svrPair
             if (dt.Rows.Count > 0)
             {
                 UpdateoNeedAssignFlag("X", ObjStation, EndStation);
-                WriteLog(string.Format("07.處理異常資料 >> 資料表 : oNeed , BeginStation : {0} , EndStation : {1} , AssignFlag : X = oRequire留有殘存資料，故將 oNeed 的 AssignFlag 改成 X ", ObjStation));
+                WriteLog(string.Format("07.處理異常資料 >> 資料表 : oNeed , BeginStation : {0} , EndStation : {1} , AssignFlag : X = oRequire留有殘存資料，故將 oNeed 的 AssignFlag 改成 X ", ObjStation, EndStation));
                 return;
             }
 
@@ -483,8 +483,9 @@ namespace svrPair
                     case "E":
                     case "X":
                     case "C":
-                    DeleteoNeedByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), "E");
-                    WriteLog(string.Format("50.處理暫存資料 >> 資料表 : oNeed , ObjStation : {0} ,EndStation : {1} , AssignFlag : {2} ", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString()));
+                        //DeleteoNeedByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), "E");
+                        DeleteoNeedByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString());
+                        WriteLog(string.Format("50.處理暫存資料 >> 資料表 : oNeed , ObjStation : {0} ,EndStation : {1} , AssignFlag : {2} ", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString()));
                         break;
 
                     default:
