@@ -57,7 +57,6 @@ namespace HikAGVWebAPI
                 dtAbnormalStartTime = oShuttles.Select(x => new KeyValuePair<string, DateTime?>(x.ShuttleId, null)).ToDictionary(x => x.Key, x => x.Value);
                 dicLowBattery = oShuttles.Select(x => new KeyValuePair<string, Dictionary<string, object>>(x.ShuttleId, new Dictionary<string, object>())).ToDictionary(x => x.Key, x => x.Value);
                 #endregion 依照 DB oShuttle 表內的車號增加充電稼動率變數
-
             }
             catch (Exception ex)
             {
@@ -314,6 +313,9 @@ namespace HikAGVWebAPI
                     }
                 }
 
+                List<oMissionModel> oMissionDetete = oAllMissions.Where(x => x.OkFlag == "C").ToList();
+                DeleteMission(oMissionDetete);
+
                 mLog.TraceOut($"========================================== oMission End! ==========================================", Log.LogType.NONE);
             }
             catch (Exception ex)
@@ -441,6 +443,21 @@ namespace HikAGVWebAPI
             }
 
             return ReturnAck;
+        }
+
+        private void DeleteMission(List<oMissionModel> oMissionDetete)
+        {
+            try
+            {
+                foreach(oMissionModel DeleteMission in oMissionDetete)
+                {
+                    mDB.Delete_oMission(DeleteMission);
+                    mLog.TraceOut($"Delete Cancel Mission! {DeleteMission?.ToString()}", Log.LogType.NONE);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }
