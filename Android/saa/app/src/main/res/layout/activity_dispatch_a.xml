@@ -19,6 +19,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <Button
+        android:id="@+id/btnBack"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_background"
+        android:text="登出\n(Log Out)"
+        android:textColor="@color/white"
+        android:textSize="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:layout_editor_absoluteY="-3dp" />
+
     <!-- 掃描站 -->
     <TextView
         android:id="@+id/txtViewStart"
@@ -39,7 +50,6 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
-        android:editable="false"
         android:hint="StartStation"
         app:layout_constraintEnd_toStartOf="@+id/scanStart"
         app:layout_constraintStart_toEndOf="@+id/txtViewStart"
@@ -103,7 +113,6 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="15dp"
         android:background="@drawable/edit_text_background"
-        android:editable="false"
         android:hint="WorkOrder"
         app:layout_constraintEnd_toStartOf="@+id/btnRefresh"
         app:layout_constraintStart_toEndOf="@+id/txtViewScanOrder"
@@ -120,8 +129,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spnPort" />
     <!-- 工單 -->
-
-
 
     <!-- 批號 -->
     <TextView
@@ -151,7 +158,6 @@
         app:layout_constraintStart_toEndOf="@+id/txtViewPartNo"
         app:layout_constraintTop_toBottomOf="@+id/txtWorkOrder" />
     <!-- 批號 -->
-
 
     <!-- 料號 -->
     <TextView
@@ -222,7 +228,7 @@
 
     <Button
         android:id="@+id/btnSend"
-        android:layout_width="wrap_content"
+        android:layout_width="300dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
         android:layout_marginEnd="50dp"
@@ -230,21 +236,7 @@
         android:text="送出\n(Send)"
         android:textColor="@color/white"
         android:textSize="15dp"
-        app:layout_constraintEnd_toEndOf="@id/btnBack"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtRackId" />
-
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="60dp"
-        android:background="@drawable/button_background"
-        android:text="返回\n(Back)"
-        android:textColor="@color/white"
-        android:textSize="15dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/btnSend"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtRackId" />
 </androidx.constraintlayout.widget.ConstraintLayout>
