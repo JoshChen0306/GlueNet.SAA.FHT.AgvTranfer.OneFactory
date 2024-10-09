@@ -114,6 +114,7 @@ namespace HikAGVWebAPI
                 }
                 catch (Exception ex)
                 {
+                    mLog.TraceOut($"Execute Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
                 }
 
                 Thread.Sleep(SleepTime);
@@ -188,6 +189,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Update AGV Status Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
 
@@ -237,6 +239,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Check Battery Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
 
@@ -320,6 +323,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"AGV Scheduling Task Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
 
@@ -353,6 +357,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Insert Shuttle Charge Activate Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
 
@@ -386,6 +391,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Insert Abnormal Activate Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
 
@@ -409,6 +415,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Get AGV Status Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
 
             return ReturnAck;
@@ -440,6 +447,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Get Scheduling Task Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
 
             return ReturnAck;
@@ -457,6 +465,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"Delete Mission Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
         }
     }
