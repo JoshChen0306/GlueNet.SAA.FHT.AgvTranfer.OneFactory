@@ -20,6 +20,7 @@ namespace HikAGVWebAPI
         private FHtSettings FHtSettings = new FHtSettings();
 
         private Thread DispatchThread;//執行續
+        private bool _stopThread = false;
         private HikAGV hikAGV = new HikAGV();//海康接口
         private Log mLog;//AGV 任務 Log 路徑
         private SQLData mDB;//SQL Server 連線
@@ -35,8 +36,8 @@ namespace HikAGVWebAPI
             ReadDBConfig();
             InitialData();
 
-            DispatchThread = new Thread(Execute);
-            DispatchThread.IsBackground = true;
+            DispatchThread = new Thread(new ThreadStart(Execute));
+            DispatchThread.IsBackground = false;
             DispatchThread.Start();
         }
 
@@ -102,10 +103,11 @@ namespace HikAGVWebAPI
         }
         #endregion 依照設定檔讀取 Section 資料
 
+        public int Collect = 0;
         #region
-        private void Execute()
+        public void Execute()
         {
-            while (true)
+            while (!_stopThread)
             {
                 try
                 {
@@ -117,8 +119,23 @@ namespace HikAGVWebAPI
                     mLog.TraceOut($"Execute Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
                 }
 
+                if (Collect > 10)
+                {
+                    GC.Collect();
+                    Collect = 0;
+                    mLog.TraceOut($"Execute GC Collect!", Log.LogType.NONE);
+                }
+
+                Collect++;
                 Thread.Sleep(SleepTime);
             }
+        }
+
+        // 停止线程的安全方法
+        public void Stop()
+        {
+            _stopThread = true;
+            DispatchThread.Join();  // 等待线程结束
         }
         #endregion
 
@@ -415,6 +432,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                ReturnAck = new AGVStatusAck();
                 mLog.TraceOut($"Get AGV Status Exception! [Exception] : {ex.Message}", Log.LogType.NONE);
             }
 
