@@ -94,20 +94,6 @@ namespace HikAGVDll
 
     public class AGVSettings : ConfigurationElement
     {
-        [ConfigurationProperty("ThreadEnable", DefaultValue = false)]
-        public bool ThreadEnable
-        {
-            get
-            {
-                return (bool)this["ThreadEnable"];
-            }
-            private set
-            {
-                //value = (bool)this["ThreadEnable"];
-                this["ThreadEnable"] = value;
-            }
-        }
-
         [ConfigurationProperty("AGVMapCode", DefaultValue = "")]
         public string AGVMapCode
         {

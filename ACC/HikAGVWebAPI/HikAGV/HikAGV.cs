@@ -4,7 +4,6 @@ using System;
 using System.Configuration;
 using System.Net.Http;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace HikAGVDll
@@ -13,7 +12,6 @@ namespace HikAGVDll
     {
         #region Config
         private readonly Configuration config;//抓取 Config 檔案資料
-        private DBSettings DBSettings = new DBSettings();
         public AGVUrlSettings AGVUrlSettings = new AGVUrlSettings();
         public AGVSettings AGVSettings = new AGVSettings();
         private readonly string ConfigFileName = string.Format("{0}\\Config\\HikAGV.config", string.IsNullOrEmpty(AppDomain.CurrentDomain.RelativeSearchPath) ? AppDomain.CurrentDomain.BaseDirectory : AppDomain.CurrentDomain.RelativeSearchPath);
@@ -22,7 +20,6 @@ namespace HikAGVDll
         private static readonly HttpClient client = new HttpClient();
         //NLog
         private Logger NLog;
-        private Thread AGVThread;
         //private readonly SqlDataMgmt SQLDB;
 
         public HikAGV()
@@ -30,13 +27,6 @@ namespace HikAGVDll
             config = LoadExternalConfig(ConfigFileName);
             ReadDBConfig();
             NLog = LogManager.GetLogger("HikAGVLog");
-
-            if (AGVSettings.ThreadEnable)
-            {
-                AGVThread = new Thread(Execute);
-                AGVThread.IsBackground = true;
-                AGVThread.Start();
-            }
         }
 
         #region 讀取設定檔全部資料
@@ -60,9 +50,6 @@ namespace HikAGVDll
         {
             try
             {
-                SectionDB SectionDB = config.GetSection("SectionDB") as SectionDB;
-                DBSettings = SectionDB?.DBSettings;
-
                 //載入這套系統要搭配的 Config 派車資訊
                 SectionAGV SectionAGV = config.GetSection("SectionAGV") as SectionAGV;
                 AGVUrlSettings = SectionAGV?.AGVUrlSettings;
@@ -73,100 +60,6 @@ namespace HikAGVDll
             }
         }
         #endregion 依照設定檔讀取 Section 資料
-
-        #region
-        private void Execute()
-        {
-            while (true)
-            {
-                try
-                {
-                    AGVSchedulingTask();
-                }
-                catch (Exception ex)
-                {
-                }
-
-                Thread.Sleep(1000);
-            }
-        }
-        #endregion
-
-        private void AGVSchedulingTask()
-        {
-            //try
-            //{
-            //    List<ShuttleModel> AllShuttle = AGVDispatch.GetShuttle().Where(x => x.Enable.Equals("Y")).ToList();
-            //    List<MissionTaskModel> AllMissionTask = AGVDispatch.GetMissionTask();
-
-            //    foreach (ShuttleModel shuttle in AllShuttle)
-            //    {
-            //        string sShuttle = shuttle.ShuttleID;
-            //        List<MissionTaskModel> ShuttleMission = AllMissionTask.Where(x => x.ShuttleID == sShuttle).ToList();
-            //        List<MissionTaskModel> NewShuttleMission = AllMissionTask.Where(x => string.IsNullOrEmpty(x.ShuttleID)).ToList();
-
-            //        if (ShuttleMission.Count == 0 && NewShuttleMission.Count > 0)//判斷此車無任務且有新增任務未指派車子
-            //        {
-            //            MissionTaskModel MissionTask = NewShuttleMission.FirstOrDefault();
-            //            AGVStatus AGVStatus = new AGVStatus()
-            //            {
-            //                reqCode = DateTime.Now.ToString("yyyyMMddhhmmssfffff"),
-            //                mapCode = AGVSettings.AGVMapCode,
-            //            };
-
-            //            AGVStatusAck AGVStatusAck = this.AGVStatus(AGVStatus);
-            //            AGVStatusData AGVStatusData = AGVStatusAck.data.Where(x => x.robotCode == sShuttle).FirstOrDefault();
-
-            //            if (AGVStatusData != null)
-            //            {
-            //                HikStatusEnum eStatus = (HikStatusEnum)Enum.Parse(typeof(HikStatusEnum), AGVStatusData.status, true);
-            //                switch (eStatus)
-            //                {
-            //                    case HikStatusEnum.IdleTask:
-            //                        SchedulingTaskAck SchedulingTaskAck = SetSchedulingTask(MissionTask);
-            //                        if (SchedulingTaskAck.code.Equals("0"))
-            //                        {
-            //                            MissionTask.OkFlag = "R";
-            //                            AGVDispatch.UpdateMissionTask(MissionTask);
-            //                        }
-            //                        break;
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //}
-        }
-
-        //private SchedulingTaskAck SetSchedulingTask(MissionTaskModel MissionTask)
-        //{
-        //    SchedulingTaskAck TaskAck = null;
-
-        //    try
-        //    {
-        //        List<CodePath> positionCodes = new List<CodePath>()
-        //        {
-        //            new CodePath() { positionCode = MissionTask.BeginStation, type = "00" },
-        //            new CodePath() { positionCode = MissionTask.EndStation, type = "00" }
-        //        };
-
-        //        SchedulingTask schedulingTask = new SchedulingTask()
-        //        {
-        //            reqCode = DateTime.Now.ToString("yyyyMMddHHmmssffff"),
-        //            taskTyp = AGVSettings.AGVTaskType,
-        //            positionCodePath = positionCodes,
-        //        };
-
-        //        TaskAck = SchedulingTask(schedulingTask);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //    }
-
-        //    return TaskAck;
-        //}
 
         protected internal T HikAGVPost<T>(HikFunctionEnum HikFunction, object model)
         {
@@ -186,8 +79,6 @@ namespace HikAGVDll
                 string sResponse = PostData(sURL, sJsonString);
                 NLog.Info($"[Receive Data] : {sResponse}");
                 T RCSModelReturn = JsonConvert.DeserializeObject<T>(sResponse);
-                //RCSModelReturn.SendJson = sJsonString;
-                //RCSModelReturn.ReturnJson = sResponse;
                 return RCSModelReturn;
             }
             catch (Exception ex)
@@ -207,7 +98,6 @@ namespace HikAGVDll
                 task.Wait();
                 response = task.Result;
                 Task<string> streamReader = Task.Run(() => response.Content.ReadAsStringAsync());
-                //Task<string> streamReader = response.Content.ReadAsStringAsync();
                 return streamReader.Result;
             }
             catch (Exception e)

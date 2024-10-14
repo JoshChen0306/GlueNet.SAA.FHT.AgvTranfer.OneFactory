@@ -52,7 +52,6 @@
     <Compile Include="Models\AGVCallBackModel.cs" />
     <Compile Include="Models\CancelTaskModel.cs" />
     <Compile Include="Models\ContinueTaskModel.cs" />
-    <Compile Include="Models\ConfigDBModel.cs" />
     <Compile Include="Models\LockPositionModel.cs" />
     <Compile Include="Models\BlockStgBinModel.cs" />
     <Compile Include="Models\LotInfoModel.cs" />
