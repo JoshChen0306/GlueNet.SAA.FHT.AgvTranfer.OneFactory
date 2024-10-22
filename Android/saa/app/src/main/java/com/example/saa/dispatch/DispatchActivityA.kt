@@ -1,6 +1,9 @@
 package com.example.saa.dispatch
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -84,6 +87,71 @@ class DispatchActivityA : AppCompatActivity() {
         btnBack.setOnClickListener {
             finish()
         }
+
+        txtWorkOrder.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                // This method is called to notify you that the text is about to be changed
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                // This method is called to notify you that the text is being changed
+                // Do something with the text here
+                val currentText = s.toString()
+                // For example, update a UI component with the new text
+            }
+
+            override fun afterTextChanged(s: Editable?) {
+                // This method is called to notify you that the text has been changed
+                spiltWorkOrder(s.toString())
+            }
+        })
+
+        // 設置鍵盤事件監聽器
+        txtStart.setOnKeyListener { view, keyCode, event ->
+            OnKeyPress(view, keyCode, event)
+        }
+
+        // 設置鍵盤事件監聽器
+        txtWorkOrder.setOnKeyListener { view, keyCode, event ->
+            OnKeyPress(view, keyCode, event)
+        }
+
+        // 點擊時選擇所有文本
+        txtStart.setOnClickListener {
+            OnClickListener(txtStart)
+            //editText.selectAll()
+        }
+
+        // 點擊時選擇所有文本
+        txtWorkOrder.setOnClickListener {
+            OnClickListener(txtWorkOrder)
+        }
+    }
+
+    private fun OnClickListener(editText: EditText) {
+        try {
+            editText.selectAll()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // 處理鍵盤按下的事件
+    private fun OnKeyPress(view: View, keyCode: Int, event: KeyEvent): Boolean {
+        // 檢查按鍵事件是否是 "Enter" 並且是按下的事件
+        if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+            // 將 view 轉型為 EditText 以取得文本數據
+            val editText = view as EditText
+            val scannedData = editText.text.toString()
+
+            // 處理掃描數據
+            handleScanResult(scannedData, editText)
+
+            // 返回 true 表示已處理該事件
+            return true
+        }
+        // 返回 false 表示未處理該事件，繼續傳遞
+        return false
     }
 
     private fun handleScanResult(contents: String?, editText: EditText) {
@@ -110,8 +178,8 @@ class DispatchActivityA : AppCompatActivity() {
 
                 loadSpinnerData()
             }
-            else
-                spiltWorkOrder(contents)
+            /*else
+                spiltWorkOrder(contents)*/
 
             editText.setText(contents)
         }
@@ -221,7 +289,7 @@ class DispatchActivityA : AppCompatActivity() {
                 val oportList = dbHelper.getAlloPort()
                 // 过滤出符合条件的站点
                 val filteredPorts = oportList.filter {
-                    it.StationNo.startsWith("B") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
+                    it.Block == "B" && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
                 }
 
                 if (filteredPorts.isNullOrEmpty()) {

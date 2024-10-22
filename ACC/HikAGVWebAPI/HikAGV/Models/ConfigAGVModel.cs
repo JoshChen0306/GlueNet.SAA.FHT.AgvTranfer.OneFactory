@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
 
 namespace HikAGVDll
 {
@@ -13,7 +15,6 @@ namespace HikAGVDll
             }
             set
             {
-                //value = (AGVUrlSettings)this["AGVUrlSettings"];
                 this["AGVUrlSettings"] = value;
             }
         }
@@ -27,7 +28,6 @@ namespace HikAGVDll
             }
             set
             {
-                //value = (AGVSettings)this["AGVSettings"];
                 this["AGVSettings"] = value;
             }
         }
@@ -44,7 +44,6 @@ namespace HikAGVDll
             }
             private set
             {
-                //value = (string)this["RestURL"];
                 this["RestURL"] = value;
             }
         }
@@ -58,7 +57,6 @@ namespace HikAGVDll
             }
             private set
             {
-                //value = (string)this["AGVStatusURL"];
                 this["AGVStatusURL"] = value;
             }
         }
@@ -76,7 +74,6 @@ namespace HikAGVDll
             }
         }
 
-        //[ConfigurationProperty("CallBackURL", DefaultValue = "http://10.46.73.128:11233/agv/agvCallbackService/{0}")]
         [ConfigurationProperty("CallBackURL", DefaultValue = "http://localhost:54632/agv/agvCallbackService/{0}")]
         internal string CallBackURL
         {
@@ -86,7 +83,6 @@ namespace HikAGVDll
             }
             private set
             {
-                //value = (string)this["CallBackURL"];
                 this["CallBackURL"] = value;
             }
         }
@@ -103,7 +99,6 @@ namespace HikAGVDll
             }
             private set
             {
-                //value = (string)this["AGVMapCode"];
                 this["AGVMapCode"] = value;
             }
         }
@@ -117,8 +112,20 @@ namespace HikAGVDll
             }
             private set
             {
-                //value = (string)this["AGVTaskType"];
                 this["AGVTaskType"] = value;
+            }
+        }
+
+        [ConfigurationProperty("WarnContent", DefaultValue = "安全告警-前碰撞条触发,安全告警-后碰撞条触发")]
+        public string WarnContent
+        {
+            get
+            {
+                return (string)this["WarnContent"];
+            }
+            private set
+            {
+                this["WarnContent"] = value;
             }
         }
     }

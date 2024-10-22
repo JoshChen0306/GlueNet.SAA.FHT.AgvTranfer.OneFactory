@@ -1,12 +1,13 @@
 ﻿using HikAGVWebAPI.App_Start;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System;
 using System.Web.Http;
 using System.Configuration;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
+using HikAGVDll;
+using System.Linq;
 
 namespace HikAGVWebAPI
 {
@@ -18,6 +19,8 @@ namespace HikAGVWebAPI
         private DBSettings DBSettings = new DBSettings();
         private LogSettings LogSettings = new LogSettings();
         private FHtSettings FHtSettings = new FHtSettings();
+        private HikAGV hikAGV = new HikAGV();//海康接口
+        private List<string> WarnContent => hikAGV.AGVSettings.WarnContent.Split(',').ToList();
 
         private SQLData mDB;//SQL Server 連線
         private Log mLog;//AGV 接口 Log 路徑

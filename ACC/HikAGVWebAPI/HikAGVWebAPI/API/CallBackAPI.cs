@@ -242,21 +242,19 @@ namespace HikAGVWebAPI
             {
                 foreach (WarnData warnData in WarnModel?.data)
                 {
-                    switch (warnData?.warnContent)
+                    if (WarnContent.IndexOf(warnData?.warnContent) > -1)
                     {
-                        case "安全告警-后碰撞条触发":
-                            FHtAPI fHtAPI = new FHtAPI()
-                            {
-                                account = FHtSettings.APIAccount,
-                                api_key = FHtSettings.APIKey,
-                                team_sn = FHtSettings.Teamcode,
-                                text_content = $@"車號：{warnData.robotCode}，告警訊息：{warnData.warnContent}!",
-                            };
+                        FHtAPI fHtAPI = new FHtAPI()
+                        {
+                            account = FHtSettings.APIAccount,
+                            api_key = FHtSettings.APIKey,
+                            team_sn = FHtSettings.Teamcode,
+                            text_content = $@"車號：{warnData.robotCode}，告警訊息：{warnData.warnContent}!",
+                        };
 
-                            mLog.TraceOut($"Send Data! {fHtAPI.ToString()}", Log.LogType.NONE);
-                            string Result = PostData(fHtAPI.ToDictionary());
-                            mLog.TraceOut($"Return Data! {Result}", Log.LogType.NONE);
-                            break;
+                        mLog.TraceOut($"Send Data! {fHtAPI.ToString()}", Log.LogType.NONE);
+                        string Result = PostData(fHtAPI.ToDictionary());
+                        mLog.TraceOut($"Return Data! {Result}", Log.LogType.NONE);
                     }
                 }
             }

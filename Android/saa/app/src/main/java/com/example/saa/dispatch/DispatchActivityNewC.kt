@@ -3,6 +3,7 @@ package com.example.saa.dispatch
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.View
 import android.widget.AdapterView
 import android.widget.Button
@@ -127,6 +128,53 @@ class DispatchActivityNewC : AppCompatActivity() {
         }
 
         initialArea()
+
+        // 設置鍵盤事件監聽器
+        txtStart.setOnKeyListener { view, keyCode, event ->
+            OnKeyPress(view, keyCode, event)
+        }
+
+        // 設置鍵盤事件監聽器
+        txtWorkOrder.setOnKeyListener { view, keyCode, event ->
+            OnKeyPress(view, keyCode, event)
+        }
+
+        // 點擊時選擇所有文本
+        txtStart.setOnClickListener {
+            OnClickListener(txtStart)
+            //editText.selectAll()
+        }
+
+        // 點擊時選擇所有文本
+        txtWorkOrder.setOnClickListener {
+            OnClickListener(txtWorkOrder)
+        }
+    }
+
+    private fun OnClickListener(editText: EditText) {
+        try {
+            editText.selectAll()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    // 處理鍵盤按下的事件
+    private fun OnKeyPress(view: View, keyCode: Int, event: KeyEvent): Boolean {
+        // 檢查按鍵事件是否是 "Enter" 並且是按下的事件
+        if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+            // 將 view 轉型為 EditText 以取得文本數據
+            val editText = view as EditText
+            val scannedData = editText.text.toString()
+
+            // 處理掃描數據
+            handleScanResult(scannedData, editText)
+
+            // 返回 true 表示已處理該事件
+            return true
+        }
+        // 返回 false 表示未處理該事件，繼續傳遞
+        return false
     }
 
     private fun initialArea() {
@@ -182,6 +230,12 @@ class DispatchActivityNewC : AppCompatActivity() {
                         machineName = it.MachineName
                         if (scanData!!.substring(0, 1) == "D")
                             txtRackId.setText(it.RackID)
+                    }
+
+                    if (machineName.isNullOrEmpty())
+                    {
+                        Toast.makeText(this@DispatchActivityNewC, "Rack Mission Exist", Toast.LENGTH_SHORT).show()
+                        return@launch
                     }
 
                     loadSpinnerData(scanData!!.substring(0, 1))
@@ -316,10 +370,10 @@ class DispatchActivityNewC : AppCompatActivity() {
                 // 过滤出符合条件的站点
                 val filteredPorts = when (block) {
                     "C" -> oportList.filter {
-                        it.StationNo.startsWith("B") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "3"
+                        it.Block == "B" && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "3"
                     }
                     "D" -> oportList.filter {
-                        it.StationNo.startsWith("E") && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
+                        it.Block == "E" && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
                     }
                     else -> emptyList()
                 }
@@ -393,7 +447,8 @@ class DispatchActivityNewC : AppCompatActivity() {
                     val selectedStation = oportList.find { it.StationNo == station.value }
                     selectedStation?.let {
                         txtWorkOrder.setText(it.WorkOrder)
-                        txtRackId.setText(it.RackID)
+                        if (station.value.substring(0, 1) == "B")
+                            txtRackId.setText(it.RackID)
                     }
                 }
 
