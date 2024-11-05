@@ -65,12 +65,18 @@ namespace SCP.Controllers
 
         public IActionResult UpdateTotalTask()
         {
-            DateTime today = DateTime.Today;
-            string todayTime = today.ToString("yyyyMMdd");
-            string shiftTime = _DBContext.pShift.Where(item => item.ShiftName == "早班").Select(item=> new {item.BeginDateTime}).FirstOrDefault().ToString();
-            todayTime = todayTime+shiftTime.Replace(":","");
+           
+          (string beginTime,string endTime) = GetShiftTime();
 
-            var result = _DBContext.ubMission.Count(item=> item.EndTime.CompareTo(todayTime)>0);
+            var result = _DBContext.ubMission.Count(item=> item.EndTime.CompareTo(beginTime) >=0 && item.EndTime.CompareTo(endTime) <= 0);
+            return Json(result);
+        }
+
+        public IActionResult UpdateAlarm()
+        {
+            (string beginTime, string endTime) = GetShiftTime();
+
+            var result = _DBContext.ubActivation.Count(item => item.EndTime.CompareTo(beginTime) >= 0 && item.EndTime.CompareTo(endTime) <= 0 && item.TaskType =="A" && !string.IsNullOrEmpty(item.EndTime));
             return Json(result);
         }
 
@@ -87,9 +93,10 @@ namespace SCP.Controllers
 
         public IActionResult GetAgvActivation()
         {
-            string currentTime = DateTime.Now.Date.ToString("yyyyMMdd");
+
+            (string beginTime, string endTime) = GetShiftTime();
             var data = _DBContext.ubActivation
-                .Where(item => item.BeginTime.StartsWith(currentTime) && !(string.IsNullOrEmpty(item.EndTime)))
+                .Where(item => item.BeginTime.CompareTo(beginTime) >= 0 && item.BeginTime.CompareTo(endTime) <= 0 && !(string.IsNullOrEmpty(item.EndTime)))
                 .Select(item => new
                 {
                     item.TaskType,
@@ -128,7 +135,7 @@ namespace SCP.Controllers
                 .ToList();
 
             var missions = _DBContext.ubMission
-                .Where(m => m.EndTime.Substring(0, 8).CompareTo(startTime) >= 0 && m.EndTime.Substring(0, 8).CompareTo(endTime) < 0)
+                .Where(m => m.EndTime.Substring(0, 8).CompareTo(startTime) >= 0 && m.EndTime.Substring(0, 8).CompareTo(endTime) <= 0)
                 .ToList()
                 .Select(m => new
                 {
@@ -175,6 +182,28 @@ namespace SCP.Controllers
         private List<pFunction> GetFunctions()
         {
             return _DBContext.pFunction.ToList();
+        }
+
+        private (string,string) GetShiftTime()
+        {
+            DateTime nowDate = DateTime.Now.Date;
+            string beginTime = string.Empty;
+            string endTime = string.Empty;
+            string shiftTime = _DBContext.pShift.Where(item => item.ShiftName == "早班").Select(item => item.BeginDateTime).FirstOrDefault();
+
+            if (DateTime.Now.TimeOfDay < TimeSpan.Parse(shiftTime)) 
+            {
+                beginTime = nowDate.AddDays(-1).ToString("yyyyMMdd")+ shiftTime.Replace(":", "");
+                endTime = nowDate.ToString("yyyyMMdd")+ shiftTime.Replace(":", "");
+            }
+            else
+            {
+                beginTime = nowDate.ToString("yyyyMMdd") + shiftTime.Replace(":", "");
+                endTime = nowDate.AddDays(+1).ToString("yyyyMMdd") + shiftTime.Replace(":", "");
+            }
+
+           
+            return (beginTime, endTime);
         }
 
         private void GetTaskStatus()

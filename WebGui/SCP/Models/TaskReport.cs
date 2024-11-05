@@ -8,7 +8,7 @@
         public string? NightShift { get; set; }
         public string? Total { get; set; }
         public string? ShiftName { get; set; }
-        public string? PartNo { get; set; }
+        public string? WorkOrder { get; set; }
         public string? BeginStation { get; set; }
         public string? EndStation { get; set; }
         public string? BeginTime { get; set; }

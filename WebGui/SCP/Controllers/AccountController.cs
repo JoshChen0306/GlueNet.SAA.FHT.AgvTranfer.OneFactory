@@ -51,6 +51,7 @@ namespace SCP.Controllers
                 {
                     UserId = a.UserId,
                     UserName = a.UserName,
+                    GroupId = a.GroupId,
                     GroupEName = g.GroupEName,
                     GroupCName = g.GroupCName,
                     LogoutTime = g.LogoutTime
@@ -66,7 +67,7 @@ namespace SCP.Controllers
                 {
                     new Claim(ClaimTypes.Name,user.UserName),
                     new Claim(ClaimTypes.NameIdentifier,user.UserId),
-                    new Claim(ClaimTypes.Role,user.GroupEName)
+                    new Claim(ClaimTypes.Role,user.GroupId)
                 };
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

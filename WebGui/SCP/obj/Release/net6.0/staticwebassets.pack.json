@@ -1045,6 +1045,10 @@
       "PackagePath": "staticwebassets\\fonts\\WD-XL_Huayou_Ti_TC.ttf"
     },
     {
+      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\AccessDenied.png",
+      "PackagePath": "staticwebassets\\img\\AccessDenied.png"
+    },
+    {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\ChargingStation-off.png",
       "PackagePath": "staticwebassets\\img\\ChargingStation-off.png"
     },
@@ -1057,44 +1061,8 @@
       "PackagePath": "staticwebassets\\img\\FHT.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Frame 29.png",
-      "PackagePath": "staticwebassets\\img\\Frame 29.png"
-    },
-    {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map.png",
       "PackagePath": "staticwebassets\\img\\Map.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map2.png",
-      "PackagePath": "staticwebassets\\img\\Map2.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map3.png",
-      "PackagePath": "staticwebassets\\img\\Map3.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map4.png",
-      "PackagePath": "staticwebassets\\img\\Map4.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map5.png",
-      "PackagePath": "staticwebassets\\img\\Map5.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map6.png",
-      "PackagePath": "staticwebassets\\img\\Map6.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map7.png",
-      "PackagePath": "staticwebassets\\img\\Map7.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map8.png",
-      "PackagePath": "staticwebassets\\img\\Map8.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map9.png",
-      "PackagePath": "staticwebassets\\img\\Map9.png"
     },
     {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\SAA.png",
@@ -1109,44 +1077,16 @@
       "PackagePath": "staticwebassets\\img\\UK.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\empty.png",
-      "PackagePath": "staticwebassets\\img\\empty.png"
-    },
-    {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\empty.svg",
       "PackagePath": "staticwebassets\\img\\empty.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\map_0729.png",
-      "PackagePath": "staticwebassets\\img\\map_0729.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material-A.png",
-      "PackagePath": "staticwebassets\\img\\material-A.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material-A.svg",
-      "PackagePath": "staticwebassets\\img\\material-A.svg"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material-B.png",
-      "PackagePath": "staticwebassets\\img\\material-B.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material-B.svg",
-      "PackagePath": "staticwebassets\\img\\material-B.svg"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\reserve.png",
-      "PackagePath": "staticwebassets\\img\\reserve.png"
+      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material.svg",
+      "PackagePath": "staticwebassets\\img\\material.svg"
     },
     {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\reserve.svg",
       "PackagePath": "staticwebassets\\img\\reserve.svg"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\trac.png",
-      "PackagePath": "staticwebassets\\img\\trac.png"
     },
     {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\trac.svg",
@@ -1183,6 +1123,10 @@
     {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Map.js",
       "PackagePath": "staticwebassets\\js\\Map.js"
+    },
+    {
+      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Port.js",
+      "PackagePath": "staticwebassets\\js\\Port.js"
     },
     {
       "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\ProgramGroup.js",

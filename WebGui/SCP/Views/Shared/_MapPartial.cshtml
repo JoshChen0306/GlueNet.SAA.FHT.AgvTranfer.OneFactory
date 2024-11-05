@@ -3,7 +3,7 @@
 *@
 <div class="bg-white d-flex">
     <div class="mx-auto d-block position-relative">
-        <img src="/img/Map9.png" height="500" class="d-block mw-100" />
+        <img src="/img/Map.png" height="500" class="d-block mw-100" />
         @foreach (var agv in ViewBag.AgvPositions)
         {
             <div class="position-absolute agv-transition" id="@agv.GustomerName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@Configuration.GetSection("AgvColor")[@agv.GustomerName]"></i></div>
@@ -27,7 +27,7 @@
                     newLeft = (double.Parse(style.Left.Replace("%", "")) + 0.2).ToString() + "%";
                     break;
             }
-            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
+            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" data-reserve="@style.Reserve" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
                 <img src="@style.ImgSrc" alt="Icon" />
             </button>
             if (style.Reserve == "Y")

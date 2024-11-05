@@ -26,6 +26,7 @@ $(function () {
                     tracName.attr("data-haveflag", item.HaveFlag);
                     tracName.attr("data-rackid", item.RackId);
                     tracName.attr("data-workorder", item.WorkOrder);
+                    tracName.attr("data-reserve", item.Reserve);
                     if (item.Reserve == "Y") {
                         $("#R-" + item.Name).removeClass("d-none");
                     }

@@ -34,7 +34,7 @@
     <script type="text/javascript" src="~/assets/js/jquery.backstretch.min.js"></script>
     <script>
         if (window.top !== window.self) { //若自身窗口不等于顶层窗口
-            window.top.location.href = window.self.location.href; //顶层窗口跳转到自身窗口
+            window.top.location.replace(window.self.location.href); //顶层窗口跳转到自身窗口
         }
 
         $.backstretch("../assets/img/login.jpg", { speed: 0 });

@@ -96,6 +96,7 @@ function GetSearchData() {
             $("#Tasks").html(data)
             // 重新初始化 DataTable
             $("#detail-table").DataTable({
+                scrollX: true, // 啟用水平滾動條
                 pageLength: 8,
                 autoWidth: false,
                 language: {

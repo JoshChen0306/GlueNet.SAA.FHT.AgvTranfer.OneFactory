@@ -43,11 +43,8 @@
                 <div class="row position-relative mb-3">
                     <label class="col-2 col-form-label">@Localizer["WorkOrder"]</label>
                     <div class="col-10 d-flex align-items-center">
-                        <input class="form-control w-75 me-2" id="WorkOrder" name="WorkOrder" placeholder="@Localizer["BatchText"]" />
-                        <button id="QRStation" class="btn btn-light p-0" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                            <i class="fa-solid fa-qrcode fa-xl position-absolute" style="color:gray;"></i>
-                        </button>
-                        
+                        <input class="form-control w-75 me-2" id="WorkOrder" name="WorkOrder" autocomplete="off" placeholder="@Localizer["BatchText"]" />
+                        <i class="fa-solid fa-qrcode fa-xl position-absolute" style="right:22.5%;color:gray;"></i>
                     </div>
                 </div>
                 <div class="row position-relative">
@@ -131,51 +128,26 @@
             </div>
         </div>
     </div>
-
-    <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <!-- 動態視窗元件 垂直置中 ZXing掃描二維碼-->
-        <div class="modal-dialog">
+    <div class="modal fade" id="cancleModal" aria-hidden="true" aria-labelledby="cancleModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">掃描二維碼</h5>
+                    <h5 class="modal-title" id="cancleModalToggleLabel"><strong>取消任務</strong></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                    <section class="container" id="demo-content">
-
-                        <label>二維碼內容:</label>
-                        <pre><code id="result"></code></pre>
-
-                        <div id="sourceSelectPanel">
-                            <select id="sourceSelect" style="display: none;">
-                            </select>
-                        </div>
-
-                        <div class="row" style="padding-top:1em">
-
-                            <div class="col-auto">
-                                <video id="video" width="300" height="200" style="border: 1px solid gray"></video>
-                            </div>
-
-                            <div class="col-auto">
-                                <button type="button" class="btn btn-primary" id="confirm" data-bs-dismiss="modal">確認</button>
-                            </div>
-
-                        </div>
-
-                    </section>
-
+                    確認取消任務
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary rounded-pill" id="CancleButton">@Localizer["Submit"]</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
                 </div>
             </div>
         </div>
     </div>
-    
 </div>
 
 @section scripts {
     <script type="module" src="~/js/Map.js"></script>
     <script type="module" src="~/js/dispatch.js"></script>
-    <script src="~/js/common/zxingqr.min.js"></script>
-    <script src="~/js/common/camera.js"></script>
 }

@@ -1,42 +1,22 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
-<div class="tab-pane fade show active bg-white" id="task" role="tabpanel" aria-labelledby="bar-tab" style="height:553px">
-    <div class="row mb-3">
-        <h5 class="text-secondary mt-4 ms-3">統計區間：@ViewBag.StartDate-@ViewBag.EndDate</h5>
-    </div>
-    <div class="ps-3 pe-3">
-        <table class="table ps-3 pe-3" id="task-table">
-            <thead>
-                <tr class="text-center">
-                    <th>車輛</th>
-                    <th>運行時間</th>
-                    <th>閒置時間</th>
-                    <th>充電時間</th>
-                    <th>異常時間</th>
-                    <th>離線時間</th>
-                    <th>總非運行時間</th>
-                    <th>稼動率</th>
-                </tr>
-            </thead>
-            <tbody class="text-center">
-                @if (ViewBag.Activation != null)
-                {
-                    @foreach (var shuttld in ViewBag.Activation)
-                    {
-                        <tr>
-                            <td>@shuttld.ShuttleId</td>
-                            <td>@shuttld.Travling</td>
-                            <td>@shuttld.Idle</td>
-                            <td>@shuttld.Charging</td>
-                            <td>@shuttld.Alarm</td>
-                            <td>@shuttld.Offline</td>
-                            <td>@shuttld.NonTraveling</td>
-                            <td>@shuttld.Activation%</td>
-                        </tr>
-                    }
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+
+
+@if (ViewBag.Activation != null)
+{
+    @foreach (var shuttld in ViewBag.Activation)
+    {
+        <tr>
+            <td>@shuttld.ShuttleId</td>
+            <td>@shuttld.Travling</td>
+            <td>@shuttld.Idle</td>
+            <td>@shuttld.Charging</td>
+            <td>@shuttld.Alarm</td>
+            <td>@shuttld.Offline</td>
+            <td>@shuttld.NonTraveling</td>
+            <td>@shuttld.Activation%</td>
+        </tr>
+    }
+}
+

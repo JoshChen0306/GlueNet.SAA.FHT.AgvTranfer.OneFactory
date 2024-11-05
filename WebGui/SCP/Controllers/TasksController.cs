@@ -25,7 +25,7 @@ namespace SCP.Controllers
                 .GroupBy(item => item.Date)
                 .Select(group => new 
                 {
-                    Date = group.Key.ToString("M/d"),
+                    Date = group.Key.ToString("MM/dd"),
                     ShuttleName = group.First().AGV,
                     DayShift = group.Where(i => i.ShiftName == "早班").Count().ToString(),
                     NightShift = group.Where(i => i.ShiftName == "晚班").Count().ToString(),
@@ -59,10 +59,10 @@ namespace SCP.Controllers
             ViewBag.Tasks = missions         
                 .Select(item => new 
                 {
-                    Date = item.Date.ToString("M/d"),
+                    Date = item.Date.ToString("MM/dd"),
                     AGV = item.AGV,
                     ShiftName = item.ShiftName,
-                    PartNo = item.PartNo,
+                    WorkOrder = item.WorkOrder,
                     BeginStation = item.BeginStation,
                     EndStation = item.EndStation,
                     BeginTime = item.BeginTime,
@@ -110,7 +110,7 @@ namespace SCP.Controllers
                .Select(m => new
                {
                    Date = DateTime.ParseExact(m.EndTime.Substring(0, 8), "yyyyMMdd", CultureInfo.InvariantCulture),
-                   PartNo = m.WorkOrder,
+                   WorkOrder = m.WorkOrder,
                    BeginStation = m.BeginStation,
                    EndStation = m.EndStation,
                    BeginTime = DateTime.ParseExact(m.BeginTime.Substring(8, 4), "HHmm", CultureInfo.InvariantCulture),
@@ -129,7 +129,7 @@ namespace SCP.Controllers
                         Date = shiftTime.BeginDateTime > shiftTime.EndDateTime && m.EndTime < shiftTime.EndDateTime ? m.Date.AddDays(-1) : m.Date,
                         AGV = shuttleName,
                         ShiftName = shiftTime.ShiftName,
-                        PartNo = m.PartNo,
+                        WorkOrder = m.WorkOrder,
                         BeginStation = m.BeginStation,
                         EndStation = m.EndStation,
                         BeginTime = m.BeginTime.ToString("HH:mm"),

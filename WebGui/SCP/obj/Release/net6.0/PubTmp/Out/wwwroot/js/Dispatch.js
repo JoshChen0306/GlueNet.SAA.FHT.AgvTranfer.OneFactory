@@ -1,43 +1,51 @@
-﻿
-import { connection } from './common/hub.js';
+﻿import { connection } from './common/hub.js';
 $(function () {
     var form = $('#DispatchForm');
+    var beginSations = [];
+    var rowData = {};
     UpdateDispatch();
     $(".Site").prop("disabled", true);
 
     //選擇派送區域選擇完後得事件
     $("#Area").on("change", function () {
         $("#BeginStation").prop("disabled", false);
-
+        $.ajax({
+            type: "GET",
+            url: "/Dispatch/GetoNeed",
+            success: function (data) {
+                beginSations = data.map(item => item.ObjStation);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("AJAX 請求失敗: ", textStatus, errorThrown);
+            }
+        });
         // 重置第二個選項的選擇
         $('#BeginStation').val('');
         $('#EndStation').val('');
     });
-
+    
     //點選派送起點，展開下拉時就會觸發的事件
     $("#BeginStation").on("focus", function () {
         // 獲取第一個選項的選擇值
         var selectedValue = $("#Area").val();
-
         // 隱藏所有第二個選項中的 <option>
         $('#BeginStation option').hide();
 
         switch (selectedValue.substring(0, 1)) {
             case "C":
                 $('#BeginStation option').filter(function () {
-                    // 檢查 <option> 的 value 是否以第一個選項的選擇值開頭 
                     var tracname = $(this).val();
-                    return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "3";
+                    return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "3" && !beginSations.includes(tracname) ;
                 }).each(function () {
-                    var lot = $("#" + $(this).val()).attr("data-workorder").split("^")[2]
-                    var workorder = $("#" + $(this).val()).attr("data-workorder").split("^")[3]
-                    var beginStation = $("#" + $(this).val()).attr("id")
+                    var lot = $("#" + $(this).val()).attr("data-workorder").split("^")[2];
+                    var workorder = $("#" + $(this).val()).attr("data-workorder").split("^")[3];
+                    var beginStation = $("#" + $(this).val()).attr("id");
                     $(this).text(beginStation + "-" + workorder + "-" + lot);
-                    console.log(beginStation)
                 }).show();
                 break;
             default:
                 // 使用 filter 方法來顯示所有與第一個選項相關的 <option>
+  
                 $('#BeginStation option').filter(function () {
 
                     // 檢查 <option> 的 value 是否以第一個選項的選擇值開頭 
@@ -45,9 +53,7 @@ $(function () {
                     return $(this).val().startsWith(selectedValue) && $(`#${tracname}`).attr("data-haveflag") !== "0";
                 }).show();
                 break;
-        }
-
-       
+        }       
     });
 
     //選擇完派送起點的值後觸發的事件
@@ -59,7 +65,7 @@ $(function () {
             case "A":
                 $('#EndStation option').each(function () {
                     var tracname = $(this).val();
-                    if ($(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "0") {
+                    if ($(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "0" && $(`#${tracname}`).attr("data-reserve") === "N") {
                         $('#EndStation').val($(this).val());
                         return false;
                     }
@@ -72,8 +78,8 @@ $(function () {
                 break;
             case "D":
                 $('#EndStation option').each(function () {
-                    var tracname = $(this).val();
-                    if ($(this).val().startsWith("E") && $(`#${tracname}`).attr("data-haveflag") === "0") {
+                    var tracname = $(this).val();   
+                    if ($(this).val().startsWith("E") && $(`#${tracname}`).attr("data-haveflag") === "0" && $(`#${tracname}`).attr("data-reserve") === "N") {
                         $('#EndStation').val($(this).val());
                         return false;
                     }
@@ -85,9 +91,11 @@ $(function () {
 
         if (area === "C") {
             $("#EndStation").prop("disabled", false);
+            $("#WorkOrder").prop("disabled", true);
         }
         else {
             $("#EndStation").prop("disabled", true);
+            $("#WorkOrder").prop("disabled", false);
         }
 
         $('#RackId').val($("#" + selectedValue).attr('data-rackid'));
@@ -154,7 +162,6 @@ $(function () {
         var area = $("#Area").val();
         var beginStation = $("#BeginStation").val();
         var endStation = $("#EndStation").val();
-        console.log(endStation);
         inputs.each(function () {
             if (!this.checkValidity()) {
                 alert('請選擇派送站點');
@@ -225,6 +232,7 @@ $(function () {
         var area = $("#Area").val();
         // 暫時啟用被禁用的元素
         $("#EndStation").prop("disabled", false);
+        $("#WorkOrder").prop("disabled", false);
         // 獲取表單資料
         var formData = form.serializeArray();
         // 將表單數據轉換為 JSON 格式
@@ -234,7 +242,8 @@ $(function () {
         });
         // 恢復被禁用的元素
         $("#EndStation").prop("disabled", true);
-        console.log(formData);
+        $("#WorkOrder").prop("disabled", true);
+
         var url = area === "E" ? "/Dispatch/UpdateoPort" : "/Dispatch/InsertoNeed";
         // 使用 AJAX 發送表單資料到後端
         $.ajax({
@@ -252,6 +261,46 @@ $(function () {
             }
         });
     });
+    
+    $(document).on("click", ".ConfirmCancle", function () {
+        rowData["index"] = $(this).closest("tr").index();
+        console.log(rowData)
+
+    })
+    $("#CancleButton").on("click", function () {
+
+        var $row = $("#DispatchStatus").find("tr").eq(rowData["index"])
+        var status = $row.find("td:eq(4)").text();
+        console.log($row);
+        console.log(status);
+        if (status === "執行中") {
+            alert("任務已執行。");
+            // 關閉 Modal 視窗
+            $('#cancleModal').modal('hide');
+            return;
+        }
+
+        var data = {}
+        data["beginStation"] = $row.find("td:eq(1)").text();
+        data["endStation"] = $row.find("td:eq(2)").text();
+        
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/DeleteoNeed",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            success: function (response) {
+                // 處理成功響應
+                console.log("表單資料已成功送出", response);
+                $('#cancleModal').modal('hide');
+            },
+            error: function (error) {
+                // 處理錯誤響應
+                console.error("表單資料送出失敗", error);
+            }
+        });
+
+    })
 
     connection.on("SendDispatchChange", function () {
         UpdateDispatch();

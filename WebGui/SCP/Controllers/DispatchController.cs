@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SCP.Models;
+using System.Linq;
 using System.Net.NetworkInformation;
+using System.Security.Claims;
 
 namespace SCP.Controllers
 {
@@ -16,18 +19,36 @@ namespace SCP.Controllers
             _configuration = configuration;
 
         }
+        [Authorize(Roles = "1")]
         public IActionResult Index()
         {
             var areas = _configuration.GetSection("Area").Get<Dictionary<string, string>>();
             var areaList = new List<SelectListItem>();
-            
-            foreach (var item in areas)
+            IEnumerable<KeyValuePair<string, string>> filterAreas = areas;
+            string groupId = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            switch (groupId)
+            {
+                case "2":
+                    filterAreas = areas.Where(item => item.Value=="A");
+                    break;
+                case "3":
+                    filterAreas = areas.Where(item => item.Value == "C"|| item.Value == "D");
+                    break;
+                case "4":
+                    filterAreas = areas.Where(item => item.Value == "E");
+                    break;
+            }
+                
+
+
+            foreach (var item in filterAreas)
             {
                 areaList.Add(new SelectListItem { Value = item.Value, Text = item.Key });
             }      
 
             ViewBag.AreaList = areaList;
-            ViewBag.Site = _DBContext.oPort.Select(t => new SelectListItem { Value = t.StationNo, Text = t.StationNo });
+            ViewBag.Site = _DBContext.oPort.Where(p=>p.UseFlag =="Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
             return View();
         }
 
@@ -89,6 +110,34 @@ namespace SCP.Controllers
             }
 
             return Ok();
+        }
+
+        public IActionResult DeleteoNeed([FromBody] Dictionary<string,string> need)
+        {
+            string begingStation = need["beginStation"];
+            string endStation = need["endStation"];
+
+            try
+            {
+                _DBContext.oRequire
+                    .Where(p => p.BeginStation == begingStation && p.EndStation == endStation)
+                    .ExecuteUpdate(setters => setters
+                        .SetProperty(p => p.OkFlag, "C"));
+                _DBContext.oMission
+                   .Where(p => p.BeginStation == begingStation && p.EndStation == endStation)
+                   .ExecuteUpdate(setters => setters
+                       .SetProperty(p => p.OkFlag, "C"));
+            }
+            catch (Exception ex)
+            {
+
+            }
+            return Ok();
+        }
+        public IActionResult GetoNeed()
+        {
+            var result = _DBContext.oNeed;
+            return Json(result);
         }
     }
 }

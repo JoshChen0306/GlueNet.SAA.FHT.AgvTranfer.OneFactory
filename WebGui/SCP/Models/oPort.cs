@@ -34,4 +34,6 @@ public partial class oPort
     public string? PutTime { get; set; }
 
     public string? BgnToEnd { get; set; }
+
+    public string? MachineName { get; set; }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using SCP.Models;
 using System;
 using System.Globalization;
@@ -33,8 +34,8 @@ namespace SCP.Controllers
             DateTime dtEnd = DateTime.ParseExact(endDate, "yyyyMMdd", CultureInfo.InvariantCulture);
 
             ViewBag.Activation = GetPieActivation(data, startDate, endDate);
-            ViewBag.StartDate = dtStart.ToString("M/d");
-            ViewBag.EndDate = dtEnd.ToString("M/d");
+            //ViewBag.StartDate = dtStart.ToString("M/d");
+            //ViewBag.EndDate = dtEnd.ToString("M/d");
 
             return PartialView("_ActivationPartial");
         }
@@ -44,7 +45,8 @@ namespace SCP.Controllers
             var data = _DBContext.ubActivation
                 .Where(item => item.BeginTime.Substring(0, 8).CompareTo(startDate) >= 0
                 && item.BeginTime.Substring(0, 8).CompareTo(endDate) <= 0
-                && (string.IsNullOrEmpty(shuttleId) || item.ShuttleId == shuttleId))
+                && (string.IsNullOrEmpty(shuttleId) || item.ShuttleId == shuttleId)
+                && !string.IsNullOrEmpty(item.EndTime))
                 .ToList();
 
             return data;

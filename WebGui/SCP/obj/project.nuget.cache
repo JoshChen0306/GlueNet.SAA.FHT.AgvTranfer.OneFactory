@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KTupcTfZ/eKtYjaL+aQ0nSsi30vgLIy6wQn1RZ65bd0hMxBNO4U+xnJBr1aAqqnTEFPRhO4O7QypYLY5bBbw+g==",
+  "dgSpecHash": "GVZ5rfbiJyf4NYnGHuafbzYuVDiqC1BWekD3BCRpLUd9IfjAJfjJGpJIrmwEMo3kegqY58XAA5Udhvko73RlFQ==",
   "success": true,
-  "projectFilePath": "C:\\Matt\\Git\\SCP\\SCP\\SCP.csproj",
+  "projectFilePath": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\SCP.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\user\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\user\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

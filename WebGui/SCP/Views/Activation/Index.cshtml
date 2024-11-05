@@ -4,23 +4,23 @@
 @{
 }
 <div class="col-lg-12 main-chart">
-    <h4 class="mb-5"><strong>車輛稼動率統計</strong></h4>
+    <h4 class="mb-5"><strong>@Localizer["AGVsOEE"]</strong></h4>
     <form>
         <div class="row mb-3">
             <div class="col-5 d-flex align-items-center">
-                <label for="dateInput" class="me-2 text-secondary">查詢時間:</label>
+                <label for="dateInput" class="me-2 text-secondary">@Localizer["SearchDate"]:</label>
                 <input type="text" name="dates" class="form-control  w-50" />
             </div>
         </div>
         <div class="row mb-5">
             <div class="col-5 d-flex align-items-center">
-                <label for="dateInput" class="me-2 text-secondary">查詢車輛:</label>
+                <label for="dateInput" class="me-2 text-secondary">@Localizer["SearchAGV"]:</label>
                 <select class="form-select w-50 me-3" id="ShuttleId">
-                    <option value="">請選擇</option>
+                    <option value="">@Localizer["Choose"]</option>
                     <option value="1">AGV-1</option>
                     <option value="2">AGV-2</option>
                 </select>
-                <button type="button" class="btn btn-primary rounded-pill px-3" onclick="SearchData()">搜尋</button>
+                <button type="button" class="btn btn-primary rounded-pill px-3" onclick="SearchData()">@Localizer["Search"]</button>
             </div>
         </div>
     </form>
@@ -31,7 +31,7 @@
                     <button class="nav-link " id="bar-tab" data-bs-toggle="tab" data-bs-target="#bar" type="button" role="tab" aria-controls="bar" aria-selected="true">直條圖</button>
                 </li> *@
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="pie-tab" data-bs-toggle="tab" data-bs-target="#pie" type="button" role="tab" aria-controls="pie" aria-selected="false">圓餅圖</button>
+                    <button class="nav-link active" id="pie-tab" data-bs-toggle="tab" data-bs-target="#pie" type="button" role="tab" aria-controls="pie" aria-selected="false">@Localizer["PieChart"]</button>
                 </li>
             </ul>
             <div class="tab-content" id="chartTabContent">
@@ -44,11 +44,35 @@
         <div class="col-6">
             <ul class="nav nav-tabs" id="task-tab" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#task" type="button" role="tab" aria-controls="task" aria-selected="true">統計報表</button>
+                    <button class="nav-link active" id="task-tab" data-bs-toggle="tab" data-bs-target="#task" type="button" role="tab" aria-controls="task" aria-selected="true">@Localizer["Data"]</button>
                 </li>
             </ul>
-            <div class="tab-content" id="taskTabContent">
-                 <partial name="_ActivationPartial.cshtml"></partial> 
+            <div class="tab-content" >
+                <div class="tab-pane fade show active bg-white" id="task" role="tabpanel" aria-labelledby="bar-tab" style="height:553px">
+                    <div class="row mb-3">
+                        <h5 class="text-secondary mt-4 ms-3">@Localizer["SearchDate"]：<span class="Interval"></span></h5>
+                    </div>
+                    <div class="ps-3 pe-3">
+                        <table class="table ps-3 pe-3" id="task-table">
+                            <thead>
+                                <tr class="text-center">
+                                    <th>@Localizer["AGV"]</th>
+                                    <th>@Localizer["Traveling"]</th>
+                                    <th>@Localizer["Idle"]</th>
+                                    <th>@Localizer["Charging"]</th>
+                                    <th>@Localizer["Alarm"]</th>
+                                    <th>@Localizer["Offline"]</th>
+                                    <th>@Localizer["TotalNonTraveling"]</th>
+                                    <th>@Localizer["OEERatio"]</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-center" id="taskTabContent">
+                                <partial name="_ActivationPartial.cshtml"></partial>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                 
             </div>
         </div>
     </div>

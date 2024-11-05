@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Matt\\Git\\SCP\\SCP\\SCP.csproj": {}
+    "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\SCP.csproj": {}
   },
   "projects": {
-    "C:\\Matt\\Git\\SCP\\SCP\\SCP.csproj": {
+    "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\SCP.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Matt\\Git\\SCP\\SCP\\SCP.csproj",
+        "projectUniqueName": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\SCP.csproj",
         "projectName": "SCP",
-        "projectPath": "C:\\Matt\\Git\\SCP\\SCP\\SCP.csproj",
+        "projectPath": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\SCP.csproj",
         "packagesPath": "C:\\Users\\user\\.nuget\\packages\\",
-        "outputPath": "C:\\Matt\\Git\\SCP\\SCP\\obj\\",
+        "outputPath": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -39,11 +39,6 @@
           "warnAsError": [
             "NU1605"
           ]
-        },
-        "restoreAuditProperties": {
-          "enableAudit": "true",
-          "auditLevel": "low",
-          "auditMode": "direct"
         }
       },
       "frameworks": {
@@ -96,7 +91,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.100\\RuntimeIdentifierGraph.json"
         }
       }
     }

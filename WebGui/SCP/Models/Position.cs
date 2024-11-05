@@ -12,5 +12,7 @@
         public string? RackId { get; set; }
         public string? WorkOrder { get; set; }
         public string? InterfaceName { get; set; }
+        public string? MachineName { get; set;}
+        public string? UseFlag { get; set; }
     }
 }

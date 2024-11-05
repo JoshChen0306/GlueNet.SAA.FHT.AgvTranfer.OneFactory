@@ -149,7 +149,7 @@ function SearchData() {
             console.log(thrownError);
         }
     });
-
+    $(".Interval").text(`${datePicker.startDate.format('M/D')}-${datePicker.endDate.format('M/D')}`)
 }
 
 function AgvPie(data) {
@@ -166,7 +166,7 @@ function AgvPie(data) {
     var totalRangeTime = endDate.diff(startDate, 'hours');
 
     // 根據資料筆數動態生成餅圖配置
-    var taskName = { Travling: "運行",Idle:"閒置", Alarm:"異常",Charging:"充電",Offline:"離線"}
+    var taskName = { Travling: "運行", Idle: "閒置", Charging: "充電", Alarm:"異常",Offline:"離線"}
     var series = [];
     var title = [];
     var centers = data.length > 1 ? [['25%', '50%'], ['75%', '50%']] : [['50%', '50%']];

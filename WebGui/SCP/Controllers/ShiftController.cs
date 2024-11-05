@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using SCP.Models;
 
 namespace SCP.Controllers
 {
+    [Authorize(Roles = "1")]
     public class ShiftController : Controller
     {
         private readonly agvDB_1400004Context _DBContext;
@@ -13,7 +15,7 @@ namespace SCP.Controllers
         {
             _DBContext = DBContext;
         }
-
+        
         public IActionResult Index()
         {
             var query = _DBContext.pShift;

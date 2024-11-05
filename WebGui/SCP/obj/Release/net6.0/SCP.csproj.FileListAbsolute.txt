@@ -40,3 +40,5 @@ C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Home.Wa
 C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Tasks.Index.en.resources
 C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.csproj.GenerateResource.cache
 C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\en\SCP.resources.dll
+C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Activation.Index.resources
+C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Activation.Index.en.resources

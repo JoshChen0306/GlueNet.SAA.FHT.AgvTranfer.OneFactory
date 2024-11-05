@@ -9,7 +9,7 @@ using System.Collections.Immutable;
 
 namespace SCP.Controllers
 {
-
+    [Authorize(Roles = "1")]
     public class UserController : Controller
     {
         private readonly ILogger<UserController> _logger;
@@ -20,7 +20,7 @@ namespace SCP.Controllers
             _DBContext = DBContext;
             _logger = logger;
         }
-
+        
         public IActionResult Index(pUser _user)
         {
 

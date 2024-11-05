@@ -8,6 +8,7 @@ using SCP.Models;
 
 namespace SCP.Controllers
 {
+    [Authorize(Roles = "1")]
     public class GroupController : Controller
     {
         private readonly ILogger<HomeController> _logger;

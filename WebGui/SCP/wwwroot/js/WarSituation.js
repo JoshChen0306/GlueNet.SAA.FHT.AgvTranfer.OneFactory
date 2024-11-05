@@ -1,9 +1,16 @@
 ﻿import { connection } from './common/hub.js';
 //顯示當前時間
 $(function () {
-
+    var descriptions = [];
     UpdateTotalTask();
+    $('.Tasktype').each(function () {
+        descriptions.push($(this).text().trim());
+    });
 
+    if (descriptions.includes("異常")) {
+        window.parent.$('.fa-bell').addClass('fa-shake');
+    }
+    UpdateTotalAlarm();
     //稼動率圖表
     setTimeout(function run() {
         $.ajax({
@@ -24,7 +31,7 @@ $(function () {
     setTimeout(function run() {
 
         var now = moment();
-        var nextTime = moment().hour(8).minute(0).second(0);
+        var nextTime = moment().hour(8).minute(30).second(0);
 
         if (now.isAfter(nextTime)) {
             nextTime.add(1,'days');
@@ -53,12 +60,26 @@ $(function () {
             url: "/Home/UpdateAgvStatus",
             success: function (data) {
                 $("#TaskStatus").html(data);
+                descriptions = [];
+                $('.Tasktype').each(function () {
+                    descriptions.push($(this).text().trim());
+                });
+
+                if (descriptions.includes("異常")) {
+                    window.parent.$('.fa-bell').addClass('fa-shake');
+                    UpdateTotalAlarm()
+                }
+                else {
+                    window.parent.$('.fa-bell').removeClass('fa-shake');
+                }
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 // 處理錯誤
                 console.error("AJAX 請求失敗: ", textStatus, errorThrown);
             }
         });
+
+       
     });
 
     //更新今日任務
@@ -82,6 +103,18 @@ function UpdateTotalTask() {
     });
 }
 
+function UpdateTotalAlarm() {
+    $.ajax({
+        type: "POST",
+        url: "/Home/UpdateAlarm",
+        success: function (data) {
+            $("#TotalAlarm").text(`${data}`);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("異常處理失敗:", textStatus, errorThrown);
+        }
+    });
+}
 //稼動率圓餅圖
 function AgvPie(data) {
     var totalSecond = 0
@@ -97,7 +130,10 @@ function AgvPie(data) {
     // 獲取當前時間
     var now = moment();
     // 獲取當天的開始時間（午夜12點）
-    var startOfDay = moment().startOf('day');
+    var startOfDay = moment().hour(8).minute(30).second(0);
+    if (now.isBefore(startOfDay)) {
+        startOfDay.subtract(1,'days')
+    }
     // 計算從午夜到現在的秒數
     var nowTime = now.diff(startOfDay, 'minutes');
     var timeDifferences = { R: "", C: "", A: "", F: "" };

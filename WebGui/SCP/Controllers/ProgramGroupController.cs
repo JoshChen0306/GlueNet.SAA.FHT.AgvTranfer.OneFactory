@@ -9,7 +9,7 @@ using SCP.Models;
 
 namespace SCP.Controllers
 {
-
+    [Authorize (Roles ="1")]
     public class ProgramGroupController : Controller
     {
         private readonly ILogger<HomeController> _logger;
@@ -20,7 +20,7 @@ namespace SCP.Controllers
             _logger = logger;
             _DBContext = DBContext;
         }
-
+        
         public IActionResult Index(pGroup group)
         {
             ViewBag.GroupList = _DBContext.pGroup.OrderBy(g => g.GroupId).Select(g => new SelectListItem { Value = g.GroupId, Text = g.GroupId + "." + g.GroupCName });

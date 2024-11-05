@@ -115,6 +115,7 @@ public partial class agvDB_1400004Context : DbContext
             entity.Property(e => e.Block).HasMaxLength(10);
             entity.Property(e => e.HaveFlag).HasMaxLength(1);
             entity.Property(e => e.InterfaceName).HasMaxLength(200);
+            entity.Property(e => e.MachineName).HasMaxLength(20);
             entity.Property(e => e.PanelCallShuttle).HasMaxLength(1);
             entity.Property(e => e.ProductionPartNo).HasMaxLength(50);
             entity.Property(e => e.PutTime).HasMaxLength(20);
