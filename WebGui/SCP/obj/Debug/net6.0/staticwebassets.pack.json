@@ -1,1443 +1,1447 @@
 {
   "Files": [
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\SCP.bundle.scp.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\obj\\Debug\\net6.0\\scopedcss\\projectbundle\\SCP.bundle.scp.css",
       "PackagePath": "staticwebassets\\SCP.bundle.scp.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\JSON\\zh-HANT.json",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\JSON\\zh-HANT.json",
       "PackagePath": "staticwebassets\\JSON\\zh-HANT.json"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\bootstrap.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\bootstrap.css",
       "PackagePath": "staticwebassets\\assets\\css\\bootstrap.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\style-responsive.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\style-responsive.css",
       "PackagePath": "staticwebassets\\assets\\css\\style-responsive.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\style.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\style.css",
       "PackagePath": "staticwebassets\\assets\\css\\style.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\table-responsive.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\table-responsive.css",
       "PackagePath": "staticwebassets\\assets\\css\\table-responsive.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\to-do.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\to-do.css",
       "PackagePath": "staticwebassets\\assets\\css\\to-do.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\css\\zabuto_calendar.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\css\\zabuto_calendar.css",
       "PackagePath": "staticwebassets\\assets\\css\\zabuto_calendar.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\css\\font-awesome.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\css\\font-awesome.css",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\css\\font-awesome.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\FontAwesome.otf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\FontAwesome.otf",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\fonts\\FontAwesome.otf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.eot",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.eot",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\fonts\\fontawesome-webfont.eot"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.svg",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\fonts\\fontawesome-webfont.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.ttf",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\fonts\\fontawesome-webfont.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.woff",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\font-awesome\\fonts\\fontawesome-webfont.woff",
       "PackagePath": "staticwebassets\\assets\\font-awesome\\fonts\\fontawesome-webfont.woff"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.eot",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.eot",
       "PackagePath": "staticwebassets\\assets\\fonts\\glyphicons-halflings-regular.eot"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.svg",
       "PackagePath": "staticwebassets\\assets\\fonts\\glyphicons-halflings-regular.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.ttf",
       "PackagePath": "staticwebassets\\assets\\fonts\\glyphicons-halflings-regular.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.woff",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\fonts\\glyphicons-halflings-regular.woff",
       "PackagePath": "staticwebassets\\assets\\fonts\\glyphicons-halflings-regular.woff"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ASE.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ASE.png",
       "PackagePath": "staticwebassets\\assets\\img\\ASE.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\AccessDenied.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\AccessDenied.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\AccessDenied.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\DisplayCut.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\DisplayCut.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\DisplayCut.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\SAA.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\SAA.png",
       "PackagePath": "staticwebassets\\assets\\img\\SAA.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\SAA1.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\SAA1.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\SAA1.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\SAA1.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\SAA1.png",
       "PackagePath": "staticwebassets\\assets\\img\\SAA1.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\SAA2.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\SAA2.png",
       "PackagePath": "staticwebassets\\assets\\img\\SAA2.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\blog-bg.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\blog-bg.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\blog-bg.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\checkbox-gray.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\checkbox-gray.png",
       "PackagePath": "staticwebassets\\assets\\img\\checkbox-gray.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-01.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-01.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-01.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-02.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-02.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-02.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-03.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-03.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-03.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-04.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-04.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-04.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-05.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-05.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-05.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-06.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-06.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-06.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-07.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-07.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-07.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-08.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-08.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-08.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-09.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-09.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-09.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-10.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-10.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-10.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\friends\\fr-11.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\friends\\fr-11.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\friends\\fr-11.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\instagram.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\instagram.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\instagram.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\login-bg.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\login-bg.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\login-bg.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\login.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\login.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\login.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\lorde.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\lorde.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\lorde.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\mask.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\mask.png",
       "PackagePath": "staticwebassets\\assets\\img\\mask.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ny.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ny.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ny.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port01.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port01.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port01.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port02.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port02.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port02.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port03.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port03.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port03.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port04.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port04.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port04.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port05.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port05.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port05.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\portfolio\\port06.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\portfolio\\port06.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\portfolio\\port06.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\product.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\product.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\product.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\product.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\product.png",
       "PackagePath": "staticwebassets\\assets\\img\\product.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\profile-01.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\profile-01.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\profile-01.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\profile-02.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\profile-02.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\profile-02.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\radio-gray.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\radio-gray.png",
       "PackagePath": "staticwebassets\\assets\\img\\radio-gray.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\search.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\search.svg",
       "PackagePath": "staticwebassets\\assets\\img\\search.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ui-danro.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ui-danro.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ui-danro.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ui-divya.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ui-divya.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ui-divya.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ui-sam.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ui-sam.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ui-sam.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ui-sherman.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ui-sherman.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ui-sherman.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\ui-zac.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\ui-zac.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\ui-zac.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\weather.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\weather.jpg",
       "PackagePath": "staticwebassets\\assets\\img\\weather.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\img\\zoom.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\img\\zoom.png",
       "PackagePath": "staticwebassets\\assets\\img\\zoom.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\bootstrap-inputmask\\bootstrap-inputmask.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\bootstrap-inputmask\\bootstrap-inputmask.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\bootstrap-inputmask\\bootstrap-inputmask.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\bootstrap-switch.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\bootstrap-switch.js",
       "PackagePath": "staticwebassets\\assets\\js\\bootstrap-switch.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\bootstrap.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\bootstrap.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\bootstrap.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\calendar-conf-events.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\calendar-conf-events.js",
       "PackagePath": "staticwebassets\\assets\\js\\calendar-conf-events.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\chart-master\\Chart.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\chart-master\\Chart.js",
       "PackagePath": "staticwebassets\\assets\\js\\chart-master\\Chart.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\chartjs-conf.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\chartjs-conf.js",
       "PackagePath": "staticwebassets\\assets\\js\\chartjs-conf.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\common-scripts.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\common-scripts.js",
       "PackagePath": "staticwebassets\\assets\\js\\common-scripts.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\easy-pie-chart.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\easy-pie-chart.js",
       "PackagePath": "staticwebassets\\assets\\js\\easy-pie-chart.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\fancybox\\jquery.fancybox.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\fancybox\\jquery.fancybox.css",
       "PackagePath": "staticwebassets\\assets\\js\\fancybox\\jquery.fancybox.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\fancybox\\jquery.fancybox.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\fancybox\\jquery.fancybox.js",
       "PackagePath": "staticwebassets\\assets\\js\\fancybox\\jquery.fancybox.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\form-component.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\form-component.js",
       "PackagePath": "staticwebassets\\assets\\js\\form-component.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\fullcalendar\\bootstrap-fullcalendar.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\fullcalendar\\bootstrap-fullcalendar.css",
       "PackagePath": "staticwebassets\\assets\\js\\fullcalendar\\bootstrap-fullcalendar.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\fullcalendar\\fullcalendar.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\fullcalendar\\fullcalendar.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\fullcalendar\\fullcalendar.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter-conf.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter-conf.js",
       "PackagePath": "staticwebassets\\assets\\js\\gritter-conf.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\css\\jquery.gritter.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\css\\jquery.gritter.css",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\css\\jquery.gritter.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\css\\jquery.gritter0.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\css\\jquery.gritter0.css",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\css\\jquery.gritter0.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter-light.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter-light.png",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\images\\gritter-light.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter-long.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter-long.png",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\images\\gritter-long.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\images\\gritter.png",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\images\\gritter.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\images\\ie-spacer.gif",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\images\\ie-spacer.gif",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\images\\ie-spacer.gif"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\gritter\\js\\jquery.gritter.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\gritter\\js\\jquery.gritter.js",
       "PackagePath": "staticwebassets\\assets\\js\\gritter\\js\\jquery.gritter.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery-1.8.3.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery-1.8.3.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery-1.8.3.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.css",
       "PackagePath": "staticwebassets\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery-easy-pie-chart\\jquery.easy-pie-chart.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery-ui-1.9.2.custom.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery-ui-1.9.2.custom.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery-ui-1.9.2.custom.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.backstretch.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.backstretch.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.backstretch.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.dcjqaccordion.2.7.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.dcjqaccordion.2.7.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.dcjqaccordion.2.7.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.nicescroll.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.nicescroll.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.nicescroll.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.scrollTo.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.scrollTo.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.scrollTo.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.sparkline.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.sparkline.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.sparkline.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.tagsinput.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.tagsinput.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.tagsinput.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\jquery.ui.touch-punch.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\jquery.ui.touch-punch.min.js",
       "PackagePath": "staticwebassets\\assets\\js\\jquery.ui.touch-punch.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\morris-conf.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\morris-conf.js",
       "PackagePath": "staticwebassets\\assets\\js\\morris-conf.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\sparkline-chart.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\sparkline-chart.js",
       "PackagePath": "staticwebassets\\assets\\js\\sparkline-chart.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\tasks.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\tasks.js",
       "PackagePath": "staticwebassets\\assets\\js\\tasks.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\js\\zabuto_calendar.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\js\\zabuto_calendar.js",
       "PackagePath": "staticwebassets\\assets\\js\\zabuto_calendar.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.eot",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.eot",
       "PackagePath": "staticwebassets\\assets\\lineicons\\fonts\\linecons.eot"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.svg",
       "PackagePath": "staticwebassets\\assets\\lineicons\\fonts\\linecons.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.ttf",
       "PackagePath": "staticwebassets\\assets\\lineicons\\fonts\\linecons.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.woff",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\fonts\\linecons.woff",
       "PackagePath": "staticwebassets\\assets\\lineicons\\fonts\\linecons.woff"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\index.html",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\index.html",
       "PackagePath": "staticwebassets\\assets\\lineicons\\index.html"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\lte-ie7.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\lte-ie7.js",
       "PackagePath": "staticwebassets\\assets\\lineicons\\lte-ie7.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\assets\\lineicons\\style.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\assets\\lineicons\\style.css",
       "PackagePath": "staticwebassets\\assets\\lineicons\\style.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-grid.rtl.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-grid.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-reboot.rtl.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-reboot.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap-utilities.rtl.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap-utilities.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.min.css",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\css\\bootstrap.rtl.min.css.map",
       "PackagePath": "staticwebassets\\bootstrap\\css\\bootstrap.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.bundle.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.bundle.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.min.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.bundle.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.bundle.min.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.bundle.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.esm.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.esm.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.min.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.esm.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.esm.min.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.esm.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.min.js",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\js\\bootstrap.min.js.map",
       "PackagePath": "staticwebassets\\bootstrap\\js\\bootstrap.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_accordion.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_accordion.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_accordion.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_alert.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_alert.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_alert.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_badge.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_badge.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_badge.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_breadcrumb.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_breadcrumb.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_breadcrumb.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_button-group.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_button-group.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_button-group.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_buttons.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_buttons.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_buttons.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_card.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_card.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_card.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_carousel.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_carousel.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_carousel.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_close.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_close.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_close.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_containers.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_containers.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_containers.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_dropdown.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_dropdown.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_dropdown.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_forms.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_forms.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_forms.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_functions.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_functions.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_functions.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_grid.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_grid.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_grid.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_helpers.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_helpers.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_helpers.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_images.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_images.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_images.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_list-group.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_list-group.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_list-group.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_maps.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_maps.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_maps.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_mixins.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_mixins.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_mixins.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_modal.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_modal.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_modal.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_nav.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_nav.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_nav.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_navbar.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_navbar.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_navbar.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_offcanvas.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_offcanvas.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_offcanvas.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_pagination.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_pagination.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_pagination.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_placeholders.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_placeholders.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_placeholders.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_popover.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_popover.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_popover.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_progress.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_progress.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_progress.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_reboot.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_reboot.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_reboot.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_root.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_root.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_root.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_spinners.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_spinners.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_spinners.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_tables.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_tables.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_tables.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_toasts.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_toasts.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_toasts.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_tooltip.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_tooltip.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_tooltip.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_transitions.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_transitions.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_transitions.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_type.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_type.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_type.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_utilities.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_utilities.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_utilities.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_variables-dark.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_variables-dark.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_variables-dark.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\_variables.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\_variables.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\_variables.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-grid.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-grid.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\bootstrap-grid.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-reboot.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-reboot.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\bootstrap-reboot.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-utilities.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap-utilities.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\bootstrap-utilities.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\bootstrap.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\bootstrap.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_floating-labels.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_floating-labels.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_floating-labels.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-check.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-check.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_form-check.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-control.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-control.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_form-control.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-range.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-range.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_form-range.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-select.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-select.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_form-select.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-text.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_form-text.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_form-text.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_input-group.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_input-group.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_input-group.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_labels.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_labels.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_labels.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_validation.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\forms\\_validation.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\forms\\_validation.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_clearfix.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_clearfix.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_clearfix.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_color-bg.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_color-bg.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_color-bg.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_colored-links.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_colored-links.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_colored-links.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_focus-ring.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_focus-ring.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_focus-ring.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_icon-link.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_icon-link.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_icon-link.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_position.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_position.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_position.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_ratio.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_ratio.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_ratio.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_stacks.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_stacks.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_stacks.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_stretched-link.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_stretched-link.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_stretched-link.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_text-truncation.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_text-truncation.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_text-truncation.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_visually-hidden.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_visually-hidden.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_visually-hidden.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_vr.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\helpers\\_vr.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\helpers\\_vr.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_alert.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_alert.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_alert.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_backdrop.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_backdrop.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_backdrop.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_banner.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_banner.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_banner.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_border-radius.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_border-radius.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_border-radius.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_box-shadow.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_box-shadow.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_box-shadow.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_breakpoints.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_breakpoints.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_breakpoints.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_buttons.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_buttons.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_buttons.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_caret.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_caret.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_caret.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_clearfix.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_clearfix.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_clearfix.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_color-mode.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_color-mode.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_color-mode.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_color-scheme.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_color-scheme.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_color-scheme.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_container.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_container.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_container.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_deprecate.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_deprecate.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_deprecate.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_forms.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_forms.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_forms.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_gradients.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_gradients.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_gradients.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_grid.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_grid.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_grid.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_image.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_image.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_image.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_list-group.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_list-group.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_list-group.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_lists.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_lists.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_lists.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_pagination.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_pagination.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_pagination.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_reset-text.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_reset-text.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_reset-text.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_resize.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_resize.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_resize.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_table-variants.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_table-variants.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_table-variants.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_text-truncate.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_text-truncate.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_text-truncate.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_transition.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_transition.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_transition.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_utilities.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_utilities.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_utilities.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_visually-hidden.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\mixins\\_visually-hidden.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\mixins\\_visually-hidden.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\utilities\\_api.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\utilities\\_api.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\utilities\\_api.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\bootstrap\\scss\\vendor\\_rfs.scss",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\bootstrap\\scss\\vendor\\_rfs.scss",
       "PackagePath": "staticwebassets\\bootstrap\\scss\\vendor\\_rfs.scss"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\css\\datatables.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\css\\datatables.min.css",
       "PackagePath": "staticwebassets\\css\\datatables.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\css\\datatablesButton.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\css\\datatablesButton.min.css",
       "PackagePath": "staticwebassets\\css\\datatablesButton.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\css\\daterangepicker.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\css\\daterangepicker.css",
       "PackagePath": "staticwebassets\\css\\daterangepicker.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\css\\site.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\css\\site.css",
       "PackagePath": "staticwebassets\\css\\site.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\datatables.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\datatables.min.css",
       "PackagePath": "staticwebassets\\datatables.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\datatables.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\datatables.min.js",
       "PackagePath": "staticwebassets\\datatables.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\favicon.ico",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\favicon.ico",
       "PackagePath": "staticwebassets\\favicon.ico"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\css\\all.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\css\\all.css",
       "PackagePath": "staticwebassets\\font-awesome\\css\\all.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-brands-400.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-brands-400.ttf",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-brands-400.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-brands-400.woff2",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-brands-400.woff2",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-brands-400.woff2"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-regular-400.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-regular-400.ttf",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-regular-400.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-regular-400.woff2",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-regular-400.woff2",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-regular-400.woff2"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-solid-900.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-solid-900.ttf",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-solid-900.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-solid-900.woff2",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-solid-900.woff2",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-solid-900.woff2"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-v4compatibility.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-v4compatibility.ttf",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-v4compatibility.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-v4compatibility.woff2",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\font-awesome\\webfonts\\fa-v4compatibility.woff2",
       "PackagePath": "staticwebassets\\font-awesome\\webfonts\\fa-v4compatibility.woff2"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\fonts\\Azonix.otf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\fonts\\Azonix.otf",
       "PackagePath": "staticwebassets\\fonts\\Azonix.otf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\fonts\\WD-XL_Huayou_Ti_TC.ttf",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\fonts\\WD-XL_Huayou_Ti_TC.ttf",
       "PackagePath": "staticwebassets\\fonts\\WD-XL_Huayou_Ti_TC.ttf"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\AccessDenied.png",
-      "PackagePath": "staticwebassets\\img\\AccessDenied.png"
-    },
-    {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\ChargingStation-off.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\ChargingStation-off.png",
       "PackagePath": "staticwebassets\\img\\ChargingStation-off.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\ChargingStation-on.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\ChargingStation-on.png",
       "PackagePath": "staticwebassets\\img\\ChargingStation-on.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\FHT.jpg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\FHT.jpg",
       "PackagePath": "staticwebassets\\img\\FHT.jpg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\Map.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\Map.png",
       "PackagePath": "staticwebassets\\img\\Map.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\SAA.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\SAA.png",
       "PackagePath": "staticwebassets\\img\\SAA.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\TW.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\TW.png",
       "PackagePath": "staticwebassets\\img\\TW.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\UK.png",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\UK.png",
       "PackagePath": "staticwebassets\\img\\UK.png"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\empty.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\empty.svg",
       "PackagePath": "staticwebassets\\img\\empty.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\material.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\material-A.svg",
+      "PackagePath": "staticwebassets\\img\\material-A.svg"
+    },
+    {
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\material-B.svg",
+      "PackagePath": "staticwebassets\\img\\material-B.svg"
+    },
+    {
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\material.svg",
       "PackagePath": "staticwebassets\\img\\material.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\reserve.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\reserve.svg",
       "PackagePath": "staticwebassets\\img\\reserve.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\img\\trac.svg",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\trac.svg",
       "PackagePath": "staticwebassets\\img\\trac.svg"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Account.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Account.js",
       "PackagePath": "staticwebassets\\js\\Account.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Activation.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Activation.js",
       "PackagePath": "staticwebassets\\js\\Activation.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\DateTime.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\DateTime.js",
       "PackagePath": "staticwebassets\\js\\DateTime.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Dispatch.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Dispatch.js",
       "PackagePath": "staticwebassets\\js\\Dispatch.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Group.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Group.js",
       "PackagePath": "staticwebassets\\js\\Group.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Layout.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Layout.js",
       "PackagePath": "staticwebassets\\js\\Layout.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\MainFun.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\MainFun.js",
       "PackagePath": "staticwebassets\\js\\MainFun.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Map.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Map.js",
       "PackagePath": "staticwebassets\\js\\Map.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Port.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Port.js",
       "PackagePath": "staticwebassets\\js\\Port.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\ProgramGroup.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\ProgramGroup.js",
       "PackagePath": "staticwebassets\\js\\ProgramGroup.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Shift.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Shift.js",
       "PackagePath": "staticwebassets\\js\\Shift.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\Tasks.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\Tasks.js",
       "PackagePath": "staticwebassets\\js\\Tasks.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\User.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\User.js",
       "PackagePath": "staticwebassets\\js\\User.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\WarSituation.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\WarSituation.js",
       "PackagePath": "staticwebassets\\js\\WarSituation.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\Camera.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\Camera.js",
       "PackagePath": "staticwebassets\\js\\common\\Camera.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\Chart.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\Chart.js",
       "PackagePath": "staticwebassets\\js\\common\\Chart.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\Hub.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\Hub.js",
       "PackagePath": "staticwebassets\\js\\common\\Hub.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\SearchDate.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\SearchDate.js",
       "PackagePath": "staticwebassets\\js\\common\\SearchDate.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\datatables.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\datatables.min.js",
       "PackagePath": "staticwebassets\\js\\common\\datatables.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\datatablesButton.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\datatablesButton.min.js",
       "PackagePath": "staticwebassets\\js\\common\\datatablesButton.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\daterangepicker.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\daterangepicker.js",
       "PackagePath": "staticwebassets\\js\\common\\daterangepicker.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\echarts.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\echarts.js",
       "PackagePath": "staticwebassets\\js\\common\\echarts.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\jquery-3.7.1.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\jquery-3.7.1.min.js",
       "PackagePath": "staticwebassets\\js\\common\\jquery-3.7.1.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\moment.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\moment.min.js",
       "PackagePath": "staticwebassets\\js\\common\\moment.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\signalr.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\signalr.js",
       "PackagePath": "staticwebassets\\js\\common\\signalr.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\signalr.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\signalr.min.js",
       "PackagePath": "staticwebassets\\js\\common\\signalr.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\js\\common\\zxingQR.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\js\\common\\zxingQR.min.js",
       "PackagePath": "staticwebassets\\js\\common\\zxingQR.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\LICENSE",
       "PackagePath": "staticwebassets\\lib\\bootstrap"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
       "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\iframe-resizer\\iframeResizer.contentWindow.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\iframe-resizer\\iframeResizer.contentWindow.min.js",
       "PackagePath": "staticwebassets\\lib\\iframe-resizer\\iframeResizer.contentWindow.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\iframe-resizer\\iframeResizer.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\iframe-resizer\\iframeResizer.min.js",
       "PackagePath": "staticwebassets\\lib\\iframe-resizer\\iframeResizer.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.unobtrusive-ajax.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.unobtrusive-ajax.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.unobtrusive-ajax.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
       "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
       "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery\\LICENSE.txt",
       "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.js",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
     },
     {
-      "Id": "C:\\Ting\\AGV\\高技\\程式\\SCP\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
       "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
     },
     {
