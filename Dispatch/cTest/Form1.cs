@@ -64,5 +64,10 @@ namespace cTest
             saaService.SettingBlockUseFlag("E", "N");
             MessageBox.Show("下料區 E 停用");
         }
+
+        private void frmMain_Load(object sender, EventArgs e)
+        {
+            btnAuto_Click(null, null);
+        }
     }
 }

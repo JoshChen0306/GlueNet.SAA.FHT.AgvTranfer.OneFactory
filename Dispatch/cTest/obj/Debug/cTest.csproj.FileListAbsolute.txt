@@ -7,3 +7,14 @@ E:\agvFleetManager\cTest\obj\Debug\cTest.Properties.Resources.resources
 E:\agvFleetManager\cTest\obj\Debug\cTest.csproj.GenerateResource.Cache
 E:\agvFleetManager\cTest\obj\Debug\cTest.exe
 E:\agvFleetManager\cTest\obj\Debug\cTest.pdb
+C:\Matt\Git\1400004\1400004\Dispatch\Release\cTest.exe.config
+C:\Matt\Git\1400004\1400004\Dispatch\Release\cTest.exe
+C:\Matt\Git\1400004\1400004\Dispatch\Release\cTest.pdb
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.AssemblyReference.cache
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.frmMain.resources
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.Properties.Resources.resources
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.GenerateResource.cache
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInputs.cache
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.Up2Date
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.exe
+C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.pdb
