@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Web.Http;
 
 namespace HikAGVWebAPI
@@ -7,6 +6,8 @@ namespace HikAGVWebAPI
     [Route("[controller]")]
     public partial class HikAGVController : ApiController
     {
+        private object objLockAGVCallback = new object();
+        private object objLockWarnCallback = new object();
         /// <summary>
         /// AGV 任務執行通知
         /// </summary>
@@ -16,73 +17,91 @@ namespace HikAGVWebAPI
         [Route(CallbackRoute + "agvCallback")]
         public CallBackAck AGVCallback(CallBack CallbackModel)
         {
-            try
+            lock (objLockAGVCallback)
             {
-                mLog.TraceOut($"========================================== AGV Callback Start! ==========================================", Log.LogType.NONE);
-                mLog.TraceOut("Get Call Back Data! " + CallbackModel?.ToString(), Log.LogType.NONE);
-
-                string sMethod = CallbackModel.method;
-                string sRackID = CallbackModel.podCode;
-                string sStartPositionCode = CallbackModel.wbCode;
-                string sCurrentPositionCode = CallbackModel.currentPositionCode;
-                string sTaskCode = CallbackModel.taskCode;
-                string sShuttleID = CallbackModel.robotCode;
-                oMissionModel oMission = mDB.Select_oMissionByTaskCode(sTaskCode);
-                mLog.TraceOut("Get oMission Data! " + oMission?.ToString(), Log.LogType.NONE);
-                CallBackAck reponse = new CallBackAck()
+                try
                 {
-                    code = "0",
-                    message = "",
-                    reqCode = CallbackModel.reqCode
-                };
+                    mLog.TraceOut($"========================================== AGV Callback Start! ==========================================", Log.LogType.NONE);
+                    mLog.TraceOut("Get Call Back Data! " + CallbackModel?.ToString(), Log.LogType.NONE);
 
-                ubActivationModel ubActivation = new ubActivationModel()
-                {
-                    TaskDateTime = oMission?.TaskDateTime,
-                    ShuttleId = sShuttleID,
-                    BeginStation = oMission?.BeginStation,
-                    EndStation = oMission?.EndStation,
-                };
+                    CallBackAck reponse = new CallBackAck();
+                    if (CallbackModel == null)
+                    {
+                        mLog.TraceOut("AGV Call Back Data Is Null!", Log.LogType.ERROR);
 
-                switch (sMethod)
-                {
-                    case CallBackMethod.start://更新任務狀態為 R(執行中)
-                        oMission.ShuttleId = sShuttleID;
-                        UpdateStart(oMission, ubActivation);
-                        mLog.TraceOut($"AGV Start Finish!", Log.LogType.NONE);
-                        break;
-                    case CallBackMethod.outbin:
-                        oMission.RackId = sRackID;
-                        UpdateOutBin(oMission, ubActivation, sStartPositionCode);
-                        mLog.TraceOut($"AGV Outbin Finish!", Log.LogType.NONE);
-                        break;
-                    case CallBackMethod.end:
-                        UpdateEnd(oMission, ubActivation, sCurrentPositionCode);
-                        mLog.TraceOut($"AGV End Finish!", Log.LogType.NONE);
-                        break;
-                    case CallBackMethod.cancel:
-                        mLog.TraceOut($"AGV Cancel Finish!", Log.LogType.NONE);
-                        break;
-                    case CallBackMethod.apply:
-                        mLog.TraceOut($"AGV Apply Finish!", Log.LogType.NONE);
-                        break;
-                    default:
-                        reponse.code = "-1";
-                        reponse.message = $"RCS Wrong Method!";
-                        break;
+                        return new CallBackAck()
+                        {
+                            code = "-9",
+                            message = "AGV CallBack Data Error",
+                            reqCode = "-9",
+                        };
+                    }
+
+                    string sMethod = CallbackModel.method;
+                    string sRackID = CallbackModel.podCode;
+                    string sStartPositionCode = CallbackModel.wbCode;
+                    string sCurrentPositionCode = CallbackModel.currentPositionCode;
+                    string sTaskCode = CallbackModel.taskCode;
+                    string sShuttleID = CallbackModel.robotCode;
+                    oMissionModel oMission = mDB.Select_oMissionByTaskCode(sTaskCode);
+                    mLog.TraceOut("Get oMission Data! " + oMission?.ToString(), Log.LogType.NONE);
+                    reponse = new CallBackAck()
+                    {
+                        code = "0",
+                        message = "",
+                        reqCode = CallbackModel.reqCode
+                    };
+
+                    ubActivationModel ubActivation = new ubActivationModel()
+                    {
+                        TaskDateTime = oMission?.TaskDateTime,
+                        ShuttleId = sShuttleID,
+                        BeginStation = oMission?.BeginStation,
+                        EndStation = oMission?.EndStation,
+                    };
+
+                    switch (sMethod)
+                    {
+                        case CallBackMethod.start://更新任務狀態為 R(執行中)
+                            oMission.ShuttleId = sShuttleID;
+                            UpdateStart(oMission, ubActivation);
+                            mLog.TraceOut($"AGV Start Finish!", Log.LogType.NONE);
+                            break;
+                        case CallBackMethod.outbin:
+                            oMission.RackId = sRackID;
+                            UpdateOutBin(oMission, ubActivation, sStartPositionCode);
+                            mLog.TraceOut($"AGV Outbin Finish!", Log.LogType.NONE);
+                            break;
+                        case CallBackMethod.end:
+                            UpdateEnd(oMission, ubActivation, sCurrentPositionCode);
+                            mLog.TraceOut($"AGV End Finish!", Log.LogType.NONE);
+                            break;
+                        case CallBackMethod.cancel:
+                            mLog.TraceOut($"AGV Cancel Finish!", Log.LogType.NONE);
+                            break;
+                        case CallBackMethod.apply:
+                            mLog.TraceOut($"AGV Apply Finish!", Log.LogType.NONE);
+                            break;
+                        default:
+                            reponse.code = "-1";
+                            reponse.message = $"RCS Wrong Method!";
+                            break;
+                    }
+
+                    mLog.TraceOut($"========================================== AGV Callback End! ==========================================", Log.LogType.NONE);
+                    return reponse;
                 }
-
-                mLog.TraceOut($"========================================== AGV Callback End! ==========================================", Log.LogType.NONE);
-                return reponse;
-            }
-            catch (Exception ex)
-            {
-                return new CallBackAck()
+                catch (Exception ex)
                 {
-                    code = "-999",
-                    message = ex.Message,
-                    reqCode = CallbackModel.reqCode,
-                };
+                    mLog.TraceOut($"AGVCallback Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
+
+                    return new CallBackAck()
+                    {
+                        code = "-99",
+                        message = ex.Message,
+                        reqCode = CallbackModel.reqCode,
+                    };
+                }
             }
         }
 
@@ -108,6 +127,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"UpdateStart Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
             }
         }
 
@@ -132,6 +152,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"UpdateOutBin Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
             }
         }
 
@@ -163,6 +184,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"UpdateEnd Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
             }
         }
 
@@ -175,20 +197,36 @@ namespace HikAGVWebAPI
         [Route(CallbackRoute + "warnCallback")]
         public WarnCallBackAck WarnCallback(WarnCallBack WarnModel)
         {
-            mLog.TraceOut($"========================================== Warn Callback Start! ==========================================", Log.LogType.NONE);
-            mLog.TraceOut($"AGV 告警推送通知! {WarnModel?.ToString()}", Log.LogType.NONE);
-            WarnCallBackAck reponse = new WarnCallBackAck()
+            lock (objLockWarnCallback)
             {
-                code = "0",
-                message = "OK",
-                reqCode = WarnModel.reqCode
-            };
+                mLog.TraceOut($"========================================== Warn Callback Start! ==========================================", Log.LogType.NONE);
+                mLog.TraceOut($"AGV 告警推送通知! {WarnModel?.ToString()}", Log.LogType.NONE);
 
-            //碰撞條觸發
-            CallFHtAPI(WarnModel);
+                if (WarnModel == null)
+                {
+                    mLog.TraceOut("AGV Warn Call Back Data Is Null!", Log.LogType.ERROR);
 
-            mLog.TraceOut($"========================================== Warn Callback End! ==========================================", Log.LogType.NONE);
-            return reponse;
+                    return new WarnCallBackAck()
+                    {
+                        code = "-999",
+                        message = "AGV Warn Call Back Data Error",
+                        reqCode = "-999",
+                    };
+                }
+
+                WarnCallBackAck reponse = new WarnCallBackAck()
+                {
+                    code = "0",
+                    message = "OK",
+                    reqCode = WarnModel.reqCode
+                };
+
+                //碰撞條觸發
+                CallFHtAPI(WarnModel);
+
+                mLog.TraceOut($"========================================== Warn Callback End! ==========================================", Log.LogType.NONE);
+                return reponse;
+            }
         }
 
         /// <summary>
@@ -260,6 +298,7 @@ namespace HikAGVWebAPI
             }
             catch (Exception ex)
             {
+                mLog.TraceOut($"CallFHtAPI Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
             }
         }
     }
