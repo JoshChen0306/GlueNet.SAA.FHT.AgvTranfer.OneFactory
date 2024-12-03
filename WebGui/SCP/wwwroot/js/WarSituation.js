@@ -131,11 +131,14 @@ function AgvPie(data) {
     var now = moment();
     // 獲取當天的開始時間（午夜12點）
     var startOfDay = moment().hour(8).minute(30).second(0);
+    console.log(startOfDay);
     if (now.isBefore(startOfDay)) {
         startOfDay.subtract(1,'days')
     }
     // 計算從午夜到現在的秒數
-    var nowTime = now.diff(startOfDay, 'minutes');
+    var nowTime = now.diff(startOfDay, 'hours',true);
+    nowTime = Math.round(nowTime * 100) / 100;
+
     var timeDifferences = { R: "", C: "", A: "", F: "" };
     $.each(data, function (index, item) {
         if (timeDifferences.hasOwnProperty(item.GroupID)) {
@@ -143,8 +146,7 @@ function AgvPie(data) {
             totalSecond += item.TimeDifference
         }
     });
-    var idleTime = nowTime - totalSecond
-
+    var idleTime = (nowTime - totalSecond).toFixed(2);
     var option = {
         title:
         {

@@ -95,6 +95,7 @@ namespace SCP.Controllers
         {
 
             (string beginTime, string endTime) = GetShiftTime();
+
             var data = _DBContext.ubActivation
                 .Where(item => item.BeginTime.CompareTo(beginTime) >= 0 && item.BeginTime.CompareTo(endTime) <= 0 && !(string.IsNullOrEmpty(item.EndTime)))
                 .Select(item => new
@@ -108,7 +109,7 @@ namespace SCP.Controllers
                 .Select(group => new
                 {
                     GroupID = group.Key,
-                    TimeDifference = group.Sum(item => Math.Round((item.EndDateTime - item.BeginDateTime).TotalMinutes,0))
+                    TimeDifference = Math.Round(group.Sum(item => (item.EndDateTime - item.BeginDateTime).TotalHours),2)
                 });
 
             return Json(data);
