@@ -144,6 +144,9 @@
   <data name="Map" xml:space="preserve">
     <value>即時地圖</value>
   </data>
+  <data name="Reject" xml:space="preserve">
+    <value>退貨</value>
+  </data>
   <data name="StationText" xml:space="preserve">
     <value>選擇站點</value>
   </data>
@@ -158,6 +161,9 @@
   </data>
   <data name="Tasks" xml:space="preserve">
     <value>任務列表</value>
+  </data>
+  <data name="UnloadFinish" xml:space="preserve">
+    <value>下料完成</value>
   </data>
   <data name="WorkOrder" xml:space="preserve">
     <value>掃描工單</value>

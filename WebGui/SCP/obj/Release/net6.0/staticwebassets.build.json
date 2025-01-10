@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "GeyJ0+n6Y/EtTzoeVRa6ihF66bK4M85y3l+l17mIlq4=",
+  "Hash": "mpA5T20Wkavh4LeJSPQ1PSYtkJTN3W+VWfSvh+LC10E=",
   "Source": "SCP",
   "BasePath": "_content/SCP",
   "Mode": "Default",
@@ -4974,6 +4974,25 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\fonts\\WD-XL_Huayou_Ti_TC.ttf"
+    },
+    {
+      "Identity": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\AccessDenied.png",
+      "SourceId": "SCP",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\",
+      "BasePath": "_content/SCP",
+      "RelativePath": "img/AccessDenied.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\img\\AccessDenied.png"
     },
     {
       "Identity": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\ChargingStation-off.png",

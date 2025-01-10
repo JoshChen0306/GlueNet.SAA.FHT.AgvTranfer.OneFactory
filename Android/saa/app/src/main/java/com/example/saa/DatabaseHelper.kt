@@ -14,7 +14,7 @@ class DatabaseHelper {
     companion object {
         private const val JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver"
         private const val DB_URL = "jdbc:jtds:sqlserver://192.168.4.10/agvDB_1400004"
-        //private const val DB_URL = "jdbc:jtds:sqlserver://192.168.0.111/agvDB_1400004"
+        //private const val DB_URL = "jdbc:jtds:sqlserver://192.168.135.173/agvDB_1400004"
         private const val USER = "mcs"
         private const val PASS = "Zz123456"
     }

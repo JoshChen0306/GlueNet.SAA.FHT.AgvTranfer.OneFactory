@@ -1045,6 +1045,10 @@
       "PackagePath": "staticwebassets\\fonts\\WD-XL_Huayou_Ti_TC.ttf"
     },
     {
+      "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\AccessDenied.png",
+      "PackagePath": "staticwebassets\\img\\AccessDenied.png"
+    },
+    {
       "Id": "C:\\Ting\\AGV\\高技\\Git\\WebGui\\SCP\\wwwroot\\img\\ChargingStation-off.png",
       "PackagePath": "staticwebassets\\img\\ChargingStation-off.png"
     },

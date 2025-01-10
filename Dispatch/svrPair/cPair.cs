@@ -117,6 +117,8 @@ namespace svrPair
                     GenerateoNeedDataByMCSAsEtoABD();    //1-2 .主程序 == 提出需要 : 將[E]暫存空Rack補至[A、B、D]
                     GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
                 }
+                GenerateoNeedDataByMCSEsBtoF();     //1-2 .主程序 == 提出需要 : 從[E]下料暫存批配料號送至退pin[F] 
+                GenerateoRequireByoNeed();       //1-0 .主程式 == 轉成需求 :
 
                 GenerateoMissionByoRequire();   //2-0 .主程序 == 尋找oRequire表中未指派的項目，產生oMission表
                 RecyclingoRequireByOkFlag();    //3-0 .主程序 == 處理oRequire表中的OkFlag欄位，Y=完成，X=異常結束，C=取消
@@ -158,12 +160,13 @@ namespace svrPair
                     case "A":   //上料區A >> 暫存區B，將放RACK及製程前材料運至暫存區，如A1 >> B3
                     case "C":   //生產區C >> 生產區D、上料區A、暫存區B，將空RACK運送至沒有RACK的地方，如C1 >> A1
                     case "D":   //生產區D >> 下料區E，將放RACK及製程後材料運至下料區，如D2 >> E1
-                    case "E":   //下料區E >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
+                    case "F":   //下料區F >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
                         WriteLog("05.處理平板配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;
                     case "B":   //暫存區B >> 上料區A，將下完料的空RACK運送至沒有RACK的地方，如B1 >> A1
                                 //暫存區B >> 生產區C，將放RACK及製程前材料運至生產區的地方，如B2 >> C1
+                    case "E":   //暫存區E >> 上料區F，將放RACK及製程完材料運至退pin區的地方，如E2 >> F1
                         WriteLog("05.處理系統配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;
@@ -190,6 +193,21 @@ namespace svrPair
                 return;
             }            
         }
+        private void GenerateoNeedDataByMCSEsBtoF()    //從[E]下料暫存批配料號送至生產[F]
+        {
+            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'F'");
+            foreach (DataRow dr in mdtQuery.Rows)
+            {
+                //ProductionPartNo = X :表不管制  填入其他數值 : 表管制
+                DataTable dt = GetoPort_PartNoTheSame_NoPair_CanWork_Sort_ByBlock("'E'", "X");
+                if (dt.Rows.Count > 0)
+                {
+                    InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(), dt.Rows[0]["WorkOrder"].ToString(), dr["StationNo"].ToString());
+                    WriteLog(string.Format("04.產生配對資料 >> E區 -> F區 , ObjStation : {0} , EndStation : {1} , ProductionPartNo : {2} :: 從[E]下料暫存批配料號送至退pin[F]", dt.Rows[0]["StationNo"].ToString(), dr["StationNo"].ToString(), dr["ProductionPartNo"].ToString()));
+                }
+                return;
+            }
+        }
         #endregion
 
         #region [1-2 .主程序 == GenerateoNeedDataByMCStoA == 尋找oPort表中找上料區A缺少Rack的埠口(終點) 再從 暫存區B中找有Rack但沒工單(起點)] 
@@ -209,44 +227,65 @@ namespace svrPair
             }
         }
 
-        private void GenerateoNeedDataByMCSAsEtoABD()    //將[E]暫存空Rack補至上料區[A、B、D]
+        private void GenerateoNeedDataByMCSAsEtoABD()    //將[F]暫存空Rack補至上料區[A、B、D]
         {
             //找oPort表某一區域沒架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 >> 找到A區有資料表示要從B區補
             mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A','B','D'");
             foreach (DataRow dr in mdtQuery.Rows)
             {
-                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("'E'");
+                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("'F'");
                 if (dt.Rows.Count > 0)
                 {
                     InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(), "", dr["StationNo"].ToString());
-                    WriteLog(string.Format("04.產生配對資料 >> E區 -> A、B、D區 ,  ObjStation : {0} , EndStation : {1} :: 將[E]空Rack補至[A、B、D]", dt.Rows[0]["StationNo"].ToString(), dr["StationNo"].ToString()));
+                    WriteLog(string.Format("04.產生配對資料 >> E區 -> A、B、D區 ,  ObjStation : {0} , EndStation : {1} :: 將[F]空Rack補至[A、B、D]", dt.Rows[0]["StationNo"].ToString(), dr["StationNo"].ToString()));
                 }
                 return;
             }
         }
         #endregion
 
-        #region [1-3 .主程序 == GenerateoNeedDataByMCStoA == 將[C]暫存空Rack補至上料區[A]、暫存區[B]、生產區[D，然後再將前筆AssignFlag= W >> P] 
+        #region [1-3 .主程序 == GenerateoNeedDataByMCStoA == 將[C]暫存空Rack補至上料區[A]、暫存區[B]、生產區[D，然後再將前筆AssignFlag= W >> P 及退貨流程] 
         private void GenerateoNeedDataByMCSAsCtoABD()    //將[C]暫存空Rack補至上料區[A]、暫存區[B]、生產區[D，然後再將前筆AssignFlag= W >> P]
         {
             //搜尋來源是oNeed資料中AssignFlag = W(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = A2 >> 指將空RACK送到上料區A 或 暫存區B 或 生產區 D (是否可用)
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oNeed where AssignFlag ='W' order by TaskDateTime").Tables[0];
+            //搜尋來源是oNeed資料中AssignFlag = R(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = B2 >> 指將料盤送回暫存區B(是否可用)
+            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oNeed where AssignFlag in ('W','R') order by TaskDateTime").Tables[0];
             foreach (DataRow odr in dt.Rows)
             {
-                mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A','B','D'");
-                foreach (DataRow dr in mdtQuery.Rows)
-                {                    
-                    InsertoNeed(odr["EndStation"].ToString(), odr["RackId"].ToString(), "", dr["StationNo"].ToString());
-                    WriteLog(string.Format("04.產生配對資料 >> C區 -> ABD區 ,  ObjStation : {0} , EndStation : {1} :: 將[C]暫存空Rack補至[A、B、D]", odr["EndStation"].ToString(), dr["StationNo"].ToString()));
-                    UpdateoNeedAssignFlag("P", odr["ObjStation"].ToString(), odr["EndStation"].ToString());
-                    WriteLog(string.Format("04.更新配對資料 >> B區 -> C區 ,  ObjStation : {0} , EndStation : {1} :: 將[B]暫存空Rack補至[C]", odr["ObjStation"].ToString(), odr["EndStation"].ToString()));
-                    return;
+                //正常流程
+                if (odr["AssignFlag"].ToString() == "W")
+                {
+                    mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A','B','D'");
+                    foreach (DataRow dr in mdtQuery.Rows)
+                    {
+                        InsertoNeed(odr["EndStation"].ToString(), odr["RackId"].ToString(), "", dr["StationNo"].ToString());
+                        WriteLog(string.Format("04.產生配對資料 >> C區 -> ABD區 ,  ObjStation : {0} , EndStation : {1} :: 將[C]暫存空Rack補至[A、B、D]", odr["EndStation"].ToString(), dr["StationNo"].ToString()));
+                        UpdateoNeedAssignFlag("P", odr["ObjStation"].ToString(), odr["EndStation"].ToString());
+                        WriteLog(string.Format("04.更新配對資料 >> B區 -> C區 ,  ObjStation : {0} , EndStation : {1} :: 將[B]料盤[C]", odr["ObjStation"].ToString(), odr["EndStation"].ToString()));
+                        return;
+                    }
                 }
+                //退貨流程R=Reject
+                else if (odr["AssignFlag"].ToString() == "R")
+                {
+                    string workOrder = mSql.QuerySqlByAutoOpen("select WorkOrder from oPort where StationNo = '"+ odr["EndStation"] +"'").Tables[0].Rows[0]["WorkOrder"].ToString();
+                    mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'B'");
+                    foreach (DataRow dr in mdtQuery.Rows)
+                    {
+                        InsertoNeed(odr["EndStation"].ToString(), odr["RackId"].ToString(), workOrder, dr["StationNo"].ToString());
+                        WriteLog(string.Format("04.產生配對資料 >> C區 -> B區 ,  ObjStation : {0} , EndStation : {1} :: 將[C]料盤退貨至[B]", odr["EndStation"].ToString(), dr["StationNo"].ToString()));
+                        UpdateoNeedAssignFlag("P", odr["ObjStation"].ToString(), odr["EndStation"].ToString());
+                        WriteLog(string.Format("04.更新配對資料 >> B區 -> C區 ,  ObjStation : {0} , EndStation : {1} :: 將[B]料盤補至[C]", odr["ObjStation"].ToString(), odr["EndStation"].ToString()));
+                        return;
+                    }
+                }
+
+               
             }
 
                 
             
-        }
+        }   
         #endregion
 
         #region  [1-4 .副程式 == ProcessoNeedToRequire == 處理各區需求]        

@@ -3,6 +3,7 @@ $(function () {
     var form = $('#DispatchForm');
     var beginSations = [];
     var rowData = {};
+    var btnName = "";
     UpdateDispatch();
     $(".Site").prop("disabled", true);
 
@@ -45,7 +46,6 @@ $(function () {
                 break;
             default:
                 // 使用 filter 方法來顯示所有與第一個選項相關的 <option>
-  
                 $('#BeginStation option').filter(function () {
 
                     // 檢查 <option> 的 value 是否以第一個選項的選擇值開頭 
@@ -156,12 +156,14 @@ $(function () {
     });
 
     //點擊確認檢查各項欄位輸出是否有問題
-    $("#ConfirmButton").on("click", function () {
+    $(".ConfirmButton").on("click", function (event) {
         var inputs = form.find('select[required]');
         var allValid = true;
         var area = $("#Area").val();
         var beginStation = $("#BeginStation").val();
         var endStation = $("#EndStation").val();
+        btnName = event.target.id;
+        
         inputs.each(function () {
             if (!this.checkValidity()) {
                 alert('請選擇派送站點');
@@ -208,7 +210,7 @@ $(function () {
         var beginStation = $("#BeginStation").val();
         var endStation = $("#EndStation").val();
 
-        if (area !== "E") {
+        if (area !== "F") {
             alert("下料區才可做下料完成!!")
             allValid = false;
         } else if (!beginStation) {
@@ -240,20 +242,22 @@ $(function () {
         $.each(formData, function () {
             jsonData[this.name] = this.value;
         });
+        jsonData["btnName"] = btnName;
         // 恢復被禁用的元素
         $("#EndStation").prop("disabled", true);
         $("#WorkOrder").prop("disabled", true);
 
-        var url = area === "E" ? "/Dispatch/UpdateoPort" : "/Dispatch/InsertoNeed";
+        var url = area === "F" ? "/Dispatch/UpdateoPort" : "/Dispatch/InsertoNeed";
         // 使用 AJAX 發送表單資料到後端
         $.ajax({
             type: "POST",
             url: url, // 替換為你的後端 URL
-            data: JSON.stringify(formData),
+            data: JSON.stringify(jsonData),
             contentType: "application/json",
             success: function (response) {
                 // 處理成功響應
                 console.log("表單資料已成功送出", response);
+                form[0].reset();
             },
             error: function (error) {
                 // 處理錯誤響應
@@ -263,16 +267,13 @@ $(function () {
     });
     
     $(document).on("click", ".ConfirmCancle", function () {
-        rowData["index"] = $(this).closest("tr").index();
-        console.log(rowData)
+        rowData["index"] = $(this).closest("tr").index();      
 
     })
     $("#CancleButton").on("click", function () {
 
         var $row = $("#DispatchStatus").find("tr").eq(rowData["index"])
         var status = $row.find("td:eq(4)").text();
-        console.log($row);
-        console.log(status);
         if (status === "執行中") {
             alert("任務已執行。");
             // 關閉 Modal 視窗

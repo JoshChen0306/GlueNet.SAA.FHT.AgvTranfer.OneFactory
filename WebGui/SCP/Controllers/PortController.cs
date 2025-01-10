@@ -36,6 +36,8 @@ namespace SCP.Controllers
                     InterfaceName = item.InterfaceName,
                     MachineName = item.MachineName,
                     UseFlag = item.UseFlag,
+                    HaveFlag = item.HaveFlag,
+                    WorkOrder = item.WorkOrder,
                 };
                 result.Add(data);
             }
@@ -49,6 +51,8 @@ namespace SCP.Controllers
             string name = port["name"];
             string machinename = port["machinename"];
             string interfacename = port["interfacename"];
+            string haveflag = port["haveflag"];
+            string workorder = (haveflag=="3")?port["workorder"]:"";
             string useflag = port.ContainsKey("useflag")?"Y":"N";
 
             try
@@ -58,6 +62,8 @@ namespace SCP.Controllers
                     .ExecuteUpdate(setters => setters
                         .SetProperty(p => p.MachineName, machinename)
                         .SetProperty(p => p.InterfaceName, interfacename)
+                        .SetProperty(p => p.HaveFlag, haveflag)
+                        .SetProperty(p => p.WorkOrder, workorder)
                         .SetProperty(p => p.UseFlag, useflag));
             }
             catch (Exception ex)

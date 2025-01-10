@@ -19,7 +19,7 @@ namespace SCP.Controllers
             _configuration = configuration;
 
         }
-        [Authorize(Roles = "1")]
+        [Authorize]
         public IActionResult Index()
         {
             var areas = _configuration.GetSection("Area").Get<Dictionary<string, string>>();
@@ -32,11 +32,11 @@ namespace SCP.Controllers
                 case "2":
                     filterAreas = areas.Where(item => item.Value=="A");
                     break;
-                case "3":
+                case "6":
                     filterAreas = areas.Where(item => item.Value == "C"|| item.Value == "D");
                     break;
-                case "4":
-                    filterAreas = areas.Where(item => item.Value == "E");
+                case "5":
+                    filterAreas = areas.Where(item => item.Value == "F");
                     break;
             }
                 
@@ -49,6 +49,7 @@ namespace SCP.Controllers
 
             ViewBag.AreaList = areaList;
             ViewBag.Site = _DBContext.oPort.Where(p=>p.UseFlag =="Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
+            ViewBag.Role = groupId;
             return View();
         }
 
@@ -67,16 +68,16 @@ namespace SCP.Controllers
             return PartialView("_DispatchPartial");
         }
 
-        public IActionResult InsertoNeed([FromBody] List<Dictionary<string ,string>> need )
+        public IActionResult InsertoNeed([FromBody] Dictionary<string ,string> need)
         {
-            Dictionary<string,string> needDict = need.ToDictionary(item => item["name"], item => item["value"]);
-
-            string area = needDict["Area"];
-            string objStation = needDict["BegingStation"];
-            string endStation = needDict["EndStation"];
-            string rackId = needDict["RackId"];
-            string workOrder = needDict["WorkOrder"];
-            string assignFlag = area == "C" ? "W" : "";
+            
+            string area = need["Area"];
+            string objStation = need["BegingStation"];
+            string endStation = need["EndStation"];
+            string rackId = need["RackId"];
+            string workOrder = need["WorkOrder"];
+            string btnName = need["btnName"];
+            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "RejectdButton") ? "R" :"";
 
             string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
             try
@@ -91,10 +92,10 @@ namespace SCP.Controllers
             return Ok();
         }
 
-        public IActionResult UpdateoPort([FromBody] List<Dictionary<string, string>> need)
+        public IActionResult UpdateoPort([FromBody]Dictionary<string, string> need)
         {
-            Dictionary<string, string> needDict = need.ToDictionary(item => item["name"], item => item["value"]);
-            string objStation = needDict["BegingStation"];
+           
+            string objStation = need["BegingStation"];
 
             try
             {

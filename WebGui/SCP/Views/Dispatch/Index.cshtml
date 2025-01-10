@@ -49,9 +49,20 @@
                 </div>
                 <div class="row position-relative">
                     <label class="col-2 col-form-label"></label>
-                    <div class="col-8 d-flex align-items-center justify-content-end">
-                        <a class="btn btn-primary rounded-pill me-3" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
-                        <a class="btn btn-success rounded-pill me-4" id="UnloadButton" role="button">下料完成</a>
+                    <div class="col-8 d-flex align-items-center justify-content-end">           
+                        @if(ViewBag.Role == "5")
+                        {   
+                            <a class="btn btn-success rounded-pill me-4" id="UnloadButton" role="button">@Localizer["UnloadFinish"]</a>
+                        }
+                        else if(ViewBag.Role == "6")
+                        {
+                            <a class="btn btn-primary rounded-pill me-3 ConfirmButton" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
+                            <a class="btn btn-success rounded-pill me-4 ConfirmButton" id="RejectdButton" role="button">@Localizer["Reject"]</a>
+                        }
+                        else
+                        {
+                            <a class="btn btn-primary rounded-pill me-3 ConfirmButton" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
+                        }
                     </div>
                 </div>
             </form>

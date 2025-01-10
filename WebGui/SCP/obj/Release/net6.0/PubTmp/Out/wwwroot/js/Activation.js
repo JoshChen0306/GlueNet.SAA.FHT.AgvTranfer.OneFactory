@@ -124,7 +124,6 @@ function SearchData() {
             shuttleId
         },
         success: function (data) {
-            //console.log(data);
             AgvPie(data);
         },
         error: function (xhr, ajaxOptions, thrownError) {

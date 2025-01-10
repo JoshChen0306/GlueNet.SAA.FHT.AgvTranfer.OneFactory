@@ -12,12 +12,15 @@
         android:layout_width="0dp"
         android:layout_height="50dp"
         android:gravity="center"
+        android:letterSpacing="6"
         android:text="生產區"
         android:textSize="30sp"
-        android:letterSpacing="6"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.85"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 區域選單 -->
 
     <Button
         android:id="@+id/btnBack"
@@ -28,9 +31,22 @@
         android:textColor="@color/white"
         android:textSize="15dp"
         app:layout_constraintEnd_toEndOf="parent"
-        tools:layout_editor_absoluteY="-3dp" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- 區域選單 -->
+    <Button
+        android:id="@+id/btnReject"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="59dp"
+        android:background="@drawable/button_background"
+        android:text="退貨\n(Reject)"
+        android:textColor="@color/white"
+        android:textSize="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.998"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtRackId" />
+
     <TextView
         android:id="@+id/txtViewArea"
         android:layout_width="115dp"

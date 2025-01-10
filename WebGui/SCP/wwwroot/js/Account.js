@@ -20,7 +20,7 @@
             obj[item.name] = item.value;
             return obj;
         },{});
-        console.log(JSON.stringify(updatedata));
+       
         if (Object.keys(updatedata).length > 0) {
             $.ajax({
                 type: 'POST',

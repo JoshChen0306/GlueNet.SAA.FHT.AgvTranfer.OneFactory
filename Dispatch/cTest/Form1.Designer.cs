@@ -191,6 +191,7 @@
             this.Controls.Add(this.tlp2);
             this.Controls.Add(this.tableLayoutPanel9);
             this.Name = "frmMain";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmMain_FormClosed);
             this.Load += new System.EventHandler(this.frmMain_Load);
             this.tableLayoutPanel9.ResumeLayout(false);
             this.tableLayoutPanel9.PerformLayout();

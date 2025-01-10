@@ -144,6 +144,9 @@
   <data name="Map" xml:space="preserve">
     <value>Map</value>
   </data>
+  <data name="Reject" xml:space="preserve">
+    <value>Reject</value>
+  </data>
   <data name="StationText" xml:space="preserve">
     <value>Choose Station</value>
   </data>
@@ -158,6 +161,9 @@
   </data>
   <data name="Tasks" xml:space="preserve">
     <value>Tasks</value>
+  </data>
+  <data name="UnloadFinish" xml:space="preserve">
+    <value>UnloadFinish</value>
   </data>
   <data name="WorkOrder" xml:space="preserve">
     <value>WorkOrder</value>

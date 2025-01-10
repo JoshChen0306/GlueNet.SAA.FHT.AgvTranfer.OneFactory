@@ -184,7 +184,7 @@ class DispatchActivityE : AppCompatActivity() {
         var result = false
         try {
             val areasub = scandata.substring(0, 1)
-            val area = (64 + user?.groupId!!.toInt()).toChar().toString()
+            val area = (65 + user?.groupId!!.toInt()).toChar().toString()
             if (areasub == area)
                 result = true
         }

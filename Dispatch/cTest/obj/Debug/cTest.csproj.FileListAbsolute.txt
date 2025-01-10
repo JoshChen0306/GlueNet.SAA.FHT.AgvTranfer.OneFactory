@@ -18,3 +18,14 @@ C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInp
 C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.csproj.Up2Date
 C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.exe
 C:\Matt\Git\1400004\1400004\Dispatch\cTest\obj\Debug\cTest.pdb
+C:\Ting\AGV\高技\Git\Dispatch\Release\cTest.exe.config
+C:\Ting\AGV\高技\Git\Dispatch\Release\cTest.exe
+C:\Ting\AGV\高技\Git\Dispatch\Release\cTest.pdb
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.AssemblyReference.cache
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.frmMain.resources
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.Properties.Resources.resources
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.GenerateResource.cache
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInputs.cache
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CopyComplete
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.exe
+C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.pdb

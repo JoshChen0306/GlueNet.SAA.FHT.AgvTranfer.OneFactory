@@ -43,8 +43,8 @@ C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\en\SCP.resources.dll
 C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Activation.Index.resources
 C:\Ting\AGV\高技\程式\SCP\SCP\obj\Release\net6.0\SCP.Resources.Views.Activation.Index.en.resources
 C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\appsettings.Development.json
-C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\libman.json
 C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\appsettings.json
+C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\libman.json
 C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\SCP.staticwebassets.runtime.json
 C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\SCP.exe
 C:\Ting\AGV\高技\Git\WebGui\Release\Release\net6.0\SCP.deps.json

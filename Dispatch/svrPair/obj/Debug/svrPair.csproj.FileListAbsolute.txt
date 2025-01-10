@@ -9,3 +9,10 @@ C:\Matt\Git\1400004\1400004\Dispatch\svrPair\obj\Debug\svrPair.csproj.CoreCompil
 C:\Matt\Git\1400004\1400004\Dispatch\svrPair\obj\Debug\svrPair.csproj.Up2Date
 C:\Matt\Git\1400004\1400004\Dispatch\svrPair\obj\Debug\svrPair.dll
 C:\Matt\Git\1400004\1400004\Dispatch\svrPair\obj\Debug\svrPair.pdb
+C:\Ting\AGV\高技\Git\Dispatch\Release\svrPair.dll
+C:\Ting\AGV\高技\Git\Dispatch\Release\svrPair.pdb
+C:\Ting\AGV\高技\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.AssemblyReference.cache
+C:\Ting\AGV\高技\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.CoreCompileInputs.cache
+C:\Ting\AGV\高技\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.CopyComplete
+C:\Ting\AGV\高技\Git\Dispatch\svrPair\obj\Debug\svrPair.dll
+C:\Ting\AGV\高技\Git\Dispatch\svrPair\obj\Debug\svrPair.pdb

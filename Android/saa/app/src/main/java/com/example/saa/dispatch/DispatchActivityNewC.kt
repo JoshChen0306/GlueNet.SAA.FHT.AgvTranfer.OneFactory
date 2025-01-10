@@ -40,6 +40,7 @@ class DispatchActivityNewC : AppCompatActivity() {
     private lateinit var scanStart: ImageButton
     private lateinit var scanWorkOrder : ImageButton
     private lateinit var btnSend: Button
+    private lateinit var btnReject: Button
     private lateinit var btnBack: Button
     private lateinit var btnRefresh:ImageButton
     private lateinit var spnPort: Spinner
@@ -67,13 +68,19 @@ class DispatchActivityNewC : AppCompatActivity() {
         scanStart = findViewById(R.id.scanStart)
         scanWorkOrder = findViewById(R.id.scanWorkOrder)
         btnSend = findViewById(R.id.btnSend)
+        btnReject = findViewById(R.id.btnReject)
         btnRefresh = findViewById(R.id.btnRefresh)
         btnBack = findViewById(R.id.btnBack)
         spnPort = findViewById(R.id.spnPort)
 
-        btnSend.setOnClickListener {
-            showConfirmationDialog()
-        }
+        var btnClickListener = View.OnClickListener { view -> showConfirmationDialog(view.id) }
+
+        btnSend.setOnClickListener(btnClickListener)
+        btnReject.setOnClickListener(btnClickListener)
+
+//        btnSend.setOnClickListener {
+//            showConfirmationDialog()
+//        }
 
         btnRefresh.setOnClickListener{
             viewRefresh()
@@ -117,9 +124,9 @@ class DispatchActivityNewC : AppCompatActivity() {
                 // Handle the selected item
                 handleSelectedItem(selectedItem)*/
                 viewRefresh()
-
                 val station = parent.getItemAtPosition(position) as SpinnerItem
                 scanWorkOrder.isEnabled = station.value != "C"
+                btnReject.visibility = if(station.value =="C") View.VISIBLE else View.INVISIBLE
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -180,8 +187,8 @@ class DispatchActivityNewC : AppCompatActivity() {
     private fun initialArea() {
         try {
             val keyValuePairs = listOf(
-                SpinnerItem("待料上料區", "C"),
-                SpinnerItem("待料下料區", "D")
+                SpinnerItem("待料上料區 (Material loading area)", "C"),
+                SpinnerItem("待料下料區 (Material unloading area)", "D")
             )
 
             // Create and set the adapter
@@ -207,7 +214,7 @@ class DispatchActivityNewC : AppCompatActivity() {
         // Use a single coroutine scope, ideally tied to the lifecycle of the activity or view model
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                // Fetch data from database in the IO dispatcher
+                // Fetch data from database in the IˊO dispatcher
                 val oport = withContext(Dispatchers.IO) { dbHelper.getbyInterface(scanData) }
 
                 if (editText == txtStart) {
@@ -280,7 +287,7 @@ class DispatchActivityNewC : AppCompatActivity() {
         }
     }
 
-    private fun showConfirmationDialog() {
+    private fun showConfirmationDialog(buttonId : Int) {
         try {
             val end: String
             val start: String
@@ -317,7 +324,7 @@ class DispatchActivityNewC : AppCompatActivity() {
                     CoroutineScope(Dispatchers.Main).launch {
                         val portResult = checkoNeed(start, end)
                         if (!portResult) {
-                            sendData(start, end, rackId, workOrder)
+                            sendData(start, end, rackId, workOrder,buttonId)
                         } else {
                             Toast.makeText(this@DispatchActivityNewC, "資料重覆 (Data duplicated)", Toast.LENGTH_SHORT).show()
                         }
@@ -331,9 +338,13 @@ class DispatchActivityNewC : AppCompatActivity() {
         }
     }
 
-    private fun sendData(start: String, end: String,rackId:String,wordOrder:String) {
+    private fun sendData(start: String, end: String,rackId:String,wordOrder:String,buttonId:Int) {
         CoroutineScope(Dispatchers.Main).launch {
-            val assignFlag = if (start.substring(0, 1) == "B") "W" else null
+            val assignFlag = when{
+                buttonId == R.id.btnSend && start.substring(0,1) =="B"-> "W"
+                buttonId == R.id.btnReject && start.substring(0,1) =="B" -> "R"
+                else -> null
+            }
             var success = dbHelper.send_oNeed(start, end, rackId, wordOrder, assignFlag)
             if (success) {
                 Toast.makeText(this@DispatchActivityNewC, "Date(oNeed) send success", Toast.LENGTH_SHORT).show()

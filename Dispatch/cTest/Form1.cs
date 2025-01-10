@@ -69,5 +69,10 @@ namespace cTest
         {
             btnAuto_Click(null, null);
         }
+
+        private void frmMain_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            saaService.EndPair();
+        }
     }
 }
