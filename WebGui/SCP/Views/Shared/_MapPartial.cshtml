@@ -27,7 +27,7 @@
                     newLeft = (double.Parse(style.Left.Replace("%", "")) + 0.2).ToString() + "%";
                     break;
             }
-            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" data-reserve="@style.Reserve" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
+            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" data-reserve="@style.Reserve" data-puttime = "@style.PutTime" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
                 <img src="@style.ImgSrc" alt="Icon" />
             </button>
             if (style.Reserve == "Y")

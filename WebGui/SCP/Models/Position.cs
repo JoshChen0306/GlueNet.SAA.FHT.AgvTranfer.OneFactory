@@ -14,5 +14,6 @@
         public string? InterfaceName { get; set; }
         public string? MachineName { get; set;}
         public string? UseFlag { get; set; }
+        public string? PutTime { get; set; }
     }
 }

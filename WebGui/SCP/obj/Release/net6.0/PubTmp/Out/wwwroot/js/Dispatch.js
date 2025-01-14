@@ -27,6 +27,7 @@ $(function () {
     
     //點選派送起點，展開下拉時就會觸發的事件
     $("#BeginStation").on("focus", function () {
+        var workoderMap = new Map();
         // 獲取第一個選項的選擇值
         var selectedValue = $("#Area").val();
         // 隱藏所有第二個選項中的 <option>
@@ -36,13 +37,32 @@ $(function () {
             case "C":
                 $('#BeginStation option').filter(function () {
                     var tracname = $(this).val();
-                    return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "3" && !beginSations.includes(tracname) ;
+                    if (!tracname) return false; // 排除空值
+                    var haveflag = $(`#${tracname}`).attr("data-haveflag")
+                    var lot = $(`#${tracname}`).attr("data-workorder").split("^")[2];
+                    var workorder = $(`#${tracname}`).attr("data-workorder").split("^")[3];
+                    var puttime = $(`#${tracname}`).attr("data-puttime")
+
+                    if (tracname.startsWith("B") && haveflag === "3") {
+                        if (!workoderMap.has(workorder) || puttime < workoderMap.get(workorder).puttime) {
+                            workoderMap.set(workorder, { tracname, lot, puttime })
+                        }
+                        return true;
+                    }
+                    return false;
+                   /* return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "3" && !beginSations.includes(tracname) ;*/
                 }).each(function () {
-                    var lot = $("#" + $(this).val()).attr("data-workorder").split("^")[2];
-                    var workorder = $("#" + $(this).val()).attr("data-workorder").split("^")[3];
-                    var beginStation = $("#" + $(this).val()).attr("id");
-                    $(this).text(beginStation + "-" + workorder + "-" + lot);
-                }).show();
+                    var tracname = $(this).val();
+                    var workorder = $(`#${tracname}`).attr("data-workorder").split("^")[3];
+                    if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
+                        var lot = workoderMap.get(workorder).lot;
+                        var beginStation = $(`#${tracname}`).attr("id");
+                        $(this).text(`${beginStation}-${workorder}-${lot}`);
+                        $(this).show()
+                    } else {
+                        $(this).hide()
+                    }                   
+                })
                 break;
             default:
                 // 使用 filter 方法來顯示所有與第一個選項相關的 <option>
@@ -274,12 +294,12 @@ $(function () {
 
         var $row = $("#DispatchStatus").find("tr").eq(rowData["index"])
         var status = $row.find("td:eq(4)").text();
-        if (status === "執行中") {
-            alert("任務已執行。");
-            // 關閉 Modal 視窗
-            $('#cancleModal').modal('hide');
-            return;
-        }
+        //if (status === "執行中") {
+        //    alert("任務已執行。");
+        //    // 關閉 Modal 視窗
+        //    $('#cancleModal').modal('hide');
+        //    return;
+        //}
 
         var data = {}
         data["beginStation"] = $row.find("td:eq(1)").text();

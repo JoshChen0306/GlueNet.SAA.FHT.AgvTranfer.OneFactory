@@ -6,6 +6,7 @@ using SCP.Models;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 
 namespace SCP.Controllers
 {
@@ -65,6 +66,7 @@ namespace SCP.Controllers
                     Status = item.AssignFlag == "Y" && item.OkFlag =="R" ? "執行中": item.AssignFlag == "Y" ? "已派車" : item.AssignFlag == "C" ? "取消" : "異常",
                     TextColor = item.AssignFlag == "Y" && item.OkFlag == "R" ? "text-primary" : item.AssignFlag == "Y" ? "text-success" : item.AssignFlag == "C" ? "text-secondary" : "text-danger"
                 });
+            ViewBag.Role = User.FindFirst(ClaimTypes.Role)?.Value;
             return PartialView("_DispatchPartial");
         }
 

@@ -159,6 +159,7 @@ namespace HikAGVWebAPI.App_Start
                                 set RackId = '{oMission.RackId}'
                                    ,WorkOrder = '{oMission.WorkOrder}'
                                    ,HaveFlag = '{HaveFlag}'
+                                   ,PutTime = '{oMission.EndTime}'
                               where StationNo = '{oMission.EndStation}' ";
             mSql.WriteSqlByAutoOpen(sSQL);
         }

@@ -65,6 +65,7 @@ namespace SCP.Controllers
                     RackId = item.RackId,
                     WorkOrder = item.WorkOrder,
                     InterfaceName = item.InterfaceName,
+                    PutTime = item.PutTime
                 };
                 result.Add(data);
             }  
