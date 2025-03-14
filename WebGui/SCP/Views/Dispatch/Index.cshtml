@@ -49,14 +49,15 @@
                 </div>
                 <div class="row position-relative">
                     <label class="col-2 col-form-label"></label>
-                    <div class="col-8 d-flex align-items-center justify-content-end">           
-                        @if(ViewBag.Role == "5")
-                        {   
+                    <div class="col-8 d-flex align-items-center justify-content-end">
+                        @if (ViewBag.Role == "5")
+                        {
                             <a class="btn btn-success rounded-pill me-4" id="UnloadButton" role="button">@Localizer["UnloadFinish"]</a>
                         }
-                        else if(ViewBag.Role == "6")
+                        else if (ViewBag.Role == "6" || ViewBag.Role == "1")
                         {
                             <a class="btn btn-primary rounded-pill me-3 ConfirmButton" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
+                            <a class="btn btn-secondary rounded-pill me-3 ConfirmButton" id="ChangeButton" role="button">@Localizer["Change"]</a>
                             <a class="btn btn-success rounded-pill me-4 ConfirmButton" id="RejectdButton" role="button">@Localizer["Reject"]</a>
                         }
                         else
@@ -101,11 +102,12 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-target="#dispatchModalToggle2" data-bs-toggle="modal">@Localizer["Submit"]</button>
-                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>                 
+                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
                 </div>
             </div>
         </div>
     </div>
+    @*下料完成*@
     <div class="modal fade" id="unloadModalToggle" aria-hidden="true" aria-labelledby="unloadModalToggleLabel" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -123,6 +125,61 @@
             </div>
         </div>
     </div>
+    @*退貨選擇*@
+    <div class="modal fade" id="RejectModalToggle" aria-hidden="true" aria-labelledby="RejectModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="RejectModalToggleLabel"><strong>退貨選擇</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="col-2 col-form-label">狀態選擇</label>
+                    <div class="col-10">
+                        <select class="form-select w-75 " name="Status" id="Status" required>
+                            <option value="1">空盤</option>
+                            <option value="3">料盤</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-dismiss="modal">@Localizer["Submit"]</button>
+                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* 帳密驗證 *@
+    <div class="modal fade" id="ReLoginModalToggle" aria-hidden="true" aria-labelledby="ReLoginModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ReLoginModalToggleLabel"><strong>帳號驗證</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="col-10">
+                        <div class="row mb-3">
+                            <label class="col-2 col-form-label">帳號:</label>
+                            <div class="col-10 d-flex align-items-center">
+                                <input class="form-control me-3 w-75" id="userId" name="userId" placeholder="帳號" />
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-2 col-form-label">密碼:</label>
+                            <div class="col-10 d-flex align-items-center">
+                                <input class="form-control me-3 w-75" type="password" id="password" name="password" placeholder="密碼" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary rounded-pill" id="reLoginButton" data-bs-dismiss="modal">@Localizer["Submit"]</button>
+                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="modal fade" id="dispatchModalToggle2" aria-hidden="true" aria-labelledby="dispatchModalToggleLabel2" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -134,11 +191,12 @@
                     派送成功
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>                 
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">關閉</button>
                 </div>
             </div>
         </div>
     </div>
+    @* 取消任務 *@
     <div class="modal fade" id="cancleModal" aria-hidden="true" aria-labelledby="cancleModalToggleLabel" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">

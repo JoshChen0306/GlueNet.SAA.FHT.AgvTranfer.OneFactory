@@ -23,6 +23,13 @@ $(function () {
         // 重置第二個選項的選擇
         $('#BeginStation').val('');
         $('#EndStation').val('');
+        if ($(this).val() == "C") {
+            $('#ChangeButton').show();
+            $('#RejectdButton').show();
+        } else {
+            $('#ChangeButton').hide();
+            $('#RejectdButton').hide();
+        }
     });
     
     //點選派送起點，展開下拉時就會觸發的事件
@@ -38,9 +45,10 @@ $(function () {
                 $('#BeginStation option').filter(function () {
                     var tracname = $(this).val();
                     if (!tracname) return false; // 排除空值
+                    if (tracname.charAt(0) !== "B" || $(`#${tracname}`).attr("data-haveflag") !=3) return false
                     var haveflag = $(`#${tracname}`).attr("data-haveflag")
-                    var lot = $(`#${tracname}`).attr("data-workorder").split("^")[2];
-                    var workorder = $(`#${tracname}`).attr("data-workorder").split("^")[3];
+                    var lot = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[2])||"undefined";
+                    var workorder = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[3]) ||"undefined";
                     var puttime = $(`#${tracname}`).attr("data-puttime")
 
                     if (tracname.startsWith("B") && haveflag === "3") {
@@ -50,10 +58,9 @@ $(function () {
                         return true;
                     }
                     return false;
-                   /* return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "3" && !beginSations.includes(tracname) ;*/
                 }).each(function () {
                     var tracname = $(this).val();
-                    var workorder = $(`#${tracname}`).attr("data-workorder").split("^")[3];
+                    var workorder = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[3]) || "undefined";
                     if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
                         var lot = workoderMap.get(workorder).lot;
                         var beginStation = $(`#${tracname}`).attr("id");
@@ -182,6 +189,7 @@ $(function () {
         var area = $("#Area").val();
         var beginStation = $("#BeginStation").val();
         var endStation = $("#EndStation").val();
+        var modal = "";
         btnName = event.target.id;
         
         inputs.each(function () {
@@ -216,11 +224,48 @@ $(function () {
         }
 
         // 手動顯示 modal
-        var myModal = new bootstrap.Modal($('#dispatchModalToggle'), {
+        if (btnName == "ConfirmButton") {
+            modal = $("#dispatchModalToggle")
+        }
+        else {         
+            modal = $("#ReLoginModalToggle")
+            $("#userId").val("");
+            $("#password").val("");
+        }
+        var myModal = new bootstrap.Modal(modal, {
             keyboard: false
         });
         myModal.show();
     });
+
+    $("#reLoginButton").on("click", function () {    
+        var userId = $("#userId").val();
+        var password = $("#password").val();
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/ReLogin",
+            contentType: "application/json",
+            data: JSON.stringify({ userId, password }),
+            success: function (response) {
+                var modal = ""
+                if (btnName == "RejectdButton") {
+                    modal = $("#RejectModalToggle")
+                } else {
+                    modal = $("#dispatchModalToggle")
+                }
+
+                var myModal = bootstrap.Modal.getOrCreateInstance(modal, {
+                    keyboard: false
+                });
+                myModal.show();
+            },
+            error: function (error) {
+                alert("帳號密碼錯誤或權限不足")
+                $("#ReLoginModalToggle").modal("hide");
+            }
+        });
+
+    })
 
     //下料完成按鈕事件
     $("#UnloadButton").on("click", function () {
@@ -252,6 +297,7 @@ $(function () {
     //點擊派車發送給後端派車資訊
     $(".SubmitButton").on("click", function () {
         var area = $("#Area").val();
+        var status = $("#Status").val();
         // 暫時啟用被禁用的元素
         $("#EndStation").prop("disabled", false);
         $("#WorkOrder").prop("disabled", false);
@@ -263,6 +309,7 @@ $(function () {
             jsonData[this.name] = this.value;
         });
         jsonData["btnName"] = btnName;
+        jsonData["Status"] = status;
         // 恢復被禁用的元素
         $("#EndStation").prop("disabled", true);
         $("#WorkOrder").prop("disabled", true);
@@ -278,10 +325,16 @@ $(function () {
                 // 處理成功響應
                 console.log("表單資料已成功送出", response);
                 form[0].reset();
+                var myModal = bootstrap.Modal.getOrCreateInstance($('#dispatchModalToggle2'), {
+                    keyboard: false
+                });
+                myModal.show();               
             },
             error: function (error) {
                 // 處理錯誤響應
                 console.error("表單資料送出失敗", error);
+                if (error.responseJSON.message) {alert("派送失敗:" + error.responseJSON.message) }
+                
             }
         });
     });

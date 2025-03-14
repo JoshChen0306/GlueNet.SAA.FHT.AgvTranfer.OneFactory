@@ -135,6 +135,9 @@
   <data name="BeginStation" xml:space="preserve">
     <value>派送起點</value>
   </data>
+  <data name="Change" xml:space="preserve">
+    <value>換料</value>
+  </data>
   <data name="Dispatch" xml:space="preserve">
     <value>任務派送</value>
   </data>

@@ -10,5 +10,6 @@
         public string Offline { get; set; }
         public string NonTraveling { get; set; }
         public string Activation { get; set; }
+        public string Date { get; set; }
     }
 }

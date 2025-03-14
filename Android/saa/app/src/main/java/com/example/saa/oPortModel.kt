@@ -3,20 +3,23 @@ package com.example.saa
 import android.os.Parcel
 import android.os.Parcelable
 
-data class oPortModel(var Area: String,
-                      var Block: String,
-                      var Port: String,
-                      var StationNo: String,
-                      var InterfaceName: String?,
-                      var Priority: String,
-                      var UseFlag: String,
-                      var RackID:String?,
-                      var WorkOrder : String?,
-                      var HaveFlag: String?,
-                      var BgnToEnd: String?,
-                      var MachineName: String?,
+data class oPortModel(
+    var Area: String,
+    var Block: String,
+    var Port: String,
+    var StationNo: String,
+    var InterfaceName: String?,
+    var Priority: String,
+    var UseFlag: String,
+    var RackID: String?,
+    var WorkOrder: String?,
+    var HaveFlag: String?,
+    var BgnToEnd: String?,
+    var MachineName: String?,
+    var PutTime: String? =null,
 ): Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString().toString(),
         parcel.readString().toString(),
         parcel.readString().toString(),
         parcel.readString().toString(),
@@ -44,6 +47,7 @@ data class oPortModel(var Area: String,
         parcel.writeString(HaveFlag)
         parcel.writeString(BgnToEnd)
         parcel.writeString(MachineName)
+        parcel.writeString(PutTime)
     }
 
     override fun describeContents(): Int {

@@ -8,6 +8,10 @@
     @foreach (var shuttld in ViewBag.Activation)
     {
         <tr>
+            @if (@shuttld.Date != null)
+            {
+                <td>@shuttld.Date</td>
+            }           
             <td>@shuttld.ShuttleId</td>
             <td>@shuttld.Travling</td>
             <td>@shuttld.Idle</td>
@@ -18,15 +22,18 @@
             <td>@shuttld.Activation%</td>
         </tr>
     }
-    <tr>
-        <td>合計：</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td>@ViewBag.TotalActivation%</td>
-    </tr>
+    @if (ViewBag.TotalActivation != null)
+    {
+        <tr>
+            <td>合計：</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>@ViewBag.TotalActivation%</td>
+        </tr>
+    }
 }
 

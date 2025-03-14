@@ -10,99 +10,6 @@ $(function () {
         pieChart.resize();
     });
 
-    var TaskBar = document.getElementById('bar');
-    
-
-    TaskBar.style.height = '553px';
-
-
-    barChart = echarts.init(TaskBar);
-   
-    //柱狀圖
-    var baroption = {
-        grid: {
-            top: '20%',
-            bottom: '10%',
-        },
-        title: {
-            top: '5%',
-            left: '3%',
-            text: '統計區間:4/22-4/28',
-            textStyle: {
-                color: '#747474',
-            },
-        },
-        tooltip: {
-            trigger: 'axis'
-        },
-        legend: {
-            top: '5%',
-            data: ['早班', '晚班'],
-            itemWidth: 30,
-        },
-        toolbox: {
-            right: '2%',
-            show: true,
-            feature: {
-                dataView: { show: false, readOnly: false },
-                magicType: { show: true, type: ['line', 'bar'] },
-                restore: { show: true },
-                saveAsImage: { show: true }
-            }
-        },
-        calculable: true,
-        xAxis: [
-            {
-                type: 'category',
-                // prettier-ignore
-                data: ['4/22', '4/23', '4/24', '4/25', '4/26', '4/27', '4/28']
-            }
-        ],
-        yAxis: [
-            {
-                type: 'value'
-            }
-        ],
-        series: [
-            {
-                name: '早班',
-                type: 'bar',
-
-                data: [
-                    2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 35.6,
-                ],
-                markPoint: {
-                    data: [
-                        { type: 'max', name: 'Max' },
-                        { type: 'min', name: 'Min' }
-                    ]
-                },
-                markLine: {
-                    data: [{ type: 'average', name: 'Avg' }]
-                }
-            },
-            {
-                name: '晚班',
-                type: 'bar',
-                data: [
-                    2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 75.6,
-                ],
-                markPoint: {
-                    data: [
-                        { type: 'max', name: 'Max' },
-                        { type: 'min', name: 'Min' }
-                    ]
-                },
-                markLine: {
-                    data: [{ type: 'average', name: 'Avg' }]
-                }
-            }
-        ]
-    };
-    
-
-    barChart.setOption(baroption);
-    
 });
 
 function SearchData() {
@@ -116,7 +23,7 @@ function SearchData() {
     var shuttleId = $('#ShuttleId').val();
 
     $.ajax({
-        url: '/Activation/GetActivation',
+        url: '/Activation/GetPieActivation',
         type: 'GET',
         data: {
             startDate,
@@ -133,6 +40,23 @@ function SearchData() {
     });
 
     $.ajax({
+        url: '/Activation/GetBarActivation',
+        type: 'GET',
+        data: {
+            startDate,
+            endDate,
+            shuttleId
+        },
+        success: function (data) {
+            AgvBar(data);
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
+
+    $.ajax({
         url: '/Activation/GetTaskTable',
         type: 'GET',
         data: {
@@ -141,7 +65,72 @@ function SearchData() {
             shuttleId,
         },
         success: function (data) {
+            // 檢查 DataTable 實例是否已存在，如果存在則銷毀
+            if ($.fn.DataTable.isDataTable("#task-table")) {
+                $("#task-table").DataTable().destroy();
+            }
             $("#taskTabContent").html(data)
+            // 重新初始化 DataTable
+            $("#task-table").DataTable({
+                pageLength: 8,
+                autoWidth: false,
+                language: {
+                    url: "../JSON/zh-HANT.json"
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['copy', {
+                            extend: 'csv',
+                            text: 'CSV',
+                            bom: true
+                        }, 'excel'/* , 'pdf', 'print' */]
+                    }
+                },
+                columnDefs: [
+                    { className: "text-center", targets: "_all" }
+                ],
+            });
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            console.log(xhr.status);
+            console.log(thrownError);
+        }
+    });
+
+    $.ajax({
+        url: '/Activation/GetDetailTable',
+        type: 'GET',
+        data: {
+            startDate,
+            endDate,
+            shuttleId,
+        },
+        success: function (data) {         
+            // 檢查 DataTable 實例是否已存在，如果存在則銷毀
+            if ($.fn.DataTable.isDataTable("#detail-table")) {
+                $("#detail-table").DataTable().destroy();
+            }
+            $("#detailTabContent").html(data)
+            // 重新初始化 DataTable
+            $("#detail-table").DataTable({
+                pageLength: 8,
+                autoWidth: false,
+                language: {
+                    url: "../JSON/zh-HANT.json"
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['copy', {
+                            extend: 'csv',
+                            text: 'CSV',
+                            bom: true
+                        }, 'excel'/* , 'pdf', 'print' */]
+                    }
+                },
+                columnDefs: [
+                    { className: "text-center", targets: "_all" }
+                ],
+            });
         },
         error: function (xhr, ajaxOptions, thrownError) {
             console.log(xhr.status);
@@ -239,4 +228,124 @@ function AgvPie(data) {
     };
     pieChart.clear();
     pieChart.setOption(pieoption);
+}
+
+function AgvBar(data) {
+    var TaskBar = document.getElementById('bar');
+
+    barChart = echarts.init(TaskBar);
+
+    // 獲取daterangepicker實例
+    var datePicker = $('input[name="dates"]').data('daterangepicker');
+
+    // 獲取選擇的開始和結束日期
+    var startDate = datePicker.startDate
+    var endDate = datePicker.endDate
+
+    // 生成日期列表
+    var dates = [];
+    for (var m = startDate.clone(); m.isBefore(endDate.clone()); m.add(1, 'days')) {
+        dates.push(m.format('M/D'));
+    }
+    if (!data || data.length === 0) {
+        // 沒有資料時的處理
+        barChart.clear(); // 清除餅圖
+        barChart.setOption({
+            title: {
+                text: '無資料',
+                subtext: '沒有找到符合條件的資料',
+                left: 'center',
+                top: '5%'
+            }
+        });
+        return; // 終止函數執行
+    }
+
+    var shuttleId = [...new Set(data.map(item => item.ShuttleId))];
+    // 根據預期順序進行排序
+    shuttleId.sort(function (a, b) {
+        return Number(a) - Number(b);
+    });
+    // 初始化 series 數據結構
+    var series = shuttleId.map(shuttleId => ({
+        name: shuttleId,
+        type: 'bar',
+        data: [],
+        markPoint: {
+            data: [
+                { type: 'max', name: 'Max' },
+                { type: 'min', name: 'Min' }
+            ]
+        },
+        markLine: {
+            data: [{ type: 'average', name: 'Avg' }]
+        }
+    }));
+
+    // 填充 series 中的數據
+    $.each(data, function (index, item) {
+        var date = moment(item.Date).format('M/D');
+        var index = dates.indexOf(date);
+        var shuttleIndex = shuttleId.indexOf(item.ShuttleId);
+        series[shuttleIndex].data[index] = item.Activation;
+    });
+    // 確保所有未指定的日期都填充為 0
+    $.each(series, function (index, item) {
+        for (let i = 0; i < dates.length; i++) {
+            if (item.data[i] === undefined) {
+                item.data[i] = 0;
+            }
+        }
+    });
+
+    //柱狀圖
+    var baroption = {
+        grid: {
+            top: '20%',
+            bottom: '10%',
+        },
+        title: {
+            top: '5%',
+            left: '3%',
+            text: `統計區間:${startDate.format('M/D')} -${endDate.format('M/D')}`,
+            textStyle: {
+                color: '#747474',
+            },
+        },
+        tooltip: {
+            trigger: 'axis'
+        },
+        legend: {
+            top: '5%',
+            data: shuttleId,
+            itemWidth: 30,
+        },
+        toolbox: {
+            right: '2%',
+            show: true,
+            feature: {
+                dataView: { show: false, readOnly: false },
+                magicType: { show: true, type: ['line', 'bar'] },
+                restore: { show: true },
+                saveAsImage: { show: true }
+            }
+        },
+        calculable: true,
+        xAxis: [
+            {
+                type: 'category',
+                data: dates
+            }
+        ],
+        yAxis: [
+            {
+                type: 'value'
+            }
+        ],
+        series: series    
+    };
+
+    barChart.clear()
+    barChart.setOption(baroption);
+
 }

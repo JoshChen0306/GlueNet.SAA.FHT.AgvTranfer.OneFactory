@@ -79,7 +79,16 @@ namespace SCP.Controllers
             string rackId = need["RackId"];
             string workOrder = need["WorkOrder"];
             string btnName = need["btnName"];
-            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "RejectdButton") ? "R" :"";
+            string status = need["Status"];
+            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "ChangeButton") ? "R" :"";
+
+            if(btnName == "RejectdButton")
+            {
+                workOrder = (status=="1")?"":_DBContext.oPort.Where(p => p.StationNo == need["EndStation"]).FirstOrDefault()?.WorkOrder?.ToString() ?? "";    
+                endStation = _DBContext.oPort.Where(p=>p.Block=="B" && p.UseFlag=="Y" && p.HaveFlag=="0" && (p.BgnToEnd==""||p.BgnToEnd ==null)).FirstOrDefault()?.StationNo.ToString()??"";
+                objStation = need["EndStation"];
+            }
+            if (string.IsNullOrEmpty(endStation)) return BadRequest(new{message = "暫存區無空架" });
 
             string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
             try
@@ -90,7 +99,7 @@ namespace SCP.Controllers
             {
 
             }
-
+           
             return Ok();
         }
 
@@ -136,6 +145,23 @@ namespace SCP.Controllers
 
             }
             return Ok();
+        }
+
+        public IActionResult ReLogin([FromBody] Dictionary<string,string> need)
+        {
+            var userId = need["userId"];
+            var password = need["password"];
+
+            var result = _DBContext.pUser.Where(u => u.UserId == userId && u.Password == password).FirstOrDefault()?.GroupId?.ToString()??"";
+            if( result =="1" || result == "7")
+            {
+                return Ok();
+            }
+            else
+            {
+                return BadRequest();
+            }
+           
         }
         public IActionResult GetoNeed()
         {

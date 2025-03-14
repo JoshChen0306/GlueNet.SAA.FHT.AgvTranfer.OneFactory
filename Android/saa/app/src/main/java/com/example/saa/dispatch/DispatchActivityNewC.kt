@@ -3,18 +3,22 @@ package com.example.saa.dispatch
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.KeyEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.platform.findViewTreeCompositionContext
 import com.example.saa.DatabaseHelper
 import com.example.saa.R
 import com.example.saa.SpinnerItem
@@ -25,6 +29,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import com.journeyapps.barcodescanner.ScanContract
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.future.future
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -40,8 +45,9 @@ class DispatchActivityNewC : AppCompatActivity() {
     private lateinit var scanStart: ImageButton
     private lateinit var scanWorkOrder : ImageButton
     private lateinit var btnSend: Button
-    private lateinit var btnReject: Button
+    private lateinit var btnChange: Button
     private lateinit var btnBack: Button
+    private lateinit var btnReject: Button
     private lateinit var btnRefresh:ImageButton
     private lateinit var spnPort: Spinner
     private val dbHelper = DatabaseHelper()
@@ -68,14 +74,16 @@ class DispatchActivityNewC : AppCompatActivity() {
         scanStart = findViewById(R.id.scanStart)
         scanWorkOrder = findViewById(R.id.scanWorkOrder)
         btnSend = findViewById(R.id.btnSend)
-        btnReject = findViewById(R.id.btnReject)
+        btnChange = findViewById(R.id.btnChange)
         btnRefresh = findViewById(R.id.btnRefresh)
         btnBack = findViewById(R.id.btnBack)
+        btnReject = findViewById(R.id.btnReject)
         spnPort = findViewById(R.id.spnPort)
 
         var btnClickListener = View.OnClickListener { view -> showConfirmationDialog(view.id) }
 
         btnSend.setOnClickListener(btnClickListener)
+        btnChange.setOnClickListener(btnClickListener)
         btnReject.setOnClickListener(btnClickListener)
 
 //        btnSend.setOnClickListener {
@@ -126,6 +134,7 @@ class DispatchActivityNewC : AppCompatActivity() {
                 viewRefresh()
                 val station = parent.getItemAtPosition(position) as SpinnerItem
                 scanWorkOrder.isEnabled = station.value != "C"
+                btnChange.visibility = if(station.value =="C") View.VISIBLE else View.INVISIBLE
                 btnReject.visibility = if(station.value =="C") View.VISIBLE else View.INVISIBLE
             }
 
@@ -312,29 +321,132 @@ class DispatchActivityNewC : AppCompatActivity() {
                 return
             }
 
-            val message =
-                "請確認資料正確性 (Please confirm data is correct)\n\n起點 (Start Station) : $start\n終點 (End Station) : $end\n工單 (Work Order) : $workOrder\n載盤 (Rack ID) : $rackId\n\n資料正確請按確認 (If correct,please send)"
+            if(buttonId == R.id.btnSend){
+                showDataDialog(start, end, rackId, workOrder, buttonId)
 
-            AlertDialog.Builder(this)
-                .setTitle("資料檢查 (Check data)")
-                .setMessage(message)
-                .setPositiveButton("送出 (Send)") { dialog, _ ->
-                    dialog.dismiss()
-                    // Launch a coroutine to check the port and handle the result
-                    CoroutineScope(Dispatchers.Main).launch {
-                        val portResult = checkoNeed(start, end)
-                        if (!portResult) {
-                            sendData(start, end, rackId, workOrder,buttonId)
-                        } else {
-                            Toast.makeText(this@DispatchActivityNewC, "資料重覆 (Data duplicated)", Toast.LENGTH_SHORT).show()
+            }else{
+                var dialogview = layoutInflater.inflate(R.layout.dialog_relogin,null)
+
+                var dialog=AlertDialog.Builder(this)
+                    .setTitle("帳密驗證")
+                    .setView(dialogview)
+                    .setPositiveButton("確認"){dialog,_ ->
+                        CoroutineScope(Dispatchers.Main).launch {
+                            var user = dialogview.findViewById<EditText>(R.id.user).text.toString()
+                            var password = dialogview.findViewById<EditText>(R.id.password).text.toString()
+
+                            if(validateCredentials(user,password)){
+                                when {
+                                    (buttonId ==R.id.btnReject)->showRejectDialog(buttonId,start,end,rackId)
+                                    (buttonId ==R.id.btnChange)->showDataDialog(start, end, rackId, workOrder, buttonId)
+                                }
+                            }else{
+                                Toast.makeText(this@DispatchActivityNewC, "帳號或密碼錯誤 (Wrong account or password)", Toast.LENGTH_SHORT).show()
+                            }
                         }
                     }
-                }
-                .setNegativeButton("取消 (Cancle)") { dialog, _ ->
-                    dialog.dismiss()
-                }
-                .show()
+                    .setNegativeButton("取消"){dialog,_ -> dialog.dismiss()}
+                    .show()
+
+                dialog.window?.setLayout(
+                    (resources.displayMetrics.widthPixels * 0.6).toInt(),
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+
         } catch (e: Exception) {
+        }
+    }
+
+    private fun showDataDialog(start:String,end:String,rackId:String,workOrder: String,buttonId: Int){
+        val message =
+            "請確認資料正確性 (Please confirm data is correct)\n\n起點 (Start Station) : $start\n終點 (End Station) : $end\n工單 (Work Order) : $workOrder\n載盤 (Rack ID) : $rackId\n\n資料正確請按確認 (If correct,please send)"
+
+        AlertDialog.Builder(this)
+            .setTitle("資料檢查 (Check data)")
+            .setMessage(message)
+            .setPositiveButton("送出 (Send)") { dialog, _ ->
+                dialog.dismiss()
+                // Launch a coroutine to check the port and handle the result
+                CoroutineScope(Dispatchers.Main).launch {
+                    val portResult = checkoNeed(start, end)
+                    if (!portResult) {
+                        sendData(start, end, rackId, workOrder,buttonId)
+                    } else {
+                        Toast.makeText(this@DispatchActivityNewC, "資料重覆 (Data duplicated)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("取消 (Cancle)") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun  showRejectDialog(buttonId:Int,start: String,end: String,rackId: String ){
+        // 动态创建 TextView
+        val textView = TextView(this).apply {
+            text = "選擇一個選項 (Select an option)"
+            textSize = 16f
+        }
+        val options = listOf(SpinnerItem("空盤(Empty)","1"), SpinnerItem("料盤(Material)","3"))
+        // 动态创建 Spinner
+        val spinner = Spinner(this).apply {
+            adapter = SpinnerItemAdapter(context, options).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("選擇操作 (Choose Action)")
+            .setView(LinearLayout(this).apply {
+                orientation = LinearLayout.VERTICAL
+                setPadding(50, 40, 50, 10)
+                addView(textView)
+                addView(spinner)
+                // 保存 Spinner 引用，供按钮点击事件使用
+            })
+            .setPositiveButton("確認 (Confirm)") { dialog, _ ->
+                // 获取动态创建的 Spinner 并获取选中的值
+                val selectItem = spinner.selectedItem as? SpinnerItem
+                val selectValue = selectItem?.value
+                // 执行操作
+                CoroutineScope(Dispatchers.Main).launch {
+                    val portResult = checkoNeed(start, end)
+                    val portlist = dbHelper.getAlloPort()
+                    val newEnd = portlist.filter { it.Block=="B" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag=="0" && it.UseFlag=="Y"}.firstOrNull()?.StationNo?:""
+                    val newStart = end
+                    val newWorkOrder = if (selectValue == "1") "" else portlist.filter { it.StationNo == newStart }.firstOrNull()?.WorkOrder.toString()
+
+                    if (!portResult &&!newEnd.isNullOrEmpty()) {
+                        sendData(newStart, newEnd, rackId, newWorkOrder,buttonId)
+                    }else  if (newEnd.isNullOrEmpty()){
+                        Toast.makeText(this@DispatchActivityNewC, "沒有終點目標 (Not EndStation)", Toast.LENGTH_SHORT).show()
+                    }
+                    else {
+                        Toast.makeText(this@DispatchActivityNewC, "資料重覆 (Data duplicated)", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
+                dialog.dismiss()
+            }
+            .setNegativeButton("取消 (Cancel)") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+
+    }
+
+    suspend fun validateCredentials(user:String,password:String):Boolean{
+        return withContext(Dispatchers.IO) {
+
+            var userResult = dbHelper.get_oUser(user,password)
+            var groupId = userResult?.groupId?:""
+
+            when{
+                groupId == "1" || groupId =="7" -> true
+                else ->false
+            }
         }
     }
 
@@ -342,7 +454,7 @@ class DispatchActivityNewC : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             val assignFlag = when{
                 buttonId == R.id.btnSend && start.substring(0,1) =="B"-> "W"
-                buttonId == R.id.btnReject && start.substring(0,1) =="B" -> "R"
+                buttonId == R.id.btnChange && start.substring(0,1) =="B" -> "R"
                 else -> null
             }
             var success = dbHelper.send_oNeed(start, end, rackId, wordOrder, assignFlag)
@@ -373,6 +485,8 @@ class DispatchActivityNewC : AppCompatActivity() {
         }
     }
 
+
+
     private fun loadSpinnerData(block: String) {
         try {
             CoroutineScope(Dispatchers.Main).launch {
@@ -382,7 +496,12 @@ class DispatchActivityNewC : AppCompatActivity() {
                 val filteredPorts = when (block) {
                     "C" -> oportList.filter {
                         it.Block == "B" && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "3"
-                    }
+                        }
+                        .groupBy {it.WorkOrder?.split("^")?.getOrNull(3)}
+                        .mapValues { (_,group) ->group.minByOrNull{it.PutTime?:""}}
+                        .values
+                        .filterNotNull()
+                        .sortedBy { it.StationNo.drop(1).toInt() }
                     "D" -> oportList.filter {
                         it.Block == "E" && it.UseFlag == "Y" && it.BgnToEnd.isNullOrEmpty() && it.HaveFlag == "0"
                     }
@@ -393,6 +512,8 @@ class DispatchActivityNewC : AppCompatActivity() {
                     Toast.makeText(this@DispatchActivityNewC, "Failed to retrieve valid station data from the database.", Toast.LENGTH_SHORT).show()
                 } else {
                     // Create SpinnerItem list from filteredPorts
+
+
                     val items = filteredPorts.map { SpinnerItem(it.StationNo + getKey(it.WorkOrder!!), it.StationNo) }
                     // Create and set custom adapter
                     val adapter = SpinnerItemAdapter(this@DispatchActivityNewC, items)

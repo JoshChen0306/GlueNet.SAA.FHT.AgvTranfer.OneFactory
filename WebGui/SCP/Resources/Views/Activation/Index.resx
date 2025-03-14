@@ -126,6 +126,9 @@
   <data name="Alarm" xml:space="preserve">
     <value>異常時間</value>
   </data>
+  <data name="BarChart" xml:space="preserve">
+    <value>直條圖</value>
+  </data>
   <data name="BeginStation" xml:space="preserve">
     <value>起點</value>
   </data>
@@ -137,6 +140,12 @@
   </data>
   <data name="Data" xml:space="preserve">
     <value>統計報表</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="Detail" xml:space="preserve">
+    <value>明細</value>
   </data>
   <data name="Idle" xml:space="preserve">
     <value>閒置時間</value>

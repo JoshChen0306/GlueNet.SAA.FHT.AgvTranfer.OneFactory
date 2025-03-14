@@ -14,7 +14,7 @@ class DatabaseHelper {
     companion object {
         private const val JDBC_DRIVER = "net.sourceforge.jtds.jdbc.Driver"
         private const val DB_URL = "jdbc:jtds:sqlserver://192.168.4.10/agvDB_1400004"
-        //private const val DB_URL = "jdbc:jtds:sqlserver://192.168.135.173/agvDB_1400004"
+        //private const val DB_URL = "jdbc:jtds:sqlserver://192.168.1.106/agvDB_1400004"
         private const val USER = "mcs"
         private const val PASS = "Zz123456"
     }
@@ -96,7 +96,7 @@ class DatabaseHelper {
             var resultSet: ResultSet? = null
             try {
                 connection = DriverManager.getConnection(DB_URL, USER, PASS)
-                val sql = "SELECT * FROM oNeed WHERE ObjStation = ? AND EndStation = ?"
+                val sql = "SELECT * FROM oNeed WHERE ObjStation = ? OR EndStation = ?"
                 preparedStatement = connection.prepareStatement(sql)
                 preparedStatement.setString(1, start)
                 preparedStatement.setString(2, end)
@@ -334,7 +334,8 @@ class DatabaseHelper {
                     val HaveFlag = resultSet.getString("HaveFlag")
                     val BgnToEnd = resultSet.getString("BgnToEnd")
                     val MachineName = resultSet.getString("MachineName")
-                    portList.add(oPortModel(Area, Block, Port, StationNo, InterfaceName, Priority, UseFlag, RackId, WorkOrder, HaveFlag, BgnToEnd, MachineName))
+                    var PutTime = resultSet.getString("PutTime")
+                    portList.add(oPortModel(Area, Block, Port, StationNo, InterfaceName, Priority, UseFlag, RackId, WorkOrder, HaveFlag, BgnToEnd, MachineName,PutTime))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()

@@ -135,6 +135,9 @@
   <data name="BeginStation" xml:space="preserve">
     <value>From</value>
   </data>
+  <data name="Change" xml:space="preserve">
+    <value>Change</value>
+  </data>
   <data name="Dispatch" xml:space="preserve">
     <value>Dispatch</value>
   </data>

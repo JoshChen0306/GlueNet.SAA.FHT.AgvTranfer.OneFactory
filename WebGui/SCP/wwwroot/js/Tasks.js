@@ -197,7 +197,7 @@ function TaskBar(data, datePicker) {
         },
         legend: {
             top: '5%',
-            data: ['早班', '晚班'],
+            data: shiftNames,
             itemWidth: 30,
         },
         toolbox: {

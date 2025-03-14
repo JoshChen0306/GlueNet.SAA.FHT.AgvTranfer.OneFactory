@@ -126,6 +126,9 @@
   <data name="Alarm" xml:space="preserve">
     <value>Alarm</value>
   </data>
+  <data name="BarChart" xml:space="preserve">
+    <value>BarChart</value>
+  </data>
   <data name="BeginStation" xml:space="preserve">
     <value>BeginStation</value>
   </data>
@@ -137,6 +140,12 @@
   </data>
   <data name="Data" xml:space="preserve">
     <value>Data</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Detail" xml:space="preserve">
+    <value>Detail</value>
   </data>
   <data name="Idle" xml:space="preserve">
     <value>Idle</value>

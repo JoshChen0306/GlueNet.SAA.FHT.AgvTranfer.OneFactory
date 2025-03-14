@@ -131,7 +131,6 @@ function AgvPie(data) {
     var now = moment();
     // 獲取當天的開始時間（午夜12點）
     var startOfDay = moment().hour(8).minute(30).second(0);
-    console.log(startOfDay);
     if (now.isBefore(startOfDay)) {
         startOfDay.subtract(1,'days')
     }
