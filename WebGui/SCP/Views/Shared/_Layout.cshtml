@@ -48,6 +48,45 @@
         </div>
     </div>
 
+    <div class="modal fade" id="hitchhikeModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="hitchhikeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header justify-content-center">
+                    <h5 class="modal-title text-center" id="hitchhikeModalLabel">
+                        順風車任務確認視窗
+                        <br />
+                        Hitchhike mission confirm window
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center" id="hitchhike-model-content">
+                        是否執行順風車任務?<br />Do you want to perform the hitchhike mission?
+                        </p>
+                    <p class="text-center" id="hitchhike-model-content-station"></p>
+                    <div class="text-center mt-3">
+                        <h4 class="text-danger">
+                            倒數計時：<span id="countdown">30</span> 秒
+                        </h4>
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning"
+                                 role="progressbar"
+                                 id="countdown-progress"
+                                 style="width: 100%"
+                                 aria-valuenow="100"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <a class="btn btn-secondary btn-lg">確認</a>
+                    <a class="btn btn-secondary btn-lg" data-bs-dismiss="modal">取消</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <section id="container">
         <!-- **********************************************************************************************************************************************************
         TOP BAR CONTENT & NOTIFICATIONS

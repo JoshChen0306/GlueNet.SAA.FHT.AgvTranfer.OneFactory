@@ -23,6 +23,7 @@ namespace SCP.Services
             RegisterDependency("select Battery,Status,LastStation,BeginStation,EndStation from dbo.oShuttle", OnAgvStatusChange);
             RegisterDependency("select TaskDateTime from dbo.ubMission", OnTotalTaskChange);
             RegisterDependency("select AssignFlag,OkFlag from dbo.oRequire", OnDispatchChange);
+            RegisterDependency("select OkFlag from dbo.oMission", OnMissionChange);
             return Task.CompletedTask;
         }
 
@@ -77,6 +78,11 @@ namespace SCP.Services
         {
             RegisterDependency("select AssignFlag,OkFlag from dbo.oRequire", OnDispatchChange);
             await _hub.Clients.All.SendAsync("SendDispatchChange");
+        }
+        private async void OnMissionChange(object sender, SqlNotificationEventArgs e)
+        {
+            RegisterDependency("select OkFlag from dbo.oMission", OnMissionChange);
+            await _hub.Clients.All.SendAsync("SendMissionChange");
         }
     }
 }

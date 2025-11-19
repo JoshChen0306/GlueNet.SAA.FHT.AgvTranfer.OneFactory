@@ -379,6 +379,24 @@ $(function () {
     connection.on("SendDispatchChange", function () {
         UpdateDispatch();
     });
+
+    // 啟動相機按鈕
+    $("#barcode-scan-btn").on("click", function () {
+        console.log("啟動相機按鈕")
+        startBarcodeScanner()
+    })
+
+    // 停止掃描按鈕
+    $("#barcode-scan-stop-btn").on("click", function () {
+        console.log("停止掃描按鈕")
+        stopScanner()
+    })
+
+    // 使用條碼按鈕
+    $("#barcode-scan-use-code-btn").on("click", function () {
+        console.log("使用條碼按鈕")
+        useScannedCode()
+    })
 });
 
 //即時更新右側任務列表
@@ -394,4 +412,164 @@ function UpdateDispatch() {
             console.error("AJAX 請求失敗: ", textStatus, errorThrown);
         }
     });
+}
+
+// 條碼掃描相關的 JavaScript 代碼
+
+// 使用 html5-qrcode 的條碼掃描函數
+async function startBarcodeScanner() {
+    console.log('開始啟動 html5-qrcode 掃描器');
+
+    try {
+        // 檢查函式庫是否載入
+        if (typeof Html5QrcodeScanner === 'undefined') {
+            alert('條碼掃描函式庫未載入，請重新整理頁面');
+            return;
+        }
+
+        showScannerModal();
+
+        // 等待模態視窗完全顯示後再初始化掃描器
+        setTimeout(() => {
+            initHtml5QrcodeScanner();
+        }, 500);
+
+    } catch (error) {
+        console.error('條碼掃描器啟動失敗:', error);
+        alert('啟動失敗: ' + error.message);
+    }
+}
+
+function showScannerModal() {
+    console.log('顯示掃描器模態視窗');
+    const modalElement = document.getElementById('barcodeModal');
+    if (!modalElement) {
+        alert('找不到條碼掃描模態視窗');
+        return;
+    }
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+function initHtml5QrcodeScanner() {
+    const scannerDiv = document.getElementById('qr-reader');
+    if (!scannerDiv) {
+        alert('找不到掃描器容器');
+        return;
+    }
+
+    // html5-qrcode 配置
+    const config = {
+        fps: 10,    // 每秒掃描次數
+        qrbox: {    // 掃描框大小
+            width: 250,
+            height: 250
+        },
+        showTorchButtonIfSupported: true,
+        // 相機配置
+        aspectRatio: 1.0,
+        disableFlip: false
+    };
+
+    // 建立掃描器實例
+    const html5QrcodeScanner = new Html5QrcodeScanner(
+        "qr-reader",
+        config,
+        false // verbose
+    );
+
+    // 掃描成功回調
+    function onScanSuccess(decodedText, decodedResult) {
+        console.log('掃描成功:', decodedText);
+        console.log('掃描結果詳情:', decodedResult);
+
+        // 停止掃描器
+        html5QrcodeScanner.clear().then(() => {
+            console.log('掃描器已清理');
+        }).catch(error => {
+            console.error('清理掃描器時發生錯誤:', error);
+        });
+
+        // 填入工單欄位
+        const workOrderInput = document.getElementById('WorkOrder');
+        if (workOrderInput) {
+            workOrderInput.value = decodedText;
+            $(workOrderInput).trigger('blur');
+        }
+
+        // 顯示成功訊息
+        showScanResult(decodedText, decodedResult.result.format?.formatName || '未知格式');
+
+        // 延遲關閉模態視窗
+        setTimeout(() => {
+            stopScanner();
+        }, 2000);
+    }
+
+    // 掃描錯誤回調（可選）
+    function onScanFailure(error) {
+        // 這是正常的，不需要處理每個掃描失敗
+        // console.log('掃描失敗:', error);
+    }
+
+    // 開始渲染掃描器
+    html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+
+    // 存儲掃描器實例以便後續操作
+    window.currentScanner = html5QrcodeScanner;
+
+    console.log('html5-qrcode 掃描器已啟動');
+}
+
+function showScanResult(code, format) {
+    const modalBody = document.querySelector('#barcodeModal .modal-body');
+    if (modalBody) {
+        // 移除之前的結果
+        const existingResult = modalBody.querySelector('.scan-result');
+        if (existingResult) {
+            existingResult.remove();
+        }
+
+        const resultDiv = document.createElement('div');
+        resultDiv.className = 'alert alert-success mt-3 scan-result';
+        resultDiv.innerHTML = `
+                <h5><i class="fa-solid fa-check-circle"></i> 掃描成功！</h5>
+                <p><strong>內容：</strong>${code}</p>
+                <p><strong>格式：</strong>${format}</p>
+            `;
+        modalBody.appendChild(resultDiv);
+    }
+}
+
+// 停止掃描器並清理資源
+function stopScanner() {
+    console.log('停止條碼掃描器');
+
+    // 清理 html5-qrcode 掃描器
+    if (window.currentScanner) {
+        window.currentScanner.clear().then(() => {
+            console.log('掃描器已成功清理');
+            window.currentScanner = null;
+        }).catch(error => {
+            console.error('清理掃描器時發生錯誤:', error);
+            window.currentScanner = null;
+        });
+    }
+
+    // 隱藏模態視窗
+    const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeModal'));
+    if (modal) {
+        modal.hide();
+    }
+
+    // 清理模態視窗內容
+    setTimeout(() => {
+        const modalBody = document.querySelector('#barcodeModal .modal-body');
+        if (modalBody) {
+            const scanResult = modalBody.querySelector('.scan-result');
+            if (scanResult) {
+                scanResult.remove();
+            }
+        }
+    }, 500);
 }

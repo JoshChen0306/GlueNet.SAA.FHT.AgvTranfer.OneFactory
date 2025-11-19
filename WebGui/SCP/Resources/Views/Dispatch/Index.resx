@@ -138,6 +138,9 @@
   <data name="Change" xml:space="preserve">
     <value>換料</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>關閉</value>
+  </data>
   <data name="Dispatch" xml:space="preserve">
     <value>任務派送</value>
   </data>
@@ -149,6 +152,12 @@
   </data>
   <data name="Reject" xml:space="preserve">
     <value>退貨</value>
+  </data>
+  <data name="ScanBarcode" xml:space="preserve">
+    <value>掃描條碼</value>
+  </data>
+  <data name="ScanSuccess" xml:space="preserve">
+    <value>掃描成功</value>
   </data>
   <data name="StationText" xml:space="preserve">
     <value>選擇站點</value>
@@ -167,6 +176,9 @@
   </data>
   <data name="UnloadFinish" xml:space="preserve">
     <value>下料完成</value>
+  </data>
+  <data name="UseCode" xml:space="preserve">
+    <value>使用條碼</value>
   </data>
   <data name="WorkOrder" xml:space="preserve">
     <value>掃描工單</value>

@@ -23,11 +23,11 @@ namespace SCP.Controllers
         }
 
         [HttpGet("ShowMap")]
-        public IActionResult ShowMap()
+        public IActionResult ShowMap(string area = "FHT2-1F")
         {
 
-            ViewBag.positions = GetTrac();
-            ViewBag.AgvPositions = GetAgv();
+            ViewBag.positions = GetTrac(area);
+            ViewBag.AgvPositions = GetAgv(area);
 
             return PartialView("_MapPartial");
         }
@@ -44,7 +44,53 @@ namespace SCP.Controllers
             var data = Json(GetAgv());
             return data;
         }
-  
+
+        [HttpGet("GetHitchhikeStation")]
+        public Dictionary<string, string>? GetHitchhikeStation()
+        {
+            var mission = _DBContext.oMission.FirstOrDefault(x => x.EndStation.StartsWith("G") && x.OkFlag == "Y");
+            Dictionary<string, string>? station = new Dictionary<string, string>();
+            if (mission != null)
+            {
+                var beginStation = _DBContext.oPort.FirstOrDefault(x => x.Block == "G" && x.HaveFlag == "1");
+                var endStation = _DBContext.oPort.FirstOrDefault(x => x.Block == "J" && x.HaveFlag == "0");
+                if (beginStation != null && endStation != null)
+                {
+                    station.Add("beginStation", beginStation.StationNo);
+                    station.Add("endStation", endStation.StationNo);
+                }
+                else station = null;
+            }
+            return station;
+        }
+
+        private List<Position> GetTrac(string area)
+        {
+            #region [讀取暫存架位置及狀態]      
+            List<oPort> query = _DBContext.oPort.Where(p => p.UseFlag == "Y" && p.Area == area).ToList();
+            List<Position> result = new List<Position>();
+
+            foreach (var item in query)
+            {
+                Position data = new Position
+                {
+                    Name = item.StationNo,
+                    Left = ConvertX(item.Remark.Split(",")[0]),
+                    Bottom = ConvertY(item.Remark.Split(",")[1]),
+                    Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
+                    ImgSrc = _configuration.GetSection("TracStatus").GetSection(item.HaveFlag).Value,
+                    Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
+                    HaveFlag = item.HaveFlag,
+                    RackId = item.RackId,
+                    WorkOrder = item.WorkOrder,
+                    InterfaceName = item.InterfaceName,
+                    PutTime = item.PutTime
+                };
+                result.Add(data);
+            }
+            #endregion
+            return result;
+        }
         private List<Position> GetTrac()
         {
             #region [讀取暫存架位置及狀態]      
@@ -68,11 +114,23 @@ namespace SCP.Controllers
                     PutTime = item.PutTime
                 };
                 result.Add(data);
-            }  
+            }
             #endregion
             return result;
         }
 
+        private List<oShuttle> GetAgv(string area)
+        {
+            #region [讀取車輛狀態及位置]
+            List<oShuttle> AgvPositions = _DBContext.oShuttle.Where(x => x.MapCode == area).ToList();
+            foreach (var item in AgvPositions)
+            {
+                item.PosX = ConvertX(item.PosX);
+                item.PosY = ConvertY(item.PosY);
+            }
+            #endregion
+            return AgvPositions;
+        }
         private List<oShuttle> GetAgv()
         {
             #region [讀取車輛狀態及位置]

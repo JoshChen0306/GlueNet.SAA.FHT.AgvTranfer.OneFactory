@@ -514,7 +514,7 @@ namespace svrPair
                 switch (dr["OkFlag"].ToString())
                 {
                     case "Y":                        
-                    case "X":                        
+                    case "X":
                     case "C":
                         DeleteoNeedByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), "Y");
                         WriteLog(string.Format("30.回收oNeed    >>  ObjStation : {0} ,EndStation : {1} , AssignFlag : {2}", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString()));

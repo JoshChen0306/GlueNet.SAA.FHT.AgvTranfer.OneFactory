@@ -138,6 +138,9 @@
   <data name="Change" xml:space="preserve">
     <value>Change</value>
   </data>
+  <data name="Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
   <data name="Dispatch" xml:space="preserve">
     <value>Dispatch</value>
   </data>
@@ -149,6 +152,12 @@
   </data>
   <data name="Reject" xml:space="preserve">
     <value>Reject</value>
+  </data>
+  <data name="ScanBarcode" xml:space="preserve">
+    <value>Scan Barcode</value>
+  </data>
+  <data name="ScanSuccess" xml:space="preserve">
+    <value>Scan Success</value>
   </data>
   <data name="StationText" xml:space="preserve">
     <value>Choose Station</value>
@@ -166,9 +175,12 @@
     <value>Tasks</value>
   </data>
   <data name="UnloadFinish" xml:space="preserve">
-    <value>UnloadFinish</value>
+    <value>Unload Finish</value>
+  </data>
+  <data name="UseCode" xml:space="preserve">
+    <value>Use Code</value>
   </data>
   <data name="WorkOrder" xml:space="preserve">
-    <value>WorkOrder</value>
+    <value>Work Order</value>
   </data>
 </root>

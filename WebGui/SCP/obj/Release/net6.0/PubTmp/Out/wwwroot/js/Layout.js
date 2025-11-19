@@ -1,6 +1,5 @@
 ﻿$(function () {
     ShowTime();
-
 });
 
 function ShowTime() {

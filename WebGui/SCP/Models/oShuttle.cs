@@ -32,4 +32,6 @@ public partial class oShuttle
     public string? PosY { get; set; }
 
     public string? RobotDir { get; set; }
+
+    public string? MapCode { get; set; }
 }

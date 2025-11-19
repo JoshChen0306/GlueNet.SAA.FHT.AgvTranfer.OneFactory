@@ -29,3 +29,14 @@ C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInputs.c
 C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CopyComplete
 C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.exe
 C:\Ting\AGV\高技\Git\Dispatch\cTest\obj\Debug\cTest.pdb
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\Release\cTest.exe.config
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\Release\cTest.exe
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\Release\cTest.pdb
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.AssemblyReference.cache
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.frmMain.resources
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.Properties.Resources.resources
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.GenerateResource.cache
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.Up2Date
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.exe
+C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.pdb

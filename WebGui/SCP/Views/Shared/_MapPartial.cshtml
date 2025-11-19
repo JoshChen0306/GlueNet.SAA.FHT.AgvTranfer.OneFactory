@@ -1,9 +1,25 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
-<div class="bg-white d-flex">
+<div class="bg-white d-flex flex-column">
+    <div>
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-area="FHT2-1F">1F</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-area="FHT2-2F">2F</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-area="FHT2-3F">3F</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" data-area="FHT2-4F">4F</a>
+            </li>
+        </ul>
+    </div>
     <div class="mx-auto d-block position-relative">
-        <img src="/img/Map.png" height="500" class="d-block mw-100" />
+        <img id="map-img" src="/img/FHT2-1F.png" height="500" class="d-block mw-100" />
         @foreach (var agv in ViewBag.AgvPositions)
         {
             <div class="position-absolute agv-transition" id="@agv.GustomerName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@Configuration.GetSection("AgvColor")[@agv.GustomerName]"></i></div>
