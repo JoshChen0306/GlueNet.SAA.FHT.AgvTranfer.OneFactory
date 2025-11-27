@@ -40,3 +40,15 @@ C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.C
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.csproj.Up2Date
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.exe
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\cTest\obj\Debug\cTest.pdb
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\Release\cTest.exe.config
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\Release\cTest.exe
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\Release\cTest.pdb
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.csproj.AssemblyReference.cache
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.exe.config
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.frmMain.resources
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.Properties.Resources.resources
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.csproj.GenerateResource.cache
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.csproj.CoreCompileInputs.cache
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.csproj.Up2Date
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.exe
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\cTest\obj\Debug\cTest.pdb

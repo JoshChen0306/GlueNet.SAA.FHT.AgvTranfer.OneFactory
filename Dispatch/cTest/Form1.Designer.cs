@@ -100,6 +100,7 @@
             this.lblOffLine.TabIndex = 0;
             this.lblOffLine.Text = "停 止\r\n服 務";
             this.lblOffLine.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblOffLine.Click += new System.EventHandler(this.lblOffLine_Click);
             // 
             // lblOnLine
             // 
@@ -115,6 +116,7 @@
             this.lblOnLine.TabIndex = 1;
             this.lblOnLine.Text = "啟 動\r\n服 務";
             this.lblOnLine.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblOnLine.Click += new System.EventHandler(this.lblOnLine_Click);
             // 
             // btnBlockDVisibleT
             // 

@@ -228,3 +228,4 @@ D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCod
 D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\WebGui\SCP\obj\Debug\net6.0\SCP.csproj.Up2Date
 D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\WebGui\SCP\obj\Debug\net6.0\SCP.genruntimeconfig.cache
 D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\WebGui\SCP\obj\Debug\net6.0\ref\SCP.dll
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\WebGui\SCP\obj\Debug\net6.0\swae.build.ex.cache

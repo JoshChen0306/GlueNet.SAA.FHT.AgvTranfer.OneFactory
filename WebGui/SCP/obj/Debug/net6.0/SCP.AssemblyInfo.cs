@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SCP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+587c83f6297ea8f1c3b873775a955cd602fb51f3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4bf7fd2a7a273c81e6755e97343256377f85d250")]
 [assembly: System.Reflection.AssemblyProductAttribute("SCP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SCP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

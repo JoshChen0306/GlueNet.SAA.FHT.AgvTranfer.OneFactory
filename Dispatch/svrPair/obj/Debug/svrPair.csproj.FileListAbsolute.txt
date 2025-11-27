@@ -23,3 +23,10 @@ C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\svrPair\obj\Debug\svrPair.cspr
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.Up2Date
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\svrPair\obj\Debug\svrPair.dll
 C:\Users\user\Desktop\SourceCode\FHt\Git\Dispatch\svrPair\obj\Debug\svrPair.pdb
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\Release\svrPair.dll
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\Release\svrPair.pdb
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.AssemblyReference.cache
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.CoreCompileInputs.cache
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\svrPair\obj\Debug\svrPair.csproj.Up2Date
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\svrPair\obj\Debug\svrPair.dll
+D:\00.Program\汛德機械\高技自動搬運系統\客戶提供資料\SourceCode\Git\Dispatch\svrPair\obj\Debug\svrPair.pdb

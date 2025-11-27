@@ -1,4 +1,9 @@
 ﻿import { connection } from './common/hub.js';
+
+// 全域變數：站點資料快取
+var stationCache = {};
+var isCacheLoaded = false;
+
 $(function () {
     var form = $('#DispatchForm');
     var beginSations = [];
@@ -14,7 +19,7 @@ $(function () {
             type: "GET",
             url: "/Dispatch/GetoNeed",
             success: function (data) {
-                beginSations = data.map(item => item.ObjStation);
+                beginSations = data.map(item => item.objStation);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 console.error("AJAX 請求失敗: ", textStatus, errorThrown);
@@ -31,56 +36,76 @@ $(function () {
             $('#RejectdButton').hide();
         }
     });
-    
+
     //點選派送起點，展開下拉時就會觸發的事件
     $("#BeginStation").on("focus", function () {
-        var workoderMap = new Map();
-        // 獲取第一個選項的選擇值
         var selectedValue = $("#Area").val();
-        // 隱藏所有第二個選項中的 <option>
+        
+        if (!selectedValue) {
+            alert('請先選擇派送區域');
+            return;
+        }
+        
+        // 如果已有快取，直接使用
+        if (isCacheLoaded && Object.keys(stationCache).length > 0) {
+            $('#BeginStation option').hide();
+            filterBeginStationOptions(selectedValue);
+            return;
+        }
+        
+        console.log('=== 開始載入站點資料 ===');
+        
+        // 顯示 Loading 遮罩
+        $('#beginStationLoading').show();
+        $('#BeginStation').prop('disabled', true);
         $('#BeginStation option').hide();
-
-        switch (selectedValue.substring(0, 1)) {
-            case "C":
-                $('#BeginStation option').filter(function () {
-                    var tracname = $(this).val();
-                    if (!tracname) return false; // 排除空值
-                    if (tracname.charAt(0) !== "B" || $(`#${tracname}`).attr("data-haveflag") !=3) return false
-                    var haveflag = $(`#${tracname}`).attr("data-haveflag")
-                    var lot = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[2])||"undefined";
-                    var workorder = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[3]) ||"undefined";
-                    var puttime = $(`#${tracname}`).attr("data-puttime")
-
-                    if (tracname.startsWith("B") && haveflag === "3") {
-                        if (!workoderMap.has(workorder) || puttime < workoderMap.get(workorder).puttime) {
-                            workoderMap.set(workorder, { tracname, lot, puttime })
-                        }
-                        return true;
-                    }
-                    return false;
-                }).each(function () {
-                    var tracname = $(this).val();
-                    var workorder = ($(`#${tracname}`).attr("data-workorder") && $(`#${tracname}`).attr("data-workorder").split("^")[3]) || "undefined";
-                    if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
-                        var lot = workoderMap.get(workorder).lot;
-                        var beginStation = $(`#${tracname}`).attr("id");
-                        $(this).text(`${beginStation}-${workorder}-${lot}`);
-                        $(this).show()
-                    } else {
-                        $(this).hide()
-                    }                   
-                })
-                break;
-            default:
-                // 使用 filter 方法來顯示所有與第一個選項相關的 <option>
-                $('#BeginStation option').filter(function () {
-
-                    // 檢查 <option> 的 value 是否以第一個選項的選擇值開頭 
-                    var tracname = $(this).val();
-                    return $(this).val().startsWith(selectedValue) && $(`#${tracname}`).attr("data-haveflag") !== "0";
-                }).show();
-                break;
-        }       
+        
+        $.ajax({
+            type: "GET",
+            url: "/Dispatch/GetAllStations",
+            dataType: "json",
+            success: function (stations) {
+                console.log('✅ API 成功回傳 ' + stations.length + ' 筆資料');
+                
+                // 隱藏 Loading
+                $('#beginStationLoading').hide();
+                $('#BeginStation').prop('disabled', false);
+                
+                if (stations.length === 0) {
+                    alert('沒有可用的站點資料');
+                    $('#BeginStation option').show();
+                    return;
+                }
+                
+                // 更新快取
+                stationCache = {};
+                stations.forEach(function(s) {
+                    var stationNo = s.stationNo || s.StationNo;
+                    stationCache[stationNo] = {
+                        haveFlag: s.haveFlag || s.HaveFlag,
+                        reserve: s.reserve || s.Reserve || "N",
+                        workOrder: s.workOrder || s.WorkOrder,
+                        rackId: s.rackId || s.RackId,
+                        putTime: s.putTime || s.PutTime,
+                        block: s.block || s.Block,
+                        machineName: s.machineName || s.MachineName
+                    };
+                });
+                
+                isCacheLoaded = true;
+                console.log('快取已更新:', Object.keys(stationCache).length, '個站點');
+                
+                filterBeginStationOptions(selectedValue);
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                $('#beginStationLoading').hide();
+                $('#BeginStation').prop('disabled', false);
+                $('#BeginStation option').show();
+                
+                console.error('❌ AJAX 失敗:', textStatus);
+                alert('無法取得站點資料');
+            }
+        });
     });
 
     //選擇完派送起點的值後觸發的事件
@@ -88,81 +113,73 @@ $(function () {
         var area = $("#Area").val();
         var selectedValue = $(this).val();
         $('#WorkOrder').val('');
+        
+        // 從快取取得選中站點的資料
+        var selectedStation = stationCache[selectedValue];
+        
         switch (area) {
             case "A":
-                $('#EndStation option').each(function () {
-                    var tracname = $(this).val();
-                    if ($(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "0" && $(`#${tracname}`).attr("data-reserve") === "N") {
-                        $('#EndStation').val($(this).val());
-                        return false;
-                    }
-                });
+                autoSelectEndStation("B", "0", "N");
                 break;
             case "C":
-                // 重置第二個選項的選擇
                 $('#EndStation').val('');
-                $('#WorkOrder').val($("#" + selectedValue).attr('data-workorder'));
+                if (selectedStation && selectedStation.workOrder) {
+                    $('#WorkOrder').val(selectedStation.workOrder);
+                }
                 break;
             case "D":
-                $('#EndStation option').each(function () {
-                    var tracname = $(this).val();   
-                    if ($(this).val().startsWith("E") && $(`#${tracname}`).attr("data-haveflag") === "0" && $(`#${tracname}`).attr("data-reserve") === "N") {
-                        $('#EndStation').val($(this).val());
-                        return false;
-                    }
-                });
+                autoSelectEndStation("E", "0", "N");
+                break;
+            case "J":
+                autoSelectEndStation("EE", "0", "N");
+                break;
+            case "EE":
+                autoSelectEndStation("J", "0", "N");
                 break;
             case "E":
                 break;
         }
 
-        if (area === "C") {
+        if (area == "C") {
             $("#EndStation").prop("disabled", false);
             $("#WorkOrder").prop("disabled", true);
-        }
-        else {
+        } else {
             $("#EndStation").prop("disabled", true);
             $("#WorkOrder").prop("disabled", false);
         }
 
-        $('#RackId').val($("#" + selectedValue).attr('data-rackid'));
-        
-    })
+        // 從快取讀取 RackId
+        if (selectedStation && selectedStation.rackId) {
+            $('#RackId').val(selectedStation.rackId);
+        }
+    });
 
     //點選派送終點展開下拉選單時觸發的事件
     $("#EndStation").on("focus", function () {
-
-        // 獲取第一個選項的選擇值
         var selectedValue = $('#BeginStation').val();
-
-        // 隱藏所有第二個選項中的 <option>
         $('#EndStation option').hide();
 
-        switch (selectedValue.substring(0, 1)) {
+        if (!selectedValue) {
+            $('#EndStation option').show();
+            return;
+        }
+
+        var firstChar = selectedValue.substring(0, 1);
+
+        switch (firstChar) {
             case "A":
-                 $('#EndStation option').filter(function () {
-                    var tracname = $(this).val()
-                    return $(this).val().startsWith("B") && $(`#${tracname}`).attr("data-haveflag") === "0";
-                }).show();
+                filterEndStationOptions("B", "0");
                 break;
             case "B":
-                $('#EndStation option').filter(function () {
-                    var tracname = $(this).val()
-                    return $(this).val().startsWith("C");
-                }).show();
+                filterEndStationOptions("C", null);
                 break;
             case "D":
-                $('#EndStation option').filter(function () {
-
-                    var tracname = $(this).val()
-                    return $(this).val().startsWith("E") && $(`#${tracname}`).attr("data-haveflag") === "0";
-                }).show();
+                filterEndStationOptions("E", "0");
                 break;
             default:
                 $('#EndStation option').show();
                 break;
         }
-
     });
 
     //點選工單欄位後會全選
@@ -176,7 +193,7 @@ $(function () {
         var area = $("#Area").val();
         var InterfaceName = $(`[data-name='${inputValue}']`);
 
-        if (InterfaceName.length > 0 && area ==="D") {
+        if (InterfaceName.length > 0 && area === "D") {
             var workOrderData = InterfaceName.attr('data-workorder');
             $(this).val(workOrderData);
         }
@@ -191,17 +208,17 @@ $(function () {
         var endStation = $("#EndStation").val();
         var modal = "";
         btnName = event.target.id;
-        
+
         inputs.each(function () {
             if (!this.checkValidity()) {
                 alert('請選擇派送站點');
                 allValid = false;
-                return false; // 停止遍歷
+                return false;
             }
         });
 
         if (allValid) {
-            if (beginStation.substring(0, 1) === 'A') {
+            if (beginStation && beginStation.substring(0, 1) === 'A') {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder) {
                     alert('請輸入工單');
@@ -209,12 +226,16 @@ $(function () {
                     return false;
                 }
             }
-            if ($("#" + beginStation).attr("data-haveflag") === "0") {
-                alert('派送起點為空貨架，請重新選擇站點')
+            
+            // 從快取驗證站點狀態
+            var beginStationData = stationCache[beginStation];
+            var endStationData = stationCache[endStation];
+            
+            if (beginStationData && beginStationData.haveFlag === "0") {
+                alert('派送起點為空貨架，請重新選擇站點');
                 allValid = false;
-            }
-            else if ($("#" + endStation).attr("data-haveflag") !== "0" && area !=="C") {
-                alert('派送終點已有貨架，請重新選擇站點')
+            } else if (endStationData && endStationData.haveFlag !== "0" && area !== "C") {
+                alert('派送終點已有貨架，請重新選擇站點');
                 allValid = false;
             }
         }
@@ -225,10 +246,9 @@ $(function () {
 
         // 手動顯示 modal
         if (btnName == "ConfirmButton") {
-            modal = $("#dispatchModalToggle")
-        }
-        else {         
-            modal = $("#ReLoginModalToggle")
+            modal = $("#dispatchModalToggle");
+        } else {
+            modal = $("#ReLoginModalToggle");
             $("#userId").val("");
             $("#password").val("");
         }
@@ -238,7 +258,7 @@ $(function () {
         myModal.show();
     });
 
-    $("#reLoginButton").on("click", function () {    
+    $("#reLoginButton").on("click", function () {
         var userId = $("#userId").val();
         var password = $("#password").val();
         $.ajax({
@@ -328,19 +348,19 @@ $(function () {
                 var myModal = bootstrap.Modal.getOrCreateInstance($('#dispatchModalToggle2'), {
                     keyboard: false
                 });
-                myModal.show();               
+                myModal.show();
             },
             error: function (error) {
                 // 處理錯誤響應
                 console.error("表單資料送出失敗", error);
-                if (error.responseJSON.message) {alert("派送失敗:" + error.responseJSON.message) }
-                
+                if (error.responseJSON.message) { alert("派送失敗:" + error.responseJSON.message) }
+
             }
         });
     });
-    
+
     $(document).on("click", ".ConfirmCancle", function () {
-        rowData["index"] = $(this).closest("tr").index();      
+        rowData["index"] = $(this).closest("tr").index();
 
     })
     $("#CancleButton").on("click", function () {
@@ -357,7 +377,7 @@ $(function () {
         var data = {}
         data["beginStation"] = $row.find("td:eq(1)").text();
         data["endStation"] = $row.find("td:eq(2)").text();
-        
+
         $.ajax({
             type: "POST",
             url: "/Dispatch/DeleteoNeed",
@@ -378,6 +398,9 @@ $(function () {
 
     connection.on("SendDispatchChange", function () {
         UpdateDispatch();
+        // 清除快取，強制重新載入
+        stationCache = {};
+        isCacheLoaded = false;
     });
 
     // 啟動相機按鈕
@@ -399,6 +422,133 @@ $(function () {
     })
 });
 
+/**
+ * 更新站點資料快取
+ */
+function updateStationCache(stations) {
+    stationCache = {};
+    stations.forEach(function(s) {
+        stationCache[s.stationNo] = {
+            haveFlag: s.haveFlag,
+            reserve: s.reserve,
+            workOrder: s.workOrder,
+            rackId: s.rackId,
+            putTime: s.putTime,
+            block: s.block,
+            machineName: s.machineName
+        };
+    });
+    isCacheLoaded = true;
+    console.log('站點資料已更新:', Object.keys(stationCache).length, '個站點');
+}
+
+/**
+ * 篩選起點選項
+ */
+function filterBeginStationOptions(selectedValue) {
+    var workoderMap = new Map();
+    
+    switch (selectedValue.substring(0, 1)) {
+        case "C":
+            // C 區：只顯示 B 區且 HaveFlag = 3 的站點
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+                
+                var station = stationCache[tracname];
+                if (!station) return false;
+                
+                if (tracname.charAt(0) !== "B" || station.haveFlag != 3) return false;
+                
+                var haveflag = station.haveFlag;
+                var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
+                var lot = (station.workOrder && station.workOrder.split("^")[2]) || "undefined";
+                var puttime = station.putTime;
+
+                if (tracname.startsWith("B") && haveflag === "3") {
+                    if (!workoderMap.has(workorder) || puttime < workoderMap.get(workorder).puttime) {
+                        workoderMap.set(workorder, { tracname, lot, puttime });
+                    }
+                    return true;
+                }
+                return false;
+            }).each(function () {
+                var tracname = $(this).val();
+                var station = stationCache[tracname];
+                if (!station) return;
+                
+                var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
+                if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
+                    var lot = workoderMap.get(workorder).lot;
+                    $(this).text(`${tracname}-${workorder}-${lot}`);
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            });
+            break;
+            
+        default:
+            // 其他區：顯示符合區域且 HaveFlag 不為 0 的站點
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+                
+                var station = stationCache[tracname];
+                if (!station) return false;
+                
+                return tracname.startsWith(selectedValue) && station.haveFlag !== "0";
+            }).show();
+            break;
+    }
+}
+
+/**
+ * 自動選擇終點站（統一處理邏輯）
+ */
+function autoSelectEndStation(prefix, requiredHaveFlag, requiredReserve) {
+    var found = false;
+    $('#EndStation option').each(function () {
+        if (found) return false; // 已找到就跳出
+        
+        var tracname = $(this).val();
+        if (!tracname || !tracname.startsWith(prefix)) return true;
+        
+        var station = stationCache[tracname];
+        if (!station) return true;
+        
+        var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
+        var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
+        
+        if (haveFlagMatch && reserveMatch) {
+            $('#EndStation').val(tracname);
+            found = true;
+            return false;
+        }
+    });
+    
+    if (!found) {
+        console.warn(`找不到符合條件的 ${prefix} 區站點`);
+    }
+}
+
+/**
+ * 篩選終點選項（用於 EndStation focus 事件）
+ */
+function filterEndStationOptions(prefix, requiredHaveFlag) {
+    $('#EndStation option').filter(function () {
+        var tracname = $(this).val();
+        if (!tracname || !tracname.startsWith(prefix)) return false;
+        
+        if (!requiredHaveFlag) return true; // 不需檢查 HaveFlag
+        
+        var station = stationCache[tracname];
+        if (!station) return false;
+        
+        return station.haveFlag === requiredHaveFlag;
+    }).show();
+}
+
 //即時更新右側任務列表
 function UpdateDispatch() {
     $.ajax({
@@ -408,7 +558,6 @@ function UpdateDispatch() {
             $('#DispatchStatus').html(data);
         },
         error: function (jqXHR, textStatus, errorThrown) {
-            // 處理錯誤
             console.error("AJAX 請求失敗: ", textStatus, errorThrown);
         }
     });

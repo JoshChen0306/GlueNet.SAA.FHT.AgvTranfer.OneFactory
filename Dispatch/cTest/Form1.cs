@@ -74,5 +74,15 @@ namespace cTest
         {
             saaService.EndPair();
         }
+
+        private void lblOnLine_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblOffLine_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

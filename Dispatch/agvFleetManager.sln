@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36705.20 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "svrPair", "svrPair\svrPair.csproj", "{2B91AAA1-B4E3-46C0-8136-0AADA5B9AAFA}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "svrPair", "svrPair\svrPair.
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "cTest", "cTest\cTest.csproj", "{C173BFFE-F36F-4973-8607-0118B5A6D147}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "svrPairTests", "svrPairTests\svrPairTests.csproj", "{A21AE27C-D30A-4FE0-9134-861B1665E9A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,6 +26,10 @@ Global
 		{C173BFFE-F36F-4973-8607-0118B5A6D147}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C173BFFE-F36F-4973-8607-0118B5A6D147}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C173BFFE-F36F-4973-8607-0118B5A6D147}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A21AE27C-D30A-4FE0-9134-861B1665E9A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A21AE27C-D30A-4FE0-9134-861B1665E9A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A21AE27C-D30A-4FE0-9134-861B1665E9A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A21AE27C-D30A-4FE0-9134-861B1665E9A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

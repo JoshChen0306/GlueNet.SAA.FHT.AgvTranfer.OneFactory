@@ -168,5 +168,39 @@ namespace SCP.Controllers
             var result = _DBContext.oNeed;
             return Json(result);
         }
+
+        /// <summary>
+        /// 取得所有站點的最新資料（供前端即時查詢使用）
+        /// </summary>
+        [HttpGet]
+        public IActionResult GetAllStations()
+        {
+            try
+            {
+                var stations = _DBContext.oPort
+                    .Where(p => p.UseFlag == "Y")
+                    .Select(p => new
+                    {
+                        p.Area,
+                        p.Port,
+                        p.BgnToEnd,
+                        Reserve = string.IsNullOrEmpty(p.BgnToEnd) ? "N" : "Y",  // 轉換 BgnToEnd 為 Reserve
+                        p.StationNo,
+                        p.Block,
+                        p.HaveFlag,
+                        p.WorkOrder,
+                        p.RackId,
+                        p.PutTime,
+                        p.MachineName
+                    })
+                    .ToList();
+
+                return Json(stations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "取得站點資料失敗", error = ex.Message });
+            }
+        }
     }
 }
