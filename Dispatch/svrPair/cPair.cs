@@ -169,6 +169,7 @@ namespace svrPair
                     case "C":   //生產區C >> 生產區D、上料區A、暫存區B，將空RACK運送至沒有RACK的地方，如C1 >> A1
                     case "D":   //生產區D >> 下料區E，將放RACK及製程後材料運至下料區，如D2 >> E1
                     case "F":   //下料區F >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
+                    case "J":   // <--- ★★★ 新增這一行：3F 插針室 ★★★
                         WriteLog("05.處理平板配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;
