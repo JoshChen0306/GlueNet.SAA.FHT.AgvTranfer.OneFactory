@@ -137,6 +137,7 @@
     <Compile Include="API\CallBackAPI.cs" />
     <Compile Include="API\NormalAPI.cs" />
     <Compile Include="SQLData\SQLData.cs" />
+    <Compile Include="SqlHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Config\FHtSetting.config">

@@ -9,11 +9,11 @@ namespace HikAGVWebAPI.App_Start
 {
     public class SQLData
     {
-        MsSql mSql;
+        SqlHelper mSql;
 
         public SQLData(string DbName, string DbIp)
         {
-            mSql = new MsSql(DbName, DbIp);
+            mSql = new SqlHelper("Data Source=DESKTOP-2I3FKA2;Initial Catalog=agvDB_1400004;Persist Security Info=True;User ID=mcs;Password=Zz123456");
         }
 
         #region 新增類

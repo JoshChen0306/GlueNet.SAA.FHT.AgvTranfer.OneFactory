@@ -111,7 +111,7 @@ namespace HikAGVWebAPI
             {
                 try
                 {
-                    UpdateAGVStatus();
+                    //UpdateAGVStatus();
                     AGVSchedulingTask();
                 }
                 catch (Exception ex)
