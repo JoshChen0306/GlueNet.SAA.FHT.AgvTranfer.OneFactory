@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 namespace HikAGVWebAPI
@@ -18,15 +22,78 @@ namespace HikAGVWebAPI
         [Route(Route + "genAgvSchedulingTask")]
         public SchedulingTaskAck GenAgvSchedulingTask(SchedulingTask SchedulingTask)
         {
+            // 1. 產生模擬的任務單號 (與 Dispatch 邏輯一致)
+            string mockTaskCode = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+
+            // 2. 啟動背景任務模擬 AGV 行為 (不卡住主執行緒，立刻回傳 Ack)
+            Task.Run(async () =>
+            {
+                await SimulateAgvMovement(mockTaskCode, SchedulingTask);
+            });
+
             SchedulingTaskAck reponse = new SchedulingTaskAck()
             {
                 code = "0",
                 message = "成功",
                 reqCode = SchedulingTask.reqCode,
-                data = "1234567890",
+                data = mockTaskCode,
             };
 
             return reponse;
+        }
+
+        // ★★★ 新增：模擬 AGV 行走的邏輯 ★★★
+        private async Task SimulateAgvMovement(string taskCode, SchedulingTask taskInfo)
+        {
+            try
+            {
+                // 解析起點與終點 (依據您 Dispatch 傳送的格式 "起點,00;終點,00")
+                // 注意：需確保您的 SchedulingTask 模型結構能正確解析 positionCodePath
+                string startStation = taskInfo.positionCodePath.FirstOrDefault()?.positionCode;
+                string endStation = taskInfo.positionCodePath.LastOrDefault()?.positionCode;
+                string robotCode = "AGV_001"; // 模擬車號
+
+                using (var httpClient = new HttpClient())
+                {
+                    string callbackUrl = "http://localhost:54632/agv/agvCallbackService/agvCallback"; // 請確認您的 Port
+
+                    // --- 階段 1: 模擬任務開始 (Start) ---
+                    await Task.Delay(2000); // 模擬 2 秒後車子開始動
+                    var startPayload = new
+                    {
+                        reqCode = DateTime.Now.Ticks.ToString(),
+                        taskCode = taskCode,
+                        method = "start",
+                        robotCode = robotCode,
+                        wbCode = startStation // 起點
+                    };
+                    await PostCallback(httpClient, callbackUrl, startPayload);
+
+                    // --- 階段 2: 模擬行走與到達 (End) ---
+                    await Task.Delay(5000); // 模擬走 5 秒到達終點
+                    var endPayload = new
+                    {
+                        reqCode = DateTime.Now.Ticks.ToString(),
+                        taskCode = taskCode,
+                        method = "end",
+                        robotCode = robotCode,
+                        currentPositionCode = endStation // 終點
+                    };
+                    await PostCallback(httpClient, callbackUrl, endPayload);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 這裡建議寫 Log 方便除錯
+                // System.Diagnostics.Debug.WriteLine("模擬失敗: " + ex.Message);
+            }
+        }
+
+        private async Task PostCallback(HttpClient client, string url, object payload)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(payload);
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            await client.PostAsync(url, content);
         }
 
         /// <summary>

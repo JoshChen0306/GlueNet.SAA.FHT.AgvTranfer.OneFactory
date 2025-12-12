@@ -40,46 +40,46 @@ $(function () {
     //點選派送起點，展開下拉時就會觸發的事件
     $("#BeginStation").on("focus", function () {
         var selectedValue = $("#Area").val();
-        
+
         if (!selectedValue) {
             alert('請先選擇派送區域');
             return;
         }
-        
+
         // 如果已有快取，直接使用
         if (isCacheLoaded && Object.keys(stationCache).length > 0) {
             $('#BeginStation option').hide();
             filterBeginStationOptions(selectedValue);
             return;
         }
-        
+
         console.log('=== 開始載入站點資料 ===');
-        
+
         // 顯示 Loading 遮罩
         $('#beginStationLoading').show();
         $('#BeginStation').prop('disabled', true);
         $('#BeginStation option').hide();
-        
+
         $.ajax({
             type: "GET",
             url: "/Dispatch/GetAllStations",
             dataType: "json",
             success: function (stations) {
                 console.log('✅ API 成功回傳 ' + stations.length + ' 筆資料');
-                
+
                 // 隱藏 Loading
                 $('#beginStationLoading').hide();
                 $('#BeginStation').prop('disabled', false);
-                
+
                 if (stations.length === 0) {
                     alert('沒有可用的站點資料');
                     $('#BeginStation option').show();
                     return;
                 }
-                
+
                 // 更新快取
                 stationCache = {};
-                stations.forEach(function(s) {
+                stations.forEach(function (s) {
                     var stationNo = s.stationNo || s.StationNo;
                     stationCache[stationNo] = {
                         haveFlag: s.haveFlag || s.HaveFlag,
@@ -91,17 +91,17 @@ $(function () {
                         machineName: s.machineName || s.MachineName
                     };
                 });
-                
+
                 isCacheLoaded = true;
                 console.log('快取已更新:', Object.keys(stationCache).length, '個站點');
-                
+
                 filterBeginStationOptions(selectedValue);
             },
             error: function (jqXHR, textStatus, errorThrown) {
                 $('#beginStationLoading').hide();
                 $('#BeginStation').prop('disabled', false);
                 $('#BeginStation option').show();
-                
+
                 console.error('❌ AJAX 失敗:', textStatus);
                 alert('無法取得站點資料');
             }
@@ -113,10 +113,10 @@ $(function () {
         var area = $("#Area").val();
         var selectedValue = $(this).val();
         $('#WorkOrder').val('');
-        
+
         // 從快取取得選中站點的資料
         var selectedStation = stationCache[selectedValue];
-        
+
         switch (area) {
             case "A":
                 autoSelectEndStation("B", "0", "N");
@@ -136,11 +136,14 @@ $(function () {
             case "EE":
                 autoSelectEndStation("J", "0", "N");
                 break;
+            case "H": // ★ 修正 1: 起點選 H 時，先清空終點值，讓使用者等等自己選
+                $('#EndStation').val('');
+                break;
             case "E":
                 break;
         }
 
-        if (area == "C") {
+        if (area == "C" || area == "H") {
             $("#EndStation").prop("disabled", false);
             $("#WorkOrder").prop("disabled", true);
         } else {
@@ -175,6 +178,9 @@ $(function () {
                 break;
             case "D":
                 filterEndStationOptions("E", "0");
+                break;
+            case "H":
+                filterEndStationOptions("K", "0");
                 break;
             default:
                 $('#EndStation option').show();
@@ -218,7 +224,7 @@ $(function () {
         });
 
         if (allValid) {
-            if (beginStation && beginStation.substring(0, 1) === 'A') {
+            if (beginStation && beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J') {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder) {
                     alert('請輸入工單');
@@ -226,11 +232,11 @@ $(function () {
                     return false;
                 }
             }
-            
+
             // 從快取驗證站點狀態
             var beginStationData = stationCache[beginStation];
             var endStationData = stationCache[endStation];
-            
+
             if (beginStationData && beginStationData.haveFlag === "0") {
                 alert('派送起點為空貨架，請重新選擇站點');
                 allValid = false;
@@ -427,7 +433,7 @@ $(function () {
  */
 function updateStationCache(stations) {
     stationCache = {};
-    stations.forEach(function(s) {
+    stations.forEach(function (s) {
         stationCache[s.stationNo] = {
             haveFlag: s.haveFlag,
             reserve: s.reserve,
@@ -447,19 +453,19 @@ function updateStationCache(stations) {
  */
 function filterBeginStationOptions(selectedValue) {
     var workoderMap = new Map();
-    
+
     switch (selectedValue.substring(0, 1)) {
         case "C":
             // C 區：只顯示 B 區且 HaveFlag = 3 的站點
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
                 if (!tracname) return false;
-                
+
                 var station = stationCache[tracname];
                 if (!station) return false;
-                
+
                 if (tracname.charAt(0) !== "B" || station.haveFlag != 3) return false;
-                
+
                 var haveflag = station.haveFlag;
                 var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
                 var lot = (station.workOrder && station.workOrder.split("^")[2]) || "undefined";
@@ -476,7 +482,7 @@ function filterBeginStationOptions(selectedValue) {
                 var tracname = $(this).val();
                 var station = stationCache[tracname];
                 if (!station) return;
-                
+
                 var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
                 if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
                     var lot = workoderMap.get(workorder).lot;
@@ -487,16 +493,28 @@ function filterBeginStationOptions(selectedValue) {
                 }
             });
             break;
-            
+        case "H":  // <--- 新增 H 區起點邏輯
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // 條件：站點開頭為 H 且 HaveFlag 為 1
+                return tracname.startsWith("H") && station.haveFlag === "1";
+            }).show();
+            break;
+
         default:
             // 其他區：顯示符合區域且 HaveFlag 不為 0 的站點
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
                 if (!tracname) return false;
-                
+
                 var station = stationCache[tracname];
                 if (!station) return false;
-                
+
                 return tracname.startsWith(selectedValue) && station.haveFlag !== "0";
             }).show();
             break;
@@ -510,23 +528,23 @@ function autoSelectEndStation(prefix, requiredHaveFlag, requiredReserve) {
     var found = false;
     $('#EndStation option').each(function () {
         if (found) return false; // 已找到就跳出
-        
+
         var tracname = $(this).val();
         if (!tracname || !tracname.startsWith(prefix)) return true;
-        
+
         var station = stationCache[tracname];
         if (!station) return true;
-        
+
         var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
         var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
-        
+
         if (haveFlagMatch && reserveMatch) {
             $('#EndStation').val(tracname);
             found = true;
             return false;
         }
     });
-    
+
     if (!found) {
         console.warn(`找不到符合條件的 ${prefix} 區站點`);
     }
@@ -539,12 +557,12 @@ function filterEndStationOptions(prefix, requiredHaveFlag) {
     $('#EndStation option').filter(function () {
         var tracname = $(this).val();
         if (!tracname || !tracname.startsWith(prefix)) return false;
-        
+
         if (!requiredHaveFlag) return true; // 不需檢查 HaveFlag
-        
+
         var station = stationCache[tracname];
         if (!station) return false;
-        
+
         return station.haveFlag === requiredHaveFlag;
     }).show();
 }

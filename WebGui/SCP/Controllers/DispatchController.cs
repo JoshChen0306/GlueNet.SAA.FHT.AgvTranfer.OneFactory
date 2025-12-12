@@ -34,7 +34,7 @@ namespace SCP.Controllers
                     filterAreas = areas.Where(item => item.Value=="A");
                     break;
                 case "6":
-                    filterAreas = areas.Where(item => item.Value == "C"|| item.Value == "D");
+                    filterAreas = areas.Where(item => item.Value == "C" || item.Value == "D");
                     break;
                 case "5":
                     filterAreas = areas.Where(item => item.Value == "F");
