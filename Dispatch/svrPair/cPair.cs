@@ -172,6 +172,10 @@ namespace svrPair
                     case "J":   // <--- ★★★ 新增這一行：3F 插針室 ★★★
                     case "H":   // <--- ★★★ 新增：2F 成型後 -> 4F 烘烤前入貨區 ★★★
                     case "L":   // <--- ★★★ 新增：4F 出貨區 -> 3F 品檢區 ★★★
+                    case "M":   // <--- ★★★ 新增：2F 雷雕區 -> O/P/T ★★★
+                    case "T":   // <--- ★★★ 新增：2F V cut區 -> O/P ★★★
+                    case "Q":   // <--- ★★★ 新增：2F 出料區 -> 清洗區 ★★★
+                    case "R":   // <--- ★★★ 新增：2F 廢料區 -> 廢料回收區 ★★★
                         WriteLog("05.處理平板配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;

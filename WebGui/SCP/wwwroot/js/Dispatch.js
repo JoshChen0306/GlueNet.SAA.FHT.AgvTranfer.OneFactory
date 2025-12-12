@@ -207,11 +207,23 @@ $(function () {
             case "L":
                 autoSelectEndStation("I", "0", "N");  // L區（4F出貨區）→ I區（3F品檢區）
                 break;
+            case "M":
+                // 雷雕區可選: O(左上料), P(右上料), T(V cut)
+                break;
+            case "T":
+                // V cut區可選: O(左上料), P(右上料)
+                break;
+            case "Q":
+                autoSelectEndStation("S", "0", "N");  // 出料區 → 清洗區
+                break;
+            case "R":
+                autoSelectEndStation("N", "0", "N");  // 廢料區 → 廢料回收區
+                break;
             case "E":
                 break;
         }
 
-        if (area == "C" || area == "H") {
+        if (area == "C" || area == "H" || area == "M" || area == "T") {
             $("#EndStation").prop("disabled", false);
             $("#WorkOrder").prop("disabled", true);
         } else {
@@ -252,6 +264,23 @@ $(function () {
                 break;
             case "L":
                 filterEndStationOptions("I", "0");
+                break;
+            case "M":
+                // 顯示 O, P, T 區空架
+                filterEndStationOptions("O", "0");
+                filterEndStationOptions("P", "0");
+                filterEndStationOptions("T", "0");
+                break;
+            case "T":
+                // 顯示 O, P 區空架
+                filterEndStationOptions("O", "0");
+                filterEndStationOptions("P", "0");
+                break;
+            case "Q":
+                filterEndStationOptions("S", "0");
+                break;
+            case "R":
+                filterEndStationOptions("N", "0");
                 break;
             default:
                 $('#EndStation option').show();
