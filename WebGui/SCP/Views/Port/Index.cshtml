@@ -4,15 +4,32 @@
 @{
 }
 <div class="col-lg-12 main-chart">
-    <div class="bg-white d-flex align-items-center justify-content-center" style="height:800px;">
-        <div class="mx-auto d-block position-relative">
-            <img src="/img/Map.png" height="500" class="d-block mw-100" style="object-fit: cover;">
-            @foreach (var style in ViewBag.positions)
-            {
-                <button class="btn position-absolute p-0 border-0" id="@style.Name" data-bs-toggle="modal" data-bs-target="#portModal" data-machinename="@style.MachineName" data-interfacename="@style.InterfaceName" data-useflag="@style.UseFlag" data-haveflag="@style.HaveFlag" data-workorder="@style.WorkOrder" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
-                    <img src="@style.ImgSrc" alt="Icon" />
-                </button>
-            }
+    <div class="bg-white d-flex flex-column" style="height:800px;">
+        <div>
+            <ul class="nav nav-tabs">
+                @{
+                    var floors = new[] { "1F", "2F", "3F", "4F" };
+                    foreach (var f in floors)
+                    {
+                        var isActive = ViewBag.CurrentFloor == f;
+                        <li class="nav-item">
+                            <a class="nav-link @(isActive ? "active" : "")" href="/Port?floor=@f">@f</a>
+                        </li>
+                    }
+                }
+            </ul>
+        </div>
+        
+        <div class="d-flex align-items-center justify-content-center flex-grow-1">
+            <div class="mx-auto d-block position-relative">
+                <img src="@ViewBag.MapImage" height="500" class="d-block mw-100" style="object-fit: cover;">
+                @foreach (var style in ViewBag.positions)
+                {
+                    <button class="btn position-absolute p-0 border-0" id="@style.Name" data-bs-toggle="modal" data-bs-target="#portModal" data-machinename="@style.MachineName" data-interfacename="@style.InterfaceName" data-useflag="@style.UseFlag" data-haveflag="@style.HaveFlag" data-workorder="@style.WorkOrder" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
+                        <img src="@style.ImgSrc" alt="Icon" />
+                    </button>
+                }
+            </div>
         </div>
     </div>
 

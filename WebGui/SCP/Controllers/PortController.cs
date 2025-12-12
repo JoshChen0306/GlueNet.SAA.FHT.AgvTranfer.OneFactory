@@ -16,15 +16,31 @@ namespace SCP.Controllers
             _configuration = configuration;
             _DBContext = DBContext;
         }
-        public IActionResult Index()
+        public IActionResult Index(string floor = "1F")
         {
+            // 樓層與區域對應
+            var floorBlocks = new Dictionary<string, string[]>
+            {
+                { "1F", new[] { "A", "B", "C", "D", "E", "F", "EE" } },
+                { "2F", new[] { "H" } },
+                { "3F", new[] { "J" } },
+                { "4F", new[] { "K", "L" } }
+            };
+            
+            var blocks = floorBlocks.ContainsKey(floor) ? floorBlocks[floor] : floorBlocks["1F"];
             
             #region [讀取暫存架位置及狀態]      
-            List<oPort> query = _DBContext.oPort.ToList();
+            List<oPort> query = _DBContext.oPort
+                .Where(p => blocks.Contains(p.Block))
+                .ToList();
             List<Position> result = new List<Position>();
 
             foreach (var item in query)
             {
+                // 跳過沒有座標設定的站點
+                if (string.IsNullOrEmpty(item.Remark) || !item.Remark.Contains(","))
+                    continue;
+                    
                 Position data = new Position
                 {
                     Name = item.StationNo,
@@ -42,7 +58,10 @@ namespace SCP.Controllers
                 result.Add(data);
             }
             #endregion
+            
             ViewBag.positions = result;
+            ViewBag.CurrentFloor = floor;
+            ViewBag.MapImage = $"/img/FHT2-{floor}.png";
             return View();
         }
         public IActionResult UpdateoPort([FromBody] Dictionary<string, string> port) 

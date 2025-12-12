@@ -201,8 +201,8 @@ $(function () {
             case "EE":
                 autoSelectEndStation("J", "0", "N");
                 break;
-            case "H": // ★ 修正 1: 起點選 H 時，先清空終點值，讓使用者等等自己選
-                $('#EndStation').val('');
+            case "H":
+                autoSelectEndStation("K", "0", "N");  // H區（2F成型後）→ K區（4F烘烤前入貨區）
                 break;
             case "E":
                 break;
@@ -289,7 +289,7 @@ $(function () {
         });
 
         if (allValid) {
-            if (beginStation && beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J') {
+            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder) {
                     alert('請輸入工單');
