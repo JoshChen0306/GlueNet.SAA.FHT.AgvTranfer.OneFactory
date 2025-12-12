@@ -23,7 +23,7 @@ namespace SCP.Controllers
             {
                 { "1F", new[] { "A", "B", "C", "D", "E", "F", "EE" } },
                 { "2F", new[] { "H" } },
-                { "3F", new[] { "J" } },
+                { "3F", new[] { "J", "I" } },
                 { "4F", new[] { "K", "L" } }
             };
             
