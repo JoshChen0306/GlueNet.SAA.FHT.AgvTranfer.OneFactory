@@ -22,7 +22,7 @@ namespace SCP.Controllers
             var floorBlocks = new Dictionary<string, string[]>
             {
                 { "1F", new[] { "A", "B", "C", "D", "E", "F", "EE" } },
-                { "2F", new[] { "H" } },
+                { "2F", new[] { "H", "M", "N", "O", "P", "Q", "R", "S", "T" } },
                 { "3F", new[] { "J", "I" } },
                 { "4F", new[] { "K", "L" } }
             };
