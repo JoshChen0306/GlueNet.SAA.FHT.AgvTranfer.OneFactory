@@ -204,6 +204,9 @@ $(function () {
             case "H":
                 autoSelectEndStation("K", "0", "N");  // H區（2F成型後）→ K區（4F烘烤前入貨區）
                 break;
+            case "L":
+                autoSelectEndStation("I", "0", "N");  // L區（4F出貨區）→ I區（3F品檢區）
+                break;
             case "E":
                 break;
         }
@@ -247,6 +250,9 @@ $(function () {
             case "H":
                 filterEndStationOptions("K", "0");
                 break;
+            case "L":
+                filterEndStationOptions("I", "0");
+                break;
             default:
                 $('#EndStation option').show();
                 break;
@@ -289,7 +295,7 @@ $(function () {
         });
 
         if (allValid) {
-            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H')) {
+            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder) {
                     alert('請輸入工單');
