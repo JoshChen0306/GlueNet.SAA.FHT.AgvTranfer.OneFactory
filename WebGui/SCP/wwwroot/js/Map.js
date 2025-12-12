@@ -1,7 +1,7 @@
 ﻿
 import { connection } from './common/hub.js';
 
-function loadMapData(area) {
+export function loadMapData(area) {
     $.ajax({
         type: "GET",
         url: "/api/Common/ShowMap",

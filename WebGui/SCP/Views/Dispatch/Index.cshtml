@@ -11,9 +11,21 @@
             <form id="DispatchForm">
                 <h4><strong>@Localizer["Dispatch"]</strong></h4>
                 <div class="row mb-3">
+                    <label class="col-2 col-form-label">樓層</label>
+                    <div class="col-10">
+                        <select class="form-select w-75" name="Floor" id="Floor" required>
+                            <option value="" class="text-secondary" disabled selected hidden>請選擇樓層</option>
+                            @foreach (var floor in ViewBag.FloorList)
+                            {
+                                <option value="@floor.Value">@floor.Text</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row mb-3">
                     <label class="col-2 col-form-label">@Localizer["Area"]</label>
                     <div class="col-10">
-                        <select class="form-select w-75" name="Area" id="Area" asp-items=@ViewBag.AreaList required>
+                        <select class="form-select w-75" name="Area" id="Area" asp-items=@ViewBag.AreaList required disabled>
                             <option value="" class="text-secondary" disabled selected hidden>@Localizer["AreaText"]</option>
                         </select>
                     </div>
@@ -258,6 +270,10 @@
 </div>
 
 @section scripts {
+        <script>
+            // 樓層與區域對應 (從後端傳入) - 掛載到 window 供 ES module 存取
+            window.floorAreaMap = @Html.Raw(Json.Serialize(ViewBag.FloorArea));
+        </script>
         <script src="~/lib/html5-qrcode/html5-qrcode.min.js"></script>
         <script type="module" src="~/js/Map.js"></script>
         <script type="module" src="~/js/dispatch.js"></script>

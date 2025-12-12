@@ -1,5 +1,32 @@
 ﻿import { connection } from './common/hub.js';
 
+console.log("=== Dispatch.js 已載入 ===");
+console.log("floorAreaMap from window:", window.floorAreaMap);
+// 本地 loadMapData 函數 (避免跨模組 import 問題)
+function loadMapDataLocal(area) {
+    $.ajax({
+        type: "GET",
+        url: "/api/Common/ShowMap",
+        data: { area: area },
+        success: function (data) {
+            $("#Map").html(data);
+            const mapSrc = area || 'FHT2-1F';
+            $('#map-img').attr('src', `/img/${mapSrc}.png`);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.error("地圖載入失敗: ", textStatus, errorThrown);
+        }
+    });
+}
+
+// 樓層與地圖區域對應
+var floorToMapArea = {
+    "1F": "FHT2-1F",
+    "2F": "FHT2-2F",
+    "3F": "FHT2-3F",
+    "4F": "FHT2-4F"
+};
+
 // 全域變數：站點資料快取
 var stationCache = {};
 var isCacheLoaded = false;
@@ -11,6 +38,44 @@ $(function () {
     var btnName = "";
     UpdateDispatch();
     $(".Site").prop("disabled", true);
+
+    // 選擇樓層後篩選 Area 選項並切換地圖
+    $("#Floor").on("change", function () {
+        var selectedFloor = $(this).val();
+        var allowedAreas = window.floorAreaMap ? window.floorAreaMap[selectedFloor] || [] : [];
+
+        console.log("選擇樓層:", selectedFloor);
+        console.log("允許的區域:", allowedAreas);
+        console.log("floorAreaMap:", window.floorAreaMap);
+
+        // 1. 切換地圖
+        if (floorToMapArea[selectedFloor]) {
+            loadMapDataLocal(floorToMapArea[selectedFloor]);
+        }
+
+        // 2. 重置 Area 和後續選項
+        $("#Area").val('');
+        $("#BeginStation").val('');
+        $("#EndStation").val('');
+        $(".Site").prop("disabled", true);
+
+        // 3. 顯示/隱藏符合樓層的 Area 選項（已經過權限篩選）
+        var visibleCount = 0;
+        $("#Area option").each(function () {
+            var areaValue = $(this).val();
+            if (areaValue === "" || allowedAreas.includes(areaValue)) {
+                $(this).show();
+                visibleCount++;
+            } else {
+                $(this).hide();
+            }
+        });
+        console.log("可見的選項數:", visibleCount);
+
+        // 4. 啟用 Area 選擇 (使用 removeAttr 強制移除 disabled)
+        $("#Area").removeAttr("disabled");
+        console.log("Area disabled 狀態:", $("#Area").prop("disabled"));
+    });
 
     //選擇派送區域選擇完後得事件
     $("#Area").on("change", function () {

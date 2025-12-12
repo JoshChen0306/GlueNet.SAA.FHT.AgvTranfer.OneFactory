@@ -51,6 +51,17 @@ namespace SCP.Controllers
             ViewBag.AreaList = areaList;
             ViewBag.Site = _DBContext.oPort.Where(p=>p.UseFlag =="Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
             ViewBag.Role = groupId;
+
+            // 樓層選擇器
+            ViewBag.FloorList = new List<SelectListItem>
+            {
+                new SelectListItem { Value = "1F", Text = "1F" },
+                new SelectListItem { Value = "2F", Text = "2F" },
+                new SelectListItem { Value = "3F", Text = "3F" },
+                new SelectListItem { Value = "4F", Text = "4F" }
+            };
+            ViewBag.FloorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+
             return View();
         }
 
