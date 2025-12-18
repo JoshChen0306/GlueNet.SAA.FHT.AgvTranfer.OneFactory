@@ -6510,7 +6510,8 @@
         "net6.0"
       ],
       "sources": {
-        "D:\\LocalNuget": {}
+        "D:\\LocalNuget": {},
+        "\\\\192.168.1.50\\AriverFileShare\\Nuget": {}
       },
       "frameworks": {
         "net6.0": {

@@ -208,10 +208,10 @@ $(function () {
                 autoSelectEndStation("I", "0", "N");  // L區（4F出貨區）→ I區（3F品檢區）
                 break;
             case "M":
-                // 雷雕區可選: O(左上料), P(右上料), T(V cut)
+                // 雷雕區可選: O(左上料), P(右上料), T(V cut) - 需要供單號
                 break;
             case "T":
-                // V cut區可選: O(左上料), P(右上料)
+                // V cut區可選: O(左上料), P(右上料) - 需要供單號
                 break;
             case "Q":
                 autoSelectEndStation("S", "0", "N");  // 出料區 → 清洗區
@@ -223,8 +223,20 @@ $(function () {
                 break;
         }
 
-        if (area == "C" || area == "H" || area == "M" || area == "T") {
+        if (area == "C" || area == "H") {
+            // C 和 H 區：終點可選，供單號禁用
             $("#EndStation").prop("disabled", false);
+            $("#WorkOrder").prop("disabled", true);
+        } else if (area == "M" || area == "T") {
+            // M (雷雕區) 和 T (V Cut區)：終點可選，供單號必填
+            console.log("=== M/T 區：啟用供單號 ===");
+            console.log("area:", area, "selectedValue:", selectedValue);
+            $("#EndStation").prop("disabled", false);
+            $("#WorkOrder").prop("disabled", false);  // 啟用供單號輸入
+            console.log("WorkOrder disabled 狀態:", $("#WorkOrder").prop("disabled"));
+        } else if (area == "Q" || area == "R") {
+            // Q (出料區) 和 R (廢料區)：終點自動選擇，供單號禁用
+            $("#EndStation").prop("disabled", true);
             $("#WorkOrder").prop("disabled", true);
         } else {
             $("#EndStation").prop("disabled", true);
@@ -324,10 +336,13 @@ $(function () {
         });
 
         if (allValid) {
-            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L')) {
+            // 需要輸入工單/供單號的區域：A, J, H, L, M, T
+            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
-                if (!workOrder) {
-                    alert('請輸入工單');
+                if (!workOrder || !workOrder.trim()) {
+                    // M 和 T 區顯示「供單號」，其他區顯示「工單」
+                    var fieldName = (beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') ? '供單號' : '工單';
+                    alert('請輸入' + fieldName);
                     allValid = false;
                     return false;
                 }
