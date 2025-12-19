@@ -111,7 +111,7 @@ namespace HikAGVWebAPI
             {
                 try
                 {
-                    //UpdateAGVStatus();
+                    UpdateAGVStatus();
                     AGVSchedulingTask();
                 }
                 catch (Exception ex)
@@ -147,62 +147,73 @@ namespace HikAGVWebAPI
             try
             {
                 mLog.TraceOut($"========================================== Get AGV Status Start! ==========================================", Log.LogType.NONE);
-                AGVStatusAck AGVAck = GetAGVStatus(hikAGV.AGVSettings.AGVMapCode);
 
-                if (AGVAck?.data?.Count > 0)
+                var mapCodeSettings = hikAGV.AGVSettings.AGVMapCode;
+
+                //var mapCodes = new []{ "AA","BB","DD","FF"};
+                var mapCodes = mapCodeSettings.Split(',');
+
+
+                foreach (var mapCode in mapCodes)
                 {
-                    mLog.TraceOut($"Get All AGV Status Ack Data! {AGVAck?.ToString()}", Log.LogType.NONE);
+                    AGVStatusAck AGVAck = GetAGVStatus(mapCode);
 
-                    foreach (AGVStatusData agvData in AGVAck?.data)
+                    if (AGVAck?.data?.Count > 0)
                     {
-                        string ShuttleStatus = "I";
-                        switch (agvData?.status)
+                        mLog.TraceOut($"Get All AGV Status Ack Data! {AGVAck?.ToString()}", Log.LogType.NONE);
+
+                        foreach (AGVStatusData agvData in AGVAck?.data)
                         {
-                            case "4"://任務空閒
-                            case "7"://充電狀態
-                                if (agvData?.status == "7" && dtChargeStartTime[agvData?.robotCode] == null)
-                                {
-                                    dtChargeStartTime[agvData?.robotCode] = DateTime.Now;
-                                    mLog.TraceOut($"Shuttle Start Charging!", Log.LogType.NONE);
-                                }
+                            string ShuttleStatus = "I";
+                            switch (agvData?.status)
+                            {
+                                case "4"://任務空閒
+                                case "7"://充電狀態
+                                    if (agvData?.status == "7" && dtChargeStartTime[agvData?.robotCode] == null)
+                                    {
+                                        dtChargeStartTime[agvData?.robotCode] = DateTime.Now;
+                                        mLog.TraceOut($"Shuttle Start Charging!", Log.LogType.NONE);
+                                    }
 
-                                if (agvData?.status == "4")
-                                    InsertShuttleChargeActivate(agvData?.robotCode);
+                                    if (agvData?.status == "4")
+                                        InsertShuttleChargeActivate(agvData?.robotCode);
 
-                                InsertAbnormalActivate(agvData?.robotCode);
-                                break;
-                            case "3"://任務異常
-                                ShuttleStatus = "A";
-                                if (dtChargeStartTime[agvData?.robotCode] == null)
-                                    dtAbnormalStartTime[agvData?.robotCode] = DateTime.Now;
+                                    InsertAbnormalActivate(agvData?.robotCode);
+                                    break;
+                                case "3"://任務異常
+                                    ShuttleStatus = "A";
+                                    if (dtChargeStartTime[agvData?.robotCode] == null)
+                                        dtAbnormalStartTime[agvData?.robotCode] = DateTime.Now;
 
-                                mLog.TraceOut($"任務異常!", Log.LogType.NONE);
-                                break;
-                            case "1"://任務完成
-                            case "2"://任務執行中
-                                ShuttleStatus = "R";
-                                break;
-                            case "5"://機器人暫停
-                            case "6"://舉升貨架狀態
-                            case "8"://弧線行走中
-                            case "9"://充滿維護
-                                mLog.TraceOut($"Normal Status!", Log.LogType.NONE);
-                                break;
-                            default://其餘狀態目前認定為異常
-                                mLog.TraceOut($"Default Alarm Status!", Log.LogType.NONE);
-                                break;
+                                    mLog.TraceOut($"任務異常!", Log.LogType.NONE);
+                                    break;
+                                case "1"://任務完成
+                                case "2"://任務執行中
+                                    ShuttleStatus = "R";
+                                    break;
+                                case "5"://機器人暫停
+                                case "6"://舉升貨架狀態
+                                case "8"://弧線行走中
+                                case "9"://充滿維護
+                                    mLog.TraceOut($"Normal Status!", Log.LogType.NONE);
+                                    break;
+                                default://其餘狀態目前認定為異常
+                                    mLog.TraceOut($"Default Alarm Status!", Log.LogType.NONE);
+                                    break;
+                            }
+
+                            agvData.status = ShuttleStatus;
+                            mDB.Update_oShuttle(agvData);
+                            mLog.TraceOut($"Update AGV Data! {agvData?.ToString()}", Log.LogType.NONE);
+
+                            //電量低於 40 跟 25 上報 FHt
+                            CheckBattery(agvData);
                         }
-
-                        agvData.status = ShuttleStatus;
-                        mDB.Update_oShuttle(agvData);
-                        mLog.TraceOut($"Update AGV Data! {agvData?.ToString()}", Log.LogType.NONE);
-
-                        //電量低於 40 跟 25 上報 FHt
-                        CheckBattery(agvData);
                     }
+
+                    mLog.TraceOut($"========================================== Get AGV Status End! ==========================================", Log.LogType.NONE);
                 }
 
-                mLog.TraceOut($"========================================== Get AGV Status End! ==========================================", Log.LogType.NONE);
             }
             catch (Exception ex)
             {
@@ -475,7 +486,7 @@ namespace HikAGVWebAPI
         {
             try
             {
-                foreach(oMissionModel DeleteMission in oMissionDetete)
+                foreach (oMissionModel DeleteMission in oMissionDetete)
                 {
                     mDB.Delete_oMission(DeleteMission);
                     mLog.TraceOut($"Delete Cancel Mission! {DeleteMission?.ToString()}", Log.LogType.NONE);
