@@ -213,5 +213,94 @@ namespace SCP.Controllers
                 return StatusCode(500, new { message = "取得站點資料失敗", error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// 登記帳料 - 在空架站點登記工單和貨架資訊
+        /// </summary>
+        [HttpPost]
+        public IActionResult RegisterLot([FromBody] Dictionary<string, string> data)
+        {
+            try
+            {
+                string stationNo = data.ContainsKey("stationNo") ? data["stationNo"] : "";
+                string workOrder = data.ContainsKey("workOrder") ? data["workOrder"] : "";
+                string rackId = data.ContainsKey("rackId") ? data["rackId"] : "";
+
+                if (string.IsNullOrEmpty(stationNo))
+                {
+                    return BadRequest(new { message = "請選擇站點" });
+                }
+
+                // 檢查站點是否存在
+                var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
+                if (port == null)
+                {
+                    return BadRequest(new { message = "站點不存在" });
+                }
+
+                // 檢查站點狀態（僅記錄，不阻擋）
+                if (port.HaveFlag != "0")
+                {
+                    // 站點不是空架，但仍允許覆蓋登記
+                    // 可在此處記錄日誌
+                }
+
+                // 更新 oPort 表
+                var putTimeStr = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+                _DBContext.oPort
+                    .Where(p => p.StationNo == stationNo)
+                    .ExecuteUpdate(setters => setters
+                        .SetProperty(p => p.HaveFlag, "3")           // 設為料盤
+                        .SetProperty(p => p.WorkOrder, workOrder)     // 工單資訊
+                        .SetProperty(p => p.RackId, rackId)           // 貨架編號
+                        .SetProperty(p => p.PutTime, putTimeStr));    // 放置時間
+
+                return Ok(new { message = "登記成功", stationNo = stationNo });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "登記失敗", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// 清除物料 - 將站點設為空架，清除工單和貨架資訊
+        /// </summary>
+        [HttpPost]
+        public IActionResult ClearLot([FromBody] Dictionary<string, string> data)
+        {
+            try
+            {
+                string stationNo = data.ContainsKey("stationNo") ? data["stationNo"] : "";
+
+                if (string.IsNullOrEmpty(stationNo))
+                {
+                    return BadRequest(new { message = "請選擇站點" });
+                }
+
+                // 檢查站點是否存在
+                var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
+                if (port == null)
+                {
+                    return BadRequest(new { message = "站點不存在" });
+                }
+
+                // 更新 oPort 表 - 清除物料資訊
+                _DBContext.oPort
+                    .Where(p => p.StationNo == stationNo)
+                    .ExecuteUpdate(setters => setters
+                        .SetProperty(p => p.HaveFlag, "0")      // 設為空架
+                        .SetProperty(p => p.WorkOrder, "")      // 清除工單
+                        .SetProperty(p => p.RackId, "")         // 清除貨架
+                        .SetProperty(p => p.PutTime, ""));      // 清除放置時間
+
+                return Ok(new { message = "清除成功", stationNo = stationNo });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "清除失敗", error = ex.Message });
+            }
+        }
     }
+
 }

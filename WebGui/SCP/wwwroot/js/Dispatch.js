@@ -18,12 +18,64 @@ function loadMapDataLocal(area) {
                 container: 'body',
                 trigger: 'hover'
             });
+
+            // 為 M 區和 T 區站點綁定點擊事件（物料管理）
+            bindStationLotEvents();
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("地圖載入失敗: ", textStatus, errorThrown);
         }
     });
 }
+
+// 綁定 M/T 區站點的物料管理點擊事件
+function bindStationLotEvents() {
+    console.log("=== 綁定 M/T 區站點點擊事件 ===");
+
+    // 標記 M 和 T 區的站點
+    $('.station-btn').each(function () {
+        var stationNo = $(this).attr('id');
+        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T'))) {
+            $(this).addClass('lot-manageable');
+            $(this).css('cursor', 'pointer');
+            console.log("標記可管理站點:", stationNo);
+        }
+    });
+}
+
+// 將函數綁定到 window，供 Map.js 呼叫
+window.bindStationLotEvents = bindStationLotEvents;
+
+// 使用事件委派綁定站點點擊事件 - 直接檢查站點 ID，不依賴 class 標記
+$(document).on('click', '.station-btn', function (e) {
+    var stationNo = $(this).attr('id');
+
+    // 只處理 M 和 T 區站點
+    if (!stationNo || (!stationNo.startsWith('M') && !stationNo.startsWith('T'))) {
+        return; // 不是 M/T 區，不處理
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log("=== 點擊 M/T 區站點:", stationNo, "===");
+
+    // 從 DOM 取得資料並更新快取
+    stationCache[stationNo] = {
+        haveFlag: $(this).attr('data-haveflag') || '0',
+        workOrder: $(this).attr('data-workorder') || '',
+        rackId: $(this).attr('data-rackid') || ''
+    };
+    console.log("站點資料:", stationCache[stationNo]);
+
+    // 開啟站點物料操作 Modal
+    if (typeof window.openStationLotModal === 'function') {
+        window.openStationLotModal(stationNo);
+    } else {
+        console.error("openStationLotModal 函數尚未載入");
+        alert("功能載入中，請稍後再試");
+    }
+});
 
 // 樓層與地圖區域對應
 var floorToMapArea = {
@@ -547,6 +599,268 @@ $(function () {
         console.log("使用條碼按鈕")
         useScannedCode()
     })
+
+    // ========== 站點物料管理功能 ==========
+
+    // 目前操作的站點
+    var currentLotStation = null;
+    // 掃描目標欄位
+    var currentScanTarget = null;
+    // 操作模式：register, edit
+    var lotOperationMode = null;
+
+    // 開啟站點物料操作 Modal
+    function openStationLotModal(stationNo) {
+        console.log("開啟站點物料操作 Modal:", stationNo);
+        currentLotStation = stationNo;
+
+        // 從快取取得站點資訊
+        var stationInfo = stationCache[stationNo];
+        if (!stationInfo) {
+            alert("找不到站點資訊：" + stationNo);
+            return;
+        }
+
+        // 更新 Modal 顯示
+        $("#stationLotName").text(stationNo);
+
+        // 狀態顯示
+        var statusText = {
+            "0": "空架",
+            "1": "空板",
+            "3": "料盤"
+        }[stationInfo.haveFlag] || "未知";
+        $("#stationLotStatus").text(statusText);
+
+        // 工單和貨架顯示
+        var workOrderDisplay = stationInfo.workOrder || "無";
+        if (workOrderDisplay.length > 30) {
+            workOrderDisplay = workOrderDisplay.substring(0, 30) + "...";
+        }
+        $("#stationLotCurrentWorkOrder").text(workOrderDisplay);
+        $("#stationLotCurrentRackId").text(stationInfo.rackId || "無");
+
+        // 清空輸入欄位
+        $("#registerLotWorkOrder").val("");
+        $("#registerLotRackId").val("");
+        $("#lotFormSection").addClass("d-none");
+
+        // 動態生成按鈕
+        var footer = $("#stationLotFooter");
+        footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
+
+        if (stationInfo.haveFlag === "0") {
+            // 空架 - 顯示「物料登記」
+            footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+        } else {
+            // 有物料 - 顯示「物料修改」和「清除物料」
+            footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
+            footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
+        }
+
+        // 顯示 Modal
+        var modal = new bootstrap.Modal(document.getElementById('stationLotModal'));
+        modal.show();
+    }
+
+    // 將函數綁定到 window，供地圖點擊使用
+    window.openStationLotModal = openStationLotModal;
+
+    // 物料登記按鈕
+    $(document).on("click", "#btnRegisterLot", function () {
+        console.log("點擊物料登記");
+        lotOperationMode = "register";
+        $("#lotFormSection").removeClass("d-none");
+    });
+
+    // 物料修改按鈕
+    $(document).on("click", "#btnEditLot", function () {
+        console.log("點擊物料修改");
+        lotOperationMode = "edit";
+
+        // 帶入現有值
+        var stationInfo = stationCache[currentLotStation];
+        if (stationInfo) {
+            $("#registerLotWorkOrder").val(stationInfo.workOrder || "");
+            $("#registerLotRackId").val(stationInfo.rackId || "");
+        }
+
+        $("#lotFormSection").removeClass("d-none");
+    });
+
+    // 清除物料按鈕 - 開啟確認視窗
+    $(document).on("click", "#btnClearLot", function () {
+        console.log("點擊清除物料");
+        $("#clearLotStationName").text(currentLotStation);
+
+        // 隱藏站點操作 Modal，顯示確認 Modal
+        bootstrap.Modal.getInstance(document.getElementById('stationLotModal')).hide();
+        setTimeout(() => {
+            var confirmModal = new bootstrap.Modal(document.getElementById('clearLotConfirmModal'));
+            confirmModal.show();
+        }, 300);
+    });
+
+    // 確認清除物料
+    $(document).on("click", "#confirmClearLotBtn", function () {
+        console.log("確認清除物料:", currentLotStation);
+
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/ClearLot",
+            contentType: "application/json",
+            data: JSON.stringify({ stationNo: currentLotStation }),
+            success: function (response) {
+                alert("清除成功！站點：" + currentLotStation);
+                bootstrap.Modal.getInstance(document.getElementById('clearLotConfirmModal')).hide();
+                // 重新載入地圖
+                refreshMap();
+            },
+            error: function (error) {
+                var message = error.responseJSON?.message || "清除失敗";
+                alert(message);
+            }
+        });
+    });
+
+    // 注意：不要在這裡添加對 btn-primary 的點擊處理，因為 #btnRegisterLot 也是 btn-primary
+    // 專用的提交按鈕是 #submitLotBtn
+
+    // 在表單區域顯示時，加入提交按鈕並隱藏原按鈕
+    function showLotFormWithSubmit() {
+        var footer = $("#stationLotFooter");
+
+        // 隱藏「物料登記」和「物料修改」按鈕
+        $("#btnRegisterLot").hide();
+        $("#btnEditLot").hide();
+
+        // 如果還沒有提交按鈕，加入一個
+        if (footer.find("#submitLotBtn").length === 0) {
+            footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="submitLotBtn">✅ 確認儲存</button>');
+        }
+    }
+
+    // 修改物料登記/修改按鈕，加入提交按鈕
+    $(document).on("click", "#btnRegisterLot, #btnEditLot", function () {
+        setTimeout(() => {
+            showLotFormWithSubmit();
+        }, 100);
+    });
+
+    // 提交按鈕
+    $(document).on("click", "#submitLotBtn", function () {
+        submitLotForm();
+    });
+
+    // 提交物料表單
+    function submitLotForm() {
+        var workOrder = $("#registerLotWorkOrder").val();
+        var rackId = $("#registerLotRackId").val();
+
+        console.log("提交物料表單:", currentLotStation, workOrder, rackId);
+
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/RegisterLot",
+            contentType: "application/json",
+            data: JSON.stringify({
+                stationNo: currentLotStation,
+                workOrder: workOrder,
+                rackId: rackId
+            }),
+            success: function (response) {
+                alert((lotOperationMode === "edit" ? "修改" : "登記") + "成功！站點：" + currentLotStation);
+                bootstrap.Modal.getInstance(document.getElementById('stationLotModal')).hide();
+                // 重新載入地圖
+                refreshMap();
+            },
+            error: function (error) {
+                var message = error.responseJSON?.message || "操作失敗";
+                alert(message);
+            }
+        });
+    }
+
+    // 重新載入地圖
+    function refreshMap() {
+        var currentFloor = $("#Floor").val() || "2F";
+        if (floorToMapArea[currentFloor]) {
+            loadMapDataLocal(floorToMapArea[currentFloor]);
+        }
+        stationCache = {};
+        isCacheLoaded = false;
+    }
+
+    // 掃描工單條碼按鈕 (使用事件委派)
+    $(document).on("click", "#scanWorkOrderBtn", function () {
+        console.log("掃描工單條碼按鈕被點擊");
+        currentScanTarget = "workOrder";
+        startLotScanner();
+    });
+
+    // 掃描貨架條碼按鈕 (使用事件委派)
+    $(document).on("click", "#scanRackIdBtn", function () {
+        console.log("掃描貨架條碼按鈕被點擊");
+        currentScanTarget = "rackId";
+        startLotScanner();
+    });
+
+    // 物料掃描器
+    function startLotScanner() {
+        // 隱藏站點操作 Modal
+        var stationModal = bootstrap.Modal.getInstance(document.getElementById('stationLotModal'));
+        if (stationModal) {
+            stationModal.hide();
+        }
+
+        // 顯示掃描 Modal
+        setTimeout(() => {
+            var scanModal = new bootstrap.Modal(document.getElementById('barcodeModal'));
+            scanModal.show();
+            setTimeout(() => {
+                initLotScanner();
+            }, 500);
+        }, 300);
+    }
+
+    // 初始化物料掃描器
+    function initLotScanner() {
+        const scannerDiv = document.getElementById('qr-reader');
+        if (!scannerDiv) return;
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            showTorchButtonIfSupported: true
+        };
+
+        const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config, false);
+
+        html5QrcodeScanner.render(function onScanSuccess(decodedText) {
+            console.log('物料掃描成功:', decodedText);
+
+            // 停止掃描器
+            html5QrcodeScanner.clear();
+
+            // 根據目標欄位填入值
+            if (currentScanTarget === "workOrder") {
+                $("#registerLotWorkOrder").val(decodedText);
+            } else if (currentScanTarget === "rackId") {
+                $("#registerLotRackId").val(decodedText);
+            }
+
+            // 關閉掃描 Modal
+            bootstrap.Modal.getInstance(document.getElementById('barcodeModal')).hide();
+
+            // 重新顯示站點操作 Modal
+            setTimeout(() => {
+                var stationModal = new bootstrap.Modal(document.getElementById('stationLotModal'));
+                stationModal.show();
+            }, 300);
+
+            currentScanTarget = null;
+        });
+    }
 });
 
 /**

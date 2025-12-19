@@ -267,6 +267,81 @@
             </div>
         </div>
     </div>
+    @* 站點物料操作 Modal (M區/T區) *@
+    <div class="modal fade" id="stationLotModal" aria-hidden="true" aria-labelledby="stationLotModalLabel" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stationLotModalLabel"><strong>📍 <span id="stationLotName">M1</span> 站點操作</strong></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @* 站點狀態資訊 *@
+                    <div class="mb-3 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-4"><strong>目前狀態：</strong></div>
+                            <div class="col-8"><span id="stationLotStatus">空架</span></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4"><strong>工單：</strong></div>
+                            <div class="col-8"><span id="stationLotCurrentWorkOrder">無</span></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-4"><strong>貨架：</strong></div>
+                            <div class="col-8"><span id="stationLotCurrentRackId">無</span></div>
+                        </div>
+                    </div>
+                    
+                    @* 物料登記/修改表單 (動態顯示) *@
+                    <div id="lotFormSection" class="d-none">
+                        <hr />
+                        <div class="mb-3">
+                            <label class="form-label">工單條碼</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="registerLotWorkOrder" placeholder="工單條碼" />
+                                <button type="button" class="btn btn-outline-secondary" id="scanWorkOrderBtn">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">貨架條碼</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="registerLotRackId" placeholder="貨架條碼 (RackId)" />
+                                <button type="button" class="btn btn-outline-secondary" id="scanRackIdBtn">
+                                    <i class="fa-solid fa-qrcode"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" id="stationLotFooter">
+                    @* 按鈕會由 JavaScript 動態生成 *@
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    @* 清除物料確認 Modal *@
+    <div class="modal fade" id="clearLotConfirmModal" aria-hidden="true" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">⚠️ 確認清除</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <p>確定要清除 <strong id="clearLotStationName">M1</strong> 的物料資料嗎？</p>
+                    <p class="text-muted small">此操作將清除工單和貨架資訊</p>
+                </div>
+                <div class="modal-footer justify-content-center">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-danger" id="confirmClearLotBtn">確認清除</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section scripts {

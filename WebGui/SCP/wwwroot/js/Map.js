@@ -17,6 +17,11 @@ export function loadMapData(area) {
                 container: 'body',
                 trigger: 'hover'
             });
+
+            // 為 M/T 區站點綁定物料管理點擊事件（如果函數存在）
+            if (typeof window.bindStationLotEvents === 'function') {
+                window.bindStationLotEvents();
+            }
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("AJAX 請求失敗: ", textStatus, errorThrown);
