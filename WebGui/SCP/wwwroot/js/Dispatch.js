@@ -12,6 +12,12 @@ function loadMapDataLocal(area) {
             $("#Map").html(data);
             const mapSrc = area || 'FHT2-1F';
             $('#map-img').attr('src', `/img/${mapSrc}.png`);
+
+            // 初始化所有庫位的 Bootstrap Tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                container: 'body',
+                trigger: 'hover'
+            });
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("地圖載入失敗: ", textStatus, errorThrown);

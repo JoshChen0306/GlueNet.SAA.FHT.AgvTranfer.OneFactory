@@ -22,12 +22,41 @@
         <img id="map-img" src="/img/FHT2-1F.png" height="500" class="d-block mw-100" />
         @foreach (var agv in ViewBag.AgvPositions)
         {
-            <div class="position-absolute agv-transition" id="@agv.GustomerName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@Configuration.GetSection("AgvColor")[@agv.GustomerName]"></i></div>
+            string agvName = agv.GustomerName ?? "";
+            string agvColor = !string.IsNullOrEmpty(agvName) ? (Configuration.GetSection("AgvColor")[agvName] ?? "#333") : "#333";
+            <div class="position-absolute agv-transition" id="@agvName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@agvColor"></i></div>
         }
         <div class="position-absolute" style="top:64%; left:12%"><img src="/img/ChargingStation-off.png" /></div>
         @foreach (var style in ViewBag.positions)
         {
+            // 變數宣告
             string newbottom = "", newLeft = "";
+            string haveFlag = style.HaveFlag ?? "";
+            string statusText = haveFlag switch {
+                "0" => "空架",
+                "1" => "空盤",
+                "3" => "料盤",
+                _ => "未知"
+            };
+            
+            // 簡化站點名稱 (移除多餘的 0，例如 A001 -> A1)
+            string shortName = "";
+            if (!string.IsNullOrEmpty(style.Name)) {
+                int idx = 0;
+                while (idx < style.Name.Length && char.IsLetter(style.Name[idx])) idx++;
+                string prefix = style.Name.Substring(0, idx);
+                string numPart = style.Name.Substring(idx).TrimStart('0');
+                if (string.IsNullOrEmpty(numPart)) numPart = "0";
+                shortName = prefix + numPart;
+            }
+            
+            // Tooltip 內容
+            string rackInfo = !string.IsNullOrEmpty(style.RackId) ? $"RackId: {style.RackId}" : "";
+            string workOrderInfo = !string.IsNullOrEmpty(style.WorkOrder) ? $"工單: {style.WorkOrder}" : "";
+            string tooltipContent = $"站點: {style.Name}&#10;狀態: {statusText}";
+            if (!string.IsNullOrEmpty(rackInfo)) tooltipContent += $"&#10;{rackInfo}";
+            if (!string.IsNullOrEmpty(workOrderInfo)) tooltipContent += $"&#10;{workOrderInfo}";
+            
             switch (style.Transform)
             {
                 case "rotate(90deg)":
@@ -43,8 +72,14 @@
                     newLeft = (double.Parse(style.Left.Replace("%", "")) + 0.2).ToString() + "%";
                     break;
             }
-            <button class="btn position-absolute p-0 border-0" id="@style.Name" data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" data-reserve="@style.Reserve" data-puttime = "@style.PutTime" style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
-                <img src="@style.ImgSrc" alt="Icon" />
+            <button class="btn position-absolute p-0 border-0 station-btn" id="@style.Name" 
+                    data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="@tooltipContent"
+                    data-haveflag="@style.HaveFlag" data-rackid="@style.RackId" data-name="@style.InterfaceName" data-workorder="@style.WorkOrder" data-reserve="@style.Reserve" data-puttime="@style.PutTime" 
+                    style='bottom:@style.Bottom; left:@style.Left; transform:@style.Transform;'>
+                <div class="station-container">
+                    <img src="@style.ImgSrc" alt="Icon" />
+                </div>
             </button>
             if (style.Reserve == "Y")
             {

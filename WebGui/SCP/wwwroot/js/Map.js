@@ -10,7 +10,13 @@ export function loadMapData(area) {
             $("#Map").html(data);
 
             const mapSrc = area || 'FHT2-1F';
-            $('#map-img').attr('src', `/img/${mapSrc}.png`)
+            $('#map-img').attr('src', `/img/${mapSrc}.png`);
+
+            // 初始化所有庫位的 Bootstrap Tooltip
+            $('[data-bs-toggle="tooltip"]').tooltip({
+                container: 'body',
+                trigger: 'hover'
+            });
         },
         error: function (jqXHR, textStatus, errorThrown) {
             console.error("AJAX 請求失敗: ", textStatus, errorThrown);
