@@ -247,11 +247,20 @@ namespace SCP.Controllers
                 }
 
                 // 處理 V Cut 標記
-                // 先移除現有的 ^VCUT 標記（如果有的話）
-                workOrder = workOrder.Replace("^VCUT", "");
-                // 若勾選了 V Cut 專用，則附加標記
-                if (isVcutMaterial == "true")
+                // 先移除現有的 ^VCUT 和 ^DONE 標記（如果有的話）
+                workOrder = workOrder.Replace("^VCUT^DONE", "").Replace("^VCUT", "").Replace("^DONE", "");
+                
+                // 判斷站點區域
+                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                
+                if (stationArea == "T")
                 {
+                    // T 區（V Cut區）建立物料時，自動標記為已加工完成
+                    workOrder = workOrder + "^VCUT^DONE";
+                }
+                else if (stationArea == "M" && isVcutMaterial == "true")
+                {
+                    // M 區（雷雕區）勾選 V Cut 專用時，附加 ^VCUT 標記
                     workOrder = workOrder + "^VCUT";
                 }
 

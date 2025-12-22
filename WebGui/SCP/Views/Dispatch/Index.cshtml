@@ -46,13 +46,13 @@
                         </select>
                     </div>
                 </div>
-                <div class="row mb-3">
+                <div class="row mb-3" id="rackIdRow">
                     <label class="col-2 col-form-label">Rack碼</label>
                     <div class="col-10 d-flex align-items-center">
                         <input class="form-control me-3 w-75" id="RackId" name="RackId" placeholder="Rack編碼" readonly />
                     </div>
                 </div>
-                <div class="row position-relative mb-3">
+                <div class="row position-relative mb-3" id="workOrderRow">
                     <label class="col-2 col-form-label">@Localizer["WorkOrder"]</label>
                     <div class="col-10 d-flex align-items-center">
                         <input class="form-control w-75 me-2" id="WorkOrder" name="WorkOrder" autocomplete="off" placeholder="@Localizer["BatchText"]" />
@@ -61,6 +61,16 @@
                                 id="barcode-scan-btn">
                             <i class="fa-solid fa-qrcode fa-xl" style="color:gray;"></i>
                         </button>
+                    </div>
+                </div>
+                @* 掃描機台按鈕（2F 專用） *@
+                <div class="row position-relative mb-3" id="machineScanRow" style="display: none;">
+                    <label class="col-2 col-form-label"></label>
+                    <div class="col-10 d-flex align-items-center">
+                        <button type="button" class="btn btn-info rounded-pill" id="machine-scan-btn">
+                            <i class="fa-solid fa-qrcode me-2"></i>掃描機台
+                        </button>
+                        <small class="text-muted ms-3">掃描機台後自動選擇派送終點和可用帳料</small>
                     </div>
                 </div>
                 <div class="row position-relative">
@@ -317,7 +327,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="mb-3">
+                        <div class="mb-3" id="vcutCheckboxRow">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="registerLotVcut">
                                 <label class="form-check-label" for="registerLotVcut">
