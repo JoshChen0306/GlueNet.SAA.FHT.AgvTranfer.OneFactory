@@ -232,6 +232,12 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請選擇站點" });
                 }
 
+                // 驗證：工單必填
+                if (string.IsNullOrEmpty(workOrder))
+                {
+                    return BadRequest(new { message = "請輸入工單條碼" });
+                }
+
                 // 檢查站點是否存在
                 var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
                 if (port == null)

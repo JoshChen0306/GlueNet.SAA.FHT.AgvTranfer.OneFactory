@@ -54,7 +54,21 @@ $(function () {
                 $.each(data, function (index, item) {
                     var tracName = $("#" + item.Name);
                     var img = tracName.find("img");
-                    img.attr("src", item.ImgSrc);
+
+                    // 決定站點圖示
+                    var imgSrc = item.ImgSrc;
+                    // V Cut 物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
+                    if (item.HaveFlag === "3" && item.WorkOrder) {
+                        if (item.WorkOrder.includes("^VCUT^DONE")) {
+                            // 紫色：V Cut 已加工完成
+                            imgSrc = "/img/vcut-done.svg";
+                        } else if (item.WorkOrder.includes("^VCUT")) {
+                            // 橙色：V Cut 待加工
+                            imgSrc = "/img/vcut-pending.svg";
+                        }
+                    }
+                    img.attr("src", imgSrc);
+
                     tracName.attr("data-haveflag", item.HaveFlag);
                     tracName.attr("data-rackid", item.RackId);
                     tracName.attr("data-workorder", item.WorkOrder);

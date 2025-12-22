@@ -994,9 +994,16 @@ $(function () {
 
     // 提交物料表單
     function submitLotForm() {
-        var workOrder = $("#registerLotWorkOrder").val();
-        var rackId = $("#registerLotRackId").val();
+        var workOrder = $("#registerLotWorkOrder").val().trim();
+        var rackId = $("#registerLotRackId").val().trim();
         var isVcutMaterial = $("#registerLotVcut").is(":checked");
+
+        // 驗證：工單必填
+        if (!workOrder) {
+            alert("請輸入工單條碼");
+            $("#registerLotWorkOrder").focus();
+            return;
+        }
 
         console.log("提交物料表單:", currentLotStation, workOrder, rackId, "V Cut:", isVcutMaterial);
 

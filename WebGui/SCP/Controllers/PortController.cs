@@ -47,7 +47,7 @@ namespace SCP.Controllers
                     Left = ConvertX(item.Remark.Split(",")[0]),
                     Bottom = ConvertY(item.Remark.Split(",")[1]),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
-                    ImgSrc = _configuration.GetSection("TracStatus").GetSection(item.HaveFlag).Value,
+                    ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
                     InterfaceName = item.InterfaceName,
                     MachineName = item.MachineName,
@@ -92,6 +92,38 @@ namespace SCP.Controllers
 
             return Ok();
         }
+
+        /// <summary>
+        /// 根據 HaveFlag 和 WorkOrder 決定站點圖示
+        /// </summary>
+        private string GetStationImgSrc(string haveFlag, string workOrder)
+        {
+            // 處理 null 或空值的情況，預設為空架 (0)
+            if (string.IsNullOrEmpty(haveFlag))
+            {
+                haveFlag = "0";
+            }
+
+            // V Cut 物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
+            if (haveFlag == "3" && !string.IsNullOrEmpty(workOrder))
+            {
+                if (workOrder.Contains("^VCUT^DONE"))
+                {
+                    // 紫色：V Cut 已加工完成
+                    return "/img/vcut-done.svg";
+                }
+                else if (workOrder.Contains("^VCUT"))
+                {
+                    // 橙色：V Cut 待加工
+                    return "/img/vcut-pending.svg";
+                }
+            }
+            // 預設：使用設定檔的圖示
+            var imgSrc = _configuration.GetSection("TracStatus").GetSection(haveFlag).Value;
+            // 如果設定檔中找不到對應的圖示，使用空架圖示作為預設
+            return imgSrc ?? "/img/empty.svg";
+        }
+
         private string ConvertX(string posX)
         {
             string result;
