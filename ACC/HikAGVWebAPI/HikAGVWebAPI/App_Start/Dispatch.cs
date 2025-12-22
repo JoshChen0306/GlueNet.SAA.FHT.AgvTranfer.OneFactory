@@ -463,10 +463,12 @@ namespace HikAGVWebAPI
 
             try
             {
+                var rackId = string.IsNullOrEmpty(oMission.RackId) ? "-1" : oMission.RackId;
                 string PositionCode = $@"{oMission.BeginStation},00;{oMission.EndStation},00";
                 SchedulingTask AGVStatus = new SchedulingTask()
                 {
                     reqCode = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),
+                    podCode = rackId,
                     taskTyp = TaskType,
                     positionCodePath = PositionCode.Split(';').Select(x => x.Split(','))
                                                      .Select(x => new CodePath { positionCode = x[0], type = x[1] }).ToList(),
