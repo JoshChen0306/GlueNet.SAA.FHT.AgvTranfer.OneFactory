@@ -410,24 +410,32 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "此站點已有待處理的派送任務，終點：" + existingTask.EndStation });
                 }
 
-                // 依序尋找可放置位置：M 區 → C 區
-                // 條件：HaveFlag=0 (空架) 且 BgnToEnd 為空 (無預約)
+                // 取得已有待處理任務的終點站，避免重複指派到同一位置
+                var pendingEndStations = _DBContext.oNeed
+                    .Where(n => n.AssignFlag == null || n.AssignFlag == "")
+                    .Select(n => n.EndStation)
+                    .ToList();
+
+                // 依序尋找可放置位置：M 區（雷雕區）→ Q 區（出貨區）
+                // 條件：HaveFlag=0 (空架) 且 BgnToEnd 為空 (無預約) 且不在待處理任務的終點中
                 var emptySlot = _DBContext.oPort
                     .Where(p => p.Block == "M" && 
                                 p.HaveFlag == "0" && 
                                 (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                p.UseFlag == "Y")
+                                p.UseFlag == "Y" &&
+                                !pendingEndStations.Contains(p.StationNo))
                     .OrderBy(p => p.Port)
                     .FirstOrDefault();
 
                 if (emptySlot == null)
                 {
-                    // M 區滿，查詢 C 區
+                    // M 區滿，查詢 Q 區（出貨區）
                     emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "C" && 
+                        .Where(p => p.Block == "Q" && 
                                     p.HaveFlag == "0" && 
                                     (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                    p.UseFlag == "Y")
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
                         .OrderBy(p => p.Port)
                         .FirstOrDefault();
                 }
