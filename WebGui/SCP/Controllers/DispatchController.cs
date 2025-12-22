@@ -188,8 +188,15 @@ namespace SCP.Controllers
         {
             try
             {
+                // 取得已有待處理任務的起點站，避免重複派送
+                var pendingObjStations = _DBContext.oNeed
+                    .Where(n => n.AssignFlag == null || n.AssignFlag == "")
+                    .Select(n => n.ObjStation)
+                    .ToList();
+
                 var stations = _DBContext.oPort
-                    .Where(p => p.UseFlag == "Y")
+                    .Where(p => p.UseFlag == "Y" && 
+                                !pendingObjStations.Contains(p.StationNo))  // 排除已有待處理任務的站點
                     .Select(p => new
                     {
                         p.Area,
