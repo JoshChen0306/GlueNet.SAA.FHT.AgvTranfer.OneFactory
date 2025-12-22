@@ -634,15 +634,35 @@ $(function () {
 
         // 工單和貨架顯示
         var workOrderDisplay = stationInfo.workOrder || "無";
+        // 判斷是否為 V Cut 物料
+        var isVcutMaterial = stationInfo.workOrder && stationInfo.workOrder.includes("^VCUT");
+        // 顯示時移除 ^VCUT 標記
+        if (isVcutMaterial) {
+            workOrderDisplay = workOrderDisplay.replace("^VCUT", "");
+        }
         if (workOrderDisplay.length > 30) {
             workOrderDisplay = workOrderDisplay.substring(0, 30) + "...";
         }
         $("#stationLotCurrentWorkOrder").text(workOrderDisplay);
         $("#stationLotCurrentRackId").text(stationInfo.rackId || "無");
 
+        // V Cut 標記顯示（只有 M 區有料時顯示）
+        if (stationInfo.haveFlag !== "0" && currentLotStation && currentLotStation.startsWith("M")) {
+            $("#vcutTagRow").show();
+            $("#stationLotVcutTag").text(isVcutMaterial ? "是" : "否");
+            if (isVcutMaterial) {
+                $("#stationLotVcutTag").addClass("text-primary fw-bold");
+            } else {
+                $("#stationLotVcutTag").removeClass("text-primary fw-bold");
+            }
+        } else {
+            $("#vcutTagRow").hide();
+        }
+
         // 清空輸入欄位
         $("#registerLotWorkOrder").val("");
         $("#registerLotRackId").val("");
+        $("#registerLotVcut").prop("checked", false);
         $("#lotFormSection").addClass("d-none");
 
         // 動態生成按鈕
@@ -681,8 +701,15 @@ $(function () {
         // 帶入現有值
         var stationInfo = stationCache[currentLotStation];
         if (stationInfo) {
-            $("#registerLotWorkOrder").val(stationInfo.workOrder || "");
+            var workOrder = stationInfo.workOrder || "";
+            var isVcut = workOrder.includes("^VCUT");
+            // 移除 ^VCUT 標記以便編輯
+            if (isVcut) {
+                workOrder = workOrder.replace("^VCUT", "");
+            }
+            $("#registerLotWorkOrder").val(workOrder);
             $("#registerLotRackId").val(stationInfo.rackId || "");
+            $("#registerLotVcut").prop("checked", isVcut);
         }
 
         $("#lotFormSection").removeClass("d-none");
@@ -756,8 +783,9 @@ $(function () {
     function submitLotForm() {
         var workOrder = $("#registerLotWorkOrder").val();
         var rackId = $("#registerLotRackId").val();
+        var isVcutMaterial = $("#registerLotVcut").is(":checked");
 
-        console.log("提交物料表單:", currentLotStation, workOrder, rackId);
+        console.log("提交物料表單:", currentLotStation, workOrder, rackId, "V Cut:", isVcutMaterial);
 
         $.ajax({
             type: "POST",
@@ -766,7 +794,8 @@ $(function () {
             data: JSON.stringify({
                 stationNo: currentLotStation,
                 workOrder: workOrder,
-                rackId: rackId
+                rackId: rackId,
+                isVcutMaterial: isVcutMaterial ? "true" : "false"
             }),
             success: function (response) {
                 alert((lotOperationMode === "edit" ? "修改" : "登記") + "成功！站點：" + currentLotStation);

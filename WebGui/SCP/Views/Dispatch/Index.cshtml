@@ -290,6 +290,10 @@
                             <div class="col-4"><strong>貨架：</strong></div>
                             <div class="col-8"><span id="stationLotCurrentRackId">無</span></div>
                         </div>
+                        <div class="row" id="vcutTagRow" style="display: none;">
+                            <div class="col-4"><strong>🏷️ V Cut 專用：</strong></div>
+                            <div class="col-8"><span id="stationLotVcutTag">否</span></div>
+                        </div>
                     </div>
                     
                     @* 物料登記/修改表單 (動態顯示) *@
@@ -312,6 +316,15 @@
                                     <i class="fa-solid fa-qrcode"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="registerLotVcut">
+                                <label class="form-check-label" for="registerLotVcut">
+                                    🏷️ V Cut 專用物料
+                                </label>
+                            </div>
+                            <small class="text-muted">勾選後，此物料僅能派送至 V Cut 區</small>
                         </div>
                     </div>
                 </div>

@@ -225,6 +225,7 @@ namespace SCP.Controllers
                 string stationNo = data.ContainsKey("stationNo") ? data["stationNo"] : "";
                 string workOrder = data.ContainsKey("workOrder") ? data["workOrder"] : "";
                 string rackId = data.ContainsKey("rackId") ? data["rackId"] : "";
+                string isVcutMaterial = data.ContainsKey("isVcutMaterial") ? data["isVcutMaterial"] : "false";
 
                 if (string.IsNullOrEmpty(stationNo))
                 {
@@ -243,6 +244,15 @@ namespace SCP.Controllers
                 {
                     // 站點不是空架，但仍允許覆蓋登記
                     // 可在此處記錄日誌
+                }
+
+                // 處理 V Cut 標記
+                // 先移除現有的 ^VCUT 標記（如果有的話）
+                workOrder = workOrder.Replace("^VCUT", "");
+                // 若勾選了 V Cut 專用，則附加標記
+                if (isVcutMaterial == "true")
+                {
+                    workOrder = workOrder + "^VCUT";
                 }
 
                 // 更新 oPort 表
