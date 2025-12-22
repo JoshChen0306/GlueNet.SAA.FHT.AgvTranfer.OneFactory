@@ -63,14 +63,16 @@
                         </button>
                     </div>
                 </div>
-                @* 掃描機台按鈕（2F 專用） *@
+                @* 掃描機台 / 手動輸入機台（2F 專用） *@
                 <div class="row position-relative mb-3" id="machineScanRow" style="display: none;">
-                    <label class="col-2 col-form-label"></label>
+                    <label class="col-2 col-form-label">機台號碼</label>
                     <div class="col-10 d-flex align-items-center">
-                        <button type="button" class="btn btn-info rounded-pill" id="machine-scan-btn">
-                            <i class="fa-solid fa-qrcode me-2"></i>掃描機台
+                        <button type="button" class="btn btn-info rounded-pill me-2" id="machine-scan-btn">
+                            <i class="fa-solid fa-qrcode me-1"></i>掃描機台
                         </button>
-                        <small class="text-muted ms-3">掃描機台後自動選擇派送終點和可用帳料</small>
+                        <button type="button" class="btn btn-outline-secondary rounded-pill" id="machine-manual-btn">
+                            <i class="fa-solid fa-keyboard me-1"></i>手動輸入
+                        </button>
                     </div>
                 </div>
                 <div class="row position-relative">

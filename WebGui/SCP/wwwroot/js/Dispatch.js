@@ -455,8 +455,18 @@ $(function () {
         });
 
         if (allValid) {
-            // 需要輸入工單/供單號的區域：A, J, H, L, M, T
-            if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
+            // MT 區特別處理：工單已在起點物料資料中，自動帶入
+            if (area === "MT" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單（移除 ^VCUT 標記）
+                    var autoWorkOrder = beginStationCache.workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
+                    $("#WorkOrder").val(autoWorkOrder);
+                    console.log("MT 區自動填入工單:", autoWorkOrder);
+                }
+            }
+            // 需要輸入工單/供單號的區域：A, J, H, L, M, T（但 MT 區已自動帶入，跳過驗證）
+            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder || !workOrder.trim()) {
                     // M 和 T 區顯示「供單號」，其他區顯示「工單」
@@ -673,6 +683,77 @@ $(function () {
         startMachineScanner();
     });
 
+    // 手動輸入機台號碼按鈕（測試用）
+    $("#machine-manual-btn").on("click", function () {
+        console.log("點擊手動輸入機台按鈕");
+        var machineInput = prompt("請輸入機台號碼（如 O1、P1）：");
+        if (machineInput && machineInput.trim() !== "") {
+            processManualMachineInput(machineInput.trim());
+        }
+    });
+
+    // 處理手動輸入的機台號碼
+    function processManualMachineInput(inputMachineName) {
+        console.log("手動輸入機台號碼:", inputMachineName);
+
+        // 轉大寫處理
+        inputMachineName = inputMachineName.toUpperCase();
+
+        // 比對 MachineName 找到對應站點
+        var matchedStation = null;
+        for (var stationNo in stationCache) {
+            var station = stationCache[stationNo];
+            // 直接比對站點名稱
+            if (stationNo.toUpperCase() === inputMachineName) {
+                matchedStation = stationNo;
+                break;
+            }
+            // 比對 MachineName
+            if (station.machineName && station.machineName.toUpperCase().includes(inputMachineName)) {
+                matchedStation = stationNo;
+                break;
+            }
+        }
+
+        // 驗證 1：站點是否存在
+        if (!matchedStation) {
+            alert("找不到對應機台：" + inputMachineName + "\n請輸入有效的站點名稱（如 O1、P1）");
+            return;
+        }
+
+        // 驗證 2：是否為有效的終點區域（O/P 區）
+        var areaPrefix = matchedStation.substring(0, 1);
+        if (areaPrefix !== "O" && areaPrefix !== "P") {
+            alert("無效的終點區域：" + matchedStation + "\n只能派送到 O 區或 P 區");
+            return;
+        }
+
+        // 驗證 3：站點是否為空架 (HaveFlag = 0)
+        var stationData = stationCache[matchedStation];
+        if (stationData && stationData.haveFlag !== "0") {
+            alert("終點站點已有貨物：" + matchedStation + "\n請選擇空架");
+            return;
+        }
+
+        console.log("找到有效站點:", matchedStation);
+
+        // 設定終點
+        $("#EndStation").val(matchedStation);
+        $("#EndStation").prop("disabled", false);
+
+        // 取得終點區域
+        var destinationArea = matchedStation.substring(0, 1).toUpperCase();
+
+        // 依據終點區域過濾起點選項
+        filterBeginStationByDestination(destinationArea);
+
+        // 啟用起點選擇
+        $("#BeginStation").prop("disabled", false);
+
+        // 提示使用者
+        alert("已設定派送終點：" + matchedStation);
+    }
+
     // 啟動機台掃描器
     function startMachineScanner() {
         // 顯示掃描 Modal
@@ -706,42 +787,8 @@ $(function () {
             // 關閉掃描 Modal
             bootstrap.Modal.getInstance(document.getElementById('barcodeModal')).hide();
 
-            // 比對 MachineName 找到對應站點
-            var matchedStation = null;
-            for (var stationNo in stationCache) {
-                var station = stationCache[stationNo];
-                if (station.machineName && station.machineName.includes(decodedText)) {
-                    matchedStation = stationNo;
-                    break;
-                }
-                // 也嘗試反向比對
-                if (decodedText.includes(station.machineName)) {
-                    matchedStation = stationNo;
-                    break;
-                }
-            }
-
-            if (matchedStation) {
-                console.log("找到對應站點:", matchedStation);
-
-                // 設定終點
-                $("#EndStation").val(matchedStation);
-                $("#EndStation").prop("disabled", false);
-
-                // 取得終點區域
-                var destinationArea = matchedStation.substring(0, 1).toUpperCase();
-
-                // 依據終點區域過濾起點選項
-                filterBeginStationByDestination(destinationArea);
-
-                // 啟用起點選擇
-                $("#BeginStation").prop("disabled", false);
-
-                // 提示使用者
-                alert("已設定派送終點：" + matchedStation + "\n請選擇要派送的帳料");
-            } else {
-                alert("找不到對應機台：" + decodedText + "\n請確認機台條碼是否正確");
-            }
+            // 使用共用函數處理掃描結果（與手動輸入使用相同驗證邏輯）
+            processManualMachineInput(decodedText);
 
             scanMode = "workOrder";
         });
