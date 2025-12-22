@@ -326,6 +326,135 @@ namespace SCP.Controllers
                 return StatusCode(500, new { message = "清除失敗", error = ex.Message });
             }
         }
+
+        /// <summary>
+        /// 標記空板 - 將站點從料盤(3)改為空板(1)，清除工單資訊
+        /// 適用於 O/P/S/N 區
+        /// </summary>
+        [HttpPost]
+        public IActionResult MarkEmptyTray([FromBody] Dictionary<string, string> data)
+        {
+            try
+            {
+                string stationNo = data.ContainsKey("stationNo") ? data["stationNo"] : "";
+
+                if (string.IsNullOrEmpty(stationNo))
+                {
+                    return BadRequest(new { message = "請選擇站點" });
+                }
+
+                // 檢查站點是否存在
+                var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
+                if (port == null)
+                {
+                    return BadRequest(new { message = "站點不存在" });
+                }
+
+                // 檢查站點狀態是否為料盤
+                if (port.HaveFlag != "3")
+                {
+                    return BadRequest(new { message = "站點狀態不是料盤，無法標記為空板" });
+                }
+
+                // 更新 oPort 表 - 標記為空板
+                _DBContext.oPort
+                    .Where(p => p.StationNo == stationNo)
+                    .ExecuteUpdate(setters => setters
+                        .SetProperty(p => p.HaveFlag, "1")      // 設為空板
+                        .SetProperty(p => p.WorkOrder, "")      // 清除工單
+                        .SetProperty(p => p.RackId, ""));       // 清除貨架
+
+                return Ok(new { message = "標記成功", stationNo = stationNo });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "標記失敗", error = ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Release - 將空板回送到 M 區或 C 區
+        /// 適用於 O/P/S/N 區
+        /// </summary>
+        [HttpPost]
+        public IActionResult Release([FromBody] Dictionary<string, string> data)
+        {
+            try
+            {
+                string stationNo = data.ContainsKey("stationNo") ? data["stationNo"] : "";
+
+                if (string.IsNullOrEmpty(stationNo))
+                {
+                    return BadRequest(new { message = "請選擇站點" });
+                }
+
+                // 檢查站點是否存在
+                var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
+                if (port == null)
+                {
+                    return BadRequest(new { message = "站點不存在" });
+                }
+
+                // 檢查站點狀態是否為空板
+                if (port.HaveFlag != "1")
+                {
+                    return BadRequest(new { message = "請先標記為空板" });
+                }
+
+                // 檢查是否已有待處理的派送任務（防止重複派送）
+                var existingTask = _DBContext.oNeed
+                    .FirstOrDefault(n => n.ObjStation == stationNo && 
+                                         (n.AssignFlag == null || n.AssignFlag == ""));
+                if (existingTask != null)
+                {
+                    return BadRequest(new { message = "此站點已有待處理的派送任務，終點：" + existingTask.EndStation });
+                }
+
+                // 依序尋找可放置位置：M 區 → C 區
+                // 條件：HaveFlag=0 (空架) 且 BgnToEnd 為空 (無預約)
+                var emptySlot = _DBContext.oPort
+                    .Where(p => p.Block == "M" && 
+                                p.HaveFlag == "0" && 
+                                (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                p.UseFlag == "Y")
+                    .OrderBy(p => p.Port)
+                    .FirstOrDefault();
+
+                if (emptySlot == null)
+                {
+                    // M 區滿，查詢 C 區
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "C" && 
+                                    p.HaveFlag == "0" && 
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y")
+                        .OrderBy(p => p.Port)
+                        .FirstOrDefault();
+                }
+
+                if (emptySlot == null)
+                {
+                    return BadRequest(new { message = "目前沒有可放置的貨架" });
+                }
+
+                // 建立派送任務 (oNeed)
+                string sql = "INSERT INTO oNeed (ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime, AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
+                _DBContext.Database.ExecuteSqlRaw(sql,
+                    stationNo,                                    // ObjStation (起點)
+                    "",                                           // RackId (空)
+                    "",                                           // WorkOrder (空)
+                    emptySlot.StationNo,                          // EndStation (終點)
+                    "Web",                                        // TaskSource
+                    DateTime.Now.ToString("yyyyMMddHHmmssffffff"), // TaskDateTime
+                    "");                                          // AssignFlag
+
+                return Ok(new { message = "Release 成功", stationNo = stationNo, endStation = emptySlot.StationNo });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Release 失敗", error = ex.Message });
+            }
+        }
     }
 
 }

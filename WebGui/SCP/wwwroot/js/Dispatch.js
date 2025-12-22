@@ -50,9 +50,12 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 只處理 M 和 T 區站點
-    if (!stationNo || (!stationNo.startsWith('M') && !stationNo.startsWith('T'))) {
-        return; // 不是 M/T 區，不處理
+    // 處理 M/T 區（物料登記）和 O/P/S/N 區（標記空板/Release）
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N'];
+    var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
+
+    if (!stationNo || validAreas.indexOf(stationArea) === -1) {
+        return; // 不是支援的區域，不處理
     }
 
     e.preventDefault();
@@ -876,13 +879,30 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        if (stationInfo.haveFlag === "0") {
-            // 空架 - 顯示「物料登記」
-            footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+        // 判斷區域類型：M/T 區為物料登記區，O/P/S/N 區為 Release 操作區
+        var releaseAreas = ['O', 'P', 'S', 'N'];
+        var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
+
+        if (isReleaseArea) {
+            // O/P/S/N 區 - 顯示「標記空板」和「Release」按鈕
+            if (stationInfo.haveFlag === "3") {
+                // 料盤 - 可標記為空板
+                footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
+            } else if (stationInfo.haveFlag === "1") {
+                // 空板 - 可 Release 回送
+                footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+            }
+            // HaveFlag=0 (空架) 時不顯示任何操作按鈕
         } else {
-            // 有物料 - 顯示「物料修改」和「清除物料」
-            footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
-            footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
+            // M/T 區 - 物料登記操作
+            if (stationInfo.haveFlag === "0") {
+                // 空架 - 顯示「物料登記」
+                footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+            } else {
+                // 有物料 - 顯示「物料修改」和「清除物料」
+                footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
+                footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
+            }
         }
 
         // 顯示 Modal
@@ -957,7 +977,53 @@ $(function () {
                 refreshMap();
             },
             error: function (error) {
-                var message = error.responseJSON?.message || "清除失敗";
+            }
+        });
+    });
+
+    // ===== O/P/S/N 區操作：標記空板 =====
+    $(document).on("click", "#btnMarkEmptyTray", function () {
+        console.log("點擊標記空板:", currentLotStation);
+
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/MarkEmptyTray",
+            contentType: "application/json",
+            data: JSON.stringify({
+                stationNo: currentLotStation
+            }),
+            success: function (response) {
+                alert("已標記為空板！站點：" + currentLotStation);
+                bootstrap.Modal.getInstance(document.getElementById('stationLotModal')).hide();
+                // 重新載入地圖
+                refreshMap();
+            },
+            error: function (error) {
+                var message = error.responseJSON?.message || "標記失敗";
+                alert(message);
+            }
+        });
+    });
+
+    // ===== O/P/S/N 區操作：Release 回送 =====
+    $(document).on("click", "#btnRelease", function () {
+        console.log("點擊 Release 回送:", currentLotStation);
+
+        $.ajax({
+            type: "POST",
+            url: "/Dispatch/Release",
+            contentType: "application/json",
+            data: JSON.stringify({
+                stationNo: currentLotStation
+            }),
+            success: function (response) {
+                alert("Release 成功！\n起點：" + currentLotStation + "\n終點：" + response.endStation);
+                bootstrap.Modal.getInstance(document.getElementById('stationLotModal')).hide();
+                // 重新載入地圖
+                refreshMap();
+            },
+            error: function (error) {
+                var message = error.responseJSON?.message || "Release 失敗";
                 alert(message);
             }
         });
