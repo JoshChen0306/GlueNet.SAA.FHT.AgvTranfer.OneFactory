@@ -176,6 +176,10 @@ namespace svrPair
                     case "T":   // <--- ★★★ 新增：2F V cut區 -> O/P ★★★
                     case "Q":   // <--- ★★★ 新增：2F 出料區 -> 清洗區 ★★★
                     case "R":   // <--- ★★★ 新增：2F 廢料區 -> 廢料回收區 ★★★
+                    case "O":   // <--- ★★★ 新增：2F OP上料區(左) -> M/Q/R (Release回送空板) ★★★
+                    case "P":   // <--- ★★★ 新增：2F OP上料區(右) -> M/Q/R (Release回送空板) ★★★
+                    case "S":   // <--- ★★★ 新增：2F 清洗區 -> M/Q/R (Release回送空板) ★★★
+                    case "N":   // <--- ★★★ 新增：2F 廢料回收區 -> M/Q/R (Release回送空板) ★★★
                         WriteLog("05.處理平板配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;
