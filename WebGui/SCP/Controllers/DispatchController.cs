@@ -252,12 +252,22 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "站點不存在" });
                 }
 
+                // 檢查該站點是否為待處理任務的終點（避免與 Release 回送任務衝突）
+                var pendingTask = _DBContext.oNeed
+                    .FirstOrDefault(n => n.EndStation == stationNo && 
+                                         (n.AssignFlag == null || n.AssignFlag == ""));
+                if (pendingTask != null)
+                {
+                    return BadRequest(new { message = $"此站點有待處理的回送任務（來自 {pendingTask.ObjStation}），請等待任務完成後再登記" });
+                }
+
                 // 檢查站點狀態（僅記錄，不阻擋）
                 if (port.HaveFlag != "0")
                 {
                     // 站點不是空架，但仍允許覆蓋登記
                     // 可在此處記錄日誌
                 }
+
 
                 // 處理 V Cut 標記
                 // 先移除現有的 ^VCUT 和 ^DONE 標記（如果有的話）
