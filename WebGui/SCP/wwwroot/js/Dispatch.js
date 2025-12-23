@@ -976,7 +976,13 @@ $(function () {
                 // 重新載入地圖
                 refreshMap();
             },
-            error: function (error) {
+            error: function (jqXHR, textStatus, errorThrown) {
+                var message = "清除失敗";
+                if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                    message = jqXHR.responseJSON.message;
+                }
+                alert(message);
+                bootstrap.Modal.getInstance(document.getElementById('clearLotConfirmModal')).hide();
             }
         });
     });

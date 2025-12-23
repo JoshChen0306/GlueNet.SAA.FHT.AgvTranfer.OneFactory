@@ -189,14 +189,34 @@ namespace SCP.Controllers
             try
             {
                 // 取得已有待處理任務的起點站，避免重複派送
-                var pendingObjStations = _DBContext.oNeed
+                // 1. oNeed 中待處理的任務（AssignFlag 為空）
+                var pendingFromONeed = _DBContext.oNeed
                     .Where(n => n.AssignFlag == null || n.AssignFlag == "")
                     .Select(n => n.ObjStation)
                     .ToList();
 
+                // 2. oRequire 中進行中的任務（OkFlag 為空，表示尚未完成）
+                var pendingFromORequire = _DBContext.oRequire
+                    .Where(r => r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")
+                    .Select(r => r.BeginStation)
+                    .ToList();
+
+                // 3. oMission 中進行中的任務（OkFlag 為空或 R=執行中）
+                var pendingFromOMission = _DBContext.oMission
+                    .Where(m => m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R")
+                    .Select(m => m.BeginStation)
+                    .ToList();
+
+                // 合併所有進行中任務的起點站
+                var allPendingStations = pendingFromONeed
+                    .Concat(pendingFromORequire)
+                    .Concat(pendingFromOMission)
+                    .Distinct()
+                    .ToList();
+
                 var stations = _DBContext.oPort
                     .Where(p => p.UseFlag == "Y" && 
-                                !pendingObjStations.Contains(p.StationNo))  // 排除已有待處理任務的站點
+                                !allPendingStations.Contains(p.StationNo))  // 排除所有進行中任務的站點
                     .Select(p => new
                     {
                         p.Area,
@@ -253,12 +273,23 @@ namespace SCP.Controllers
                 }
 
                 // 檢查該站點是否為待處理任務的終點（避免與 Release 回送任務衝突）
-                var pendingTask = _DBContext.oNeed
+                var pendingAsEndTask = _DBContext.oNeed
                     .FirstOrDefault(n => n.EndStation == stationNo && 
                                          (n.AssignFlag == null || n.AssignFlag == ""));
-                if (pendingTask != null)
+                if (pendingAsEndTask != null)
                 {
-                    return BadRequest(new { message = $"此站點有待處理的回送任務（來自 {pendingTask.ObjStation}），請等待任務完成後再登記" });
+                    return BadRequest(new { message = $"此站點有待處理的回送任務（來自 {pendingAsEndTask.ObjStation}），請等待任務完成後再登記" });
+                }
+
+                // 檢查該站點是否為進行中任務的起點（不能修改有任務的站點物料）
+                var hasPendingAsBegin = 
+                    _DBContext.oNeed.Any(n => n.ObjStation == stationNo && (n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y")) ||
+                    _DBContext.oRequire.Any(r => r.BeginStation == stationNo && (r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")) ||
+                    _DBContext.oMission.Any(m => m.BeginStation == stationNo && (m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R"));
+                
+                if (hasPendingAsBegin)
+                {
+                    return BadRequest(new { message = "此站點有進行中的派送任務，無法修改物料資訊" });
                 }
 
                 // 檢查站點狀態（僅記錄，不阻擋）
@@ -267,6 +298,7 @@ namespace SCP.Controllers
                     // 站點不是空架，但仍允許覆蓋登記
                     // 可在此處記錄日誌
                 }
+
 
 
                 // 處理 V Cut 標記
@@ -325,6 +357,17 @@ namespace SCP.Controllers
                 if (port == null)
                 {
                     return BadRequest(new { message = "站點不存在" });
+                }
+
+                // 檢查該站點是否有進行中的派送任務（不能清除有任務的站點）
+                var hasPendingTask = 
+                    _DBContext.oNeed.Any(n => n.ObjStation == stationNo && (n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y")) ||
+                    _DBContext.oRequire.Any(r => r.BeginStation == stationNo && (r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")) ||
+                    _DBContext.oMission.Any(m => m.BeginStation == stationNo && (m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R"));
+                
+                if (hasPendingTask)
+                {
+                    return BadRequest(new { message = "此站點有進行中的派送任務，無法清除物料" });
                 }
 
                 // 更新 oPort 表 - 清除物料資訊
