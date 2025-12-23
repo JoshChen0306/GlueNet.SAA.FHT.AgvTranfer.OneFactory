@@ -449,6 +449,19 @@ namespace SCP.Controllers
 
                 if (emptySlot == null)
                 {
+                    // Q 區滿，查詢 R 區
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "R" && 
+                                    p.HaveFlag == "0" && 
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderBy(p => p.Port)
+                        .FirstOrDefault();
+                }
+
+                if (emptySlot == null)
+                {
                     return BadRequest(new { message = "目前沒有可放置的貨架" });
                 }
 
