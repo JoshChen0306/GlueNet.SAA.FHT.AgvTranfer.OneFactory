@@ -50,8 +50,9 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 M/T 區（物料登記）和 O/P/S/N 區（標記空板/Release）
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N'];
+    // 處理 M/T/J 區（物料登記）和 O/P/S/N/EE 區（標記空板/Release）
+    // 注意：EE 區站點以 'E' 開頭，所以用 'E' 代表
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'E'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -61,7 +62,7 @@ $(document).on('click', '.station-btn', function (e) {
     e.preventDefault();
     e.stopPropagation();
 
-    console.log("=== 點擊 M/T 區站點:", stationNo, "===");
+    console.log("=== 點擊站點:", stationNo, "區域:", stationArea, "===");
 
     // 從 DOM 取得資料並更新快取
     stationCache[stationNo] = {
@@ -147,6 +148,17 @@ $(function () {
             // 顯示掃描機台按鈕
             $("#machineScanRow").show();
             // 隱藏 Rack 碼和工單欄位（2F 已有建物料流程）
+            $("#rackIdRow").hide();
+            $("#workOrderRow").hide();
+        } else if (selectedFloor === "3F") {
+            // 3F 樓層：區域預設選擇 J（插針室）
+            if ($("#Area option[value='J']").length > 0) {
+                $("#Area").val("J").trigger("change");
+                console.log("3F 樓層：區域預設選擇 J（插針室）");
+            }
+            // 隱藏掃描機台按鈕（3F 不需要）
+            $("#machineScanRow").hide();
+            // 隱藏 Rack 碼和工單欄位（3F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
@@ -468,8 +480,17 @@ $(function () {
                     console.log("MT 區自動填入工單:", autoWorkOrder);
                 }
             }
-            // 需要輸入工單/供單號的區域：A, J, H, L, M, T（但 MT 區已自動帶入，跳過驗證）
-            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'J' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
+            // J 區（3F 插針室）特別處理：工單已在物料登記時輸入，自動帶入
+            else if (area === "J" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單
+                    $("#WorkOrder").val(beginStationCache.workOrder);
+                    console.log("J 區自動填入工單:", beginStationCache.workOrder);
+                }
+            }
+            // 需要輸入工單/供單號的區域：A, H, L, M, T（注意：MT 和 J 已自動帶入，跳過驗證）
+            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder || !workOrder.trim()) {
                     // M 和 T 區顯示「供單號」，其他區顯示「工單」
@@ -480,14 +501,20 @@ $(function () {
                 }
             }
 
+            // 驗證：終點站必選
+            if (!endStation || endStation === "" || endStation === "選擇站點") {
+                alert('沒有可用的派送終點，請確認目標區域有空位');
+                allValid = false;
+            }
+
             // 從快取驗證站點狀態
             var beginStationData = stationCache[beginStation];
             var endStationData = stationCache[endStation];
 
-            if (beginStationData && beginStationData.haveFlag === "0") {
+            if (allValid && beginStationData && beginStationData.haveFlag === "0") {
                 alert('派送起點為空貨架，請重新選擇站點');
                 allValid = false;
-            } else if (endStationData && endStationData.haveFlag !== "0" && area !== "C") {
+            } else if (allValid && endStationData && endStationData.haveFlag !== "0" && area !== "C") {
                 alert('派送終點已有貨架，請重新選擇站點');
                 allValid = false;
             }
@@ -598,6 +625,12 @@ $(function () {
                 // 處理成功響應
                 console.log("表單資料已成功送出", response);
                 form[0].reset();
+
+                // 清除站點快取，防止重複派工（下次會重新從 API 載入）
+                isCacheLoaded = false;
+                stationCache = {};
+                console.log("已清除站點快取");
+
                 var myModal = bootstrap.Modal.getOrCreateInstance($('#dispatchModalToggle2'), {
                     keyboard: false
                 });
@@ -866,7 +899,8 @@ $(function () {
 
         // 根據站點區域控制 V Cut checkbox 顯示
         // T 區會自動標記為已加工完成，不需要顯示 checkbox
-        if (stationArea === "T") {
+        // J 區（3F 插針室）不需要 V Cut 標記
+        if (stationArea === "T" || stationArea === "J") {
             $("#vcutCheckboxRow").hide();
         } else if (stationArea === "M") {
             $("#vcutCheckboxRow").show();
@@ -879,12 +913,13 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：M/T 區為物料登記區，O/P/S/N 區為 Release 操作區
-        var releaseAreas = ['O', 'P', 'S', 'N'];
+        // 判斷區域類型：M/T/J 區為物料登記區，O/P/S/N/EE 區為 Release 操作區
+        // EE 區以 'E' 開頭，所以用 'E' 代表
+        var releaseAreas = ['O', 'P', 'S', 'N', 'E'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
-            // O/P/S/N 區 - 顯示「標記空板」和「Release」按鈕
+            // O/P/S/N/EE 區 - 顯示「標記空板」和「Release」按鈕
             if (stationInfo.haveFlag === "3") {
                 // 料盤 - 可標記為空板
                 footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
@@ -894,7 +929,7 @@ $(function () {
             }
             // HaveFlag=0 (空架) 時不顯示任何操作按鈕
         } else {
-            // M/T 區 - 物料登記操作
+            // M/T/J 區 - 物料登記操作
             if (stationInfo.haveFlag === "0") {
                 // 空架 - 顯示「物料登記」
                 footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
@@ -1353,6 +1388,30 @@ function filterBeginStationOptions(selectedValue) {
 
                 var workOrder = station.workOrder || "";
                 return workOrder.includes("^VCUT^DONE");
+            }).show();
+            break;
+
+        case "J":
+            // J 區（3F 插針室）作為起點：顯示有料的站點 (HaveFlag = 3)
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // J 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("J") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var workOrder = station.workOrder || "";
+                var displayWorkOrder = workOrder;
+                // 截斷過長的文字
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
             }).show();
             break;
 

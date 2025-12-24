@@ -208,15 +208,44 @@ namespace SCP.Controllers
                     .ToList();
 
                 // 合併所有進行中任務的起點站
-                var allPendingStations = pendingFromONeed
+                var allPendingBeginStations = pendingFromONeed
                     .Concat(pendingFromORequire)
                     .Concat(pendingFromOMission)
                     .Distinct()
                     .ToList();
 
+                // 取得已有待處理任務的終點站，避免重複指派
+                var pendingEndFromONeed = _DBContext.oNeed
+                    .Where(n => n.AssignFlag == null || n.AssignFlag == "")
+                    .Select(n => n.EndStation)
+                    .ToList();
+
+                var pendingEndFromORequire = _DBContext.oRequire
+                    .Where(r => r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")
+                    .Select(r => r.EndStation)
+                    .ToList();
+
+                var pendingEndFromOMission = _DBContext.oMission
+                    .Where(m => m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R")
+                    .Select(m => m.EndStation)
+                    .ToList();
+
+                // 合併所有進行中任務的終點站
+                var allPendingEndStations = pendingEndFromONeed
+                    .Concat(pendingEndFromORequire)
+                    .Concat(pendingEndFromOMission)
+                    .Distinct()
+                    .ToList();
+
+                // 合併所有不可選的站點（起點 + 終點）
+                var allExcludedStations = allPendingBeginStations
+                    .Concat(allPendingEndStations)
+                    .Distinct()
+                    .ToList();
+
                 var stations = _DBContext.oPort
                     .Where(p => p.UseFlag == "Y" && 
-                                !allPendingStations.Contains(p.StationNo))  // 排除所有進行中任務的站點
+                                !allExcludedStations.Contains(p.StationNo))  // 排除所有進行中任務的站點（起點和終點）
                     .Select(p => new
                     {
                         p.Area,
@@ -265,6 +294,13 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請輸入工單條碼" });
                 }
 
+                // 驗證：J 區（3F 插針室）RackId 必填
+                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                if (stationArea == "J" && string.IsNullOrEmpty(rackId))
+                {
+                    return BadRequest(new { message = "請輸入貨架條碼" });
+                }
+
                 // 檢查站點是否存在
                 var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
                 if (port == null)
@@ -305,8 +341,7 @@ namespace SCP.Controllers
                 // 先移除現有的 ^VCUT 和 ^DONE 標記（如果有的話）
                 workOrder = workOrder.Replace("^VCUT^DONE", "").Replace("^VCUT", "").Replace("^DONE", "");
                 
-                // 判斷站點區域
-                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                // 判斷站點區域（stationArea 已在前面宣告）
                 
                 if (stationArea == "T")
                 {
@@ -433,8 +468,9 @@ namespace SCP.Controllers
         }
 
         /// <summary>
-        /// Release - 將空板回送到 M 區或 C 區
-        /// 適用於 O/P/S/N 區
+        /// Release - 將空板回送到指定區域
+        /// O/P/S/N 區 → M 區（雷雕區）→ Q 區（出貨區）→ R 區
+        /// EE 區（電梯暫存區）→ J 區（3F 插針室）
         /// </summary>
         [HttpPost]
         public IActionResult Release([FromBody] Dictionary<string, string> data)
@@ -476,46 +512,70 @@ namespace SCP.Controllers
                     .Select(n => n.EndStation)
                     .ToList();
 
-                // 依序尋找可放置位置：M 區（雷雕區）→ Q 區（出貨區）
-                // 條件：HaveFlag=0 (空架) 且 BgnToEnd 為空 (無預約) 且不在待處理任務的終點中
-                var emptySlot = _DBContext.oPort
-                    .Where(p => p.Block == "M" && 
-                                p.HaveFlag == "0" && 
-                                (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                p.UseFlag == "Y" &&
-                                !pendingEndStations.Contains(p.StationNo))
-                    .OrderBy(p => p.Port)
-                    .FirstOrDefault();
+                // 判斷起點區域，決定回送目的地
+                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                oPort emptySlot = null;
 
-                if (emptySlot == null)
+                if (stationArea == "E")
                 {
-                    // M 區滿，查詢 Q 區（出貨區）
+                    // EE 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
                     emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "Q" && 
+                        .Where(p => p.Block == "J" && 
+                                    p.HaveFlag == "0" && 
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "3F 插針室 (J區) 沒有可放置的空位" });
+                    }
+                }
+                else
+                {
+                    // O/P/S/N 區 → 依序尋找：M 區（雷雕區）→ Q 區（出貨區）→ R 區
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "M" && 
                                     p.HaveFlag == "0" && 
                                     (p.BgnToEnd == null || p.BgnToEnd == "") &&
                                     p.UseFlag == "Y" &&
                                     !pendingEndStations.Contains(p.StationNo))
                         .OrderBy(p => p.Port)
                         .FirstOrDefault();
-                }
 
-                if (emptySlot == null)
-                {
-                    // Q 區滿，查詢 R 區
-                    emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "R" && 
-                                    p.HaveFlag == "0" && 
-                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                    p.UseFlag == "Y" &&
-                                    !pendingEndStations.Contains(p.StationNo))
-                        .OrderBy(p => p.Port)
-                        .FirstOrDefault();
-                }
+                    if (emptySlot == null)
+                    {
+                        // M 區滿，查詢 Q 區（出貨區）
+                        emptySlot = _DBContext.oPort
+                            .Where(p => p.Block == "Q" && 
+                                        p.HaveFlag == "0" && 
+                                        (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                        p.UseFlag == "Y" &&
+                                        !pendingEndStations.Contains(p.StationNo))
+                            .OrderBy(p => p.Port)
+                            .FirstOrDefault();
+                    }
 
-                if (emptySlot == null)
-                {
-                    return BadRequest(new { message = "目前沒有可放置的貨架" });
+                    if (emptySlot == null)
+                    {
+                        // Q 區滿，查詢 R 區
+                        emptySlot = _DBContext.oPort
+                            .Where(p => p.Block == "R" && 
+                                        p.HaveFlag == "0" && 
+                                        (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                        p.UseFlag == "Y" &&
+                                        !pendingEndStations.Contains(p.StationNo))
+                            .OrderBy(p => p.Port)
+                            .FirstOrDefault();
+                    }
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "目前沒有可放置的貨架" });
+                    }
                 }
 
                 // 建立派送任務 (oNeed)
