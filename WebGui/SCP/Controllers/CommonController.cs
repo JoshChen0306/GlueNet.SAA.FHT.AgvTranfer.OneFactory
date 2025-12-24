@@ -25,11 +25,28 @@ namespace SCP.Controllers
         [HttpGet("ShowMap")]
         public IActionResult ShowMap(string area = "FHT2-1F")
         {
+            try
+            {
+                LogMgt.Logger?.Info($"[ShowMap] 開始載入地圖, area={area}");
+                
+                LogMgt.Logger?.Debug($"[ShowMap] 正在取得站點資料...");
+                var positions = GetTrac(area);
+                LogMgt.Logger?.Info($"[ShowMap] 站點資料載入成功, 共 {positions.Count} 個站點");
+                ViewBag.positions = positions;
+                
+                LogMgt.Logger?.Debug($"[ShowMap] 正在取得 AGV 資料...");
+                var agvPositions = GetAgv(area);
+                LogMgt.Logger?.Info($"[ShowMap] AGV 資料載入成功, 共 {agvPositions.Count} 個 AGV");
+                ViewBag.AgvPositions = agvPositions;
 
-            ViewBag.positions = GetTrac(area);
-            ViewBag.AgvPositions = GetAgv(area);
-
-            return PartialView("_MapPartial");
+                LogMgt.Logger?.Info($"[ShowMap] 地圖載入完成");
+                return PartialView("_MapPartial");
+            }
+            catch (Exception ex)
+            {
+                LogMgt.Logger?.Error(ex, $"[ShowMap] 錯誤: {ex.Message}");
+                throw;
+            }
         }
 
         [HttpGet("UpdateTrac")]
