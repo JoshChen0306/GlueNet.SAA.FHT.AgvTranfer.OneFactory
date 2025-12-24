@@ -28,14 +28,14 @@ function loadMapDataLocal(area) {
     });
 }
 
-// 綁定 M/T 區站點的物料管理點擊事件
+// 綁定 M/T/Q 區站點的物料管理點擊事件
 function bindStationLotEvents() {
-    console.log("=== 綁定 M/T 區站點點擊事件 ===");
+    console.log("=== 綁定 M/T/Q 區站點點擊事件 ===");
 
-    // 標記 M 和 T 區的站點
+    // 標記 M、T、Q 區的站點（支援物料登記）
     $('.station-btn').each(function () {
         var stationNo = $(this).attr('id');
-        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T'))) {
+        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T') || stationNo.startsWith('Q'))) {
             $(this).addClass('lot-manageable');
             $(this).css('cursor', 'pointer');
             console.log("標記可管理站點:", stationNo);
@@ -50,8 +50,8 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 M/T/J 區（物料登記）和 O/P/S/N/G 區（標記空板/Release）
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G'];
+    // 處理 M/T/J/Q 區（物料登記）和 O/P/S/N/G 區（標記空板/Release）
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -488,7 +488,16 @@ $(function () {
                     console.log("J 區自動填入工單:", beginStationCache.workOrder);
                 }
             }
-            // 需要輸入工單/供單號的區域：A, H, L, M, T（注意：MT 和 J 已自動帶入，跳過驗證）
+            // Q 區（出貨區）特別處理：工單已在物料登記時輸入，自動帶入
+            else if (area === "Q" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單
+                    $("#WorkOrder").val(beginStationCache.workOrder);
+                    console.log("Q 區自動填入工單:", beginStationCache.workOrder);
+                }
+            }
+            // 需要輸入工單/供單號的區域：A, H, L, M, T（注意：MT、J、Q 已自動帶入，跳過驗證）
             else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder || !workOrder.trim()) {
@@ -502,7 +511,12 @@ $(function () {
 
             // 驗證：終點站必選
             if (!endStation || endStation === "" || endStation === "選擇站點") {
-                alert('沒有可用的派送終點，請確認目標區域有空位');
+                // 根據區域顯示不同的提示訊息
+                var endAreaName = "目標區域";
+                if (area === "Q") {
+                    endAreaName = "清洗區";
+                }
+                alert('沒有可用的派送終點，請確認' + endAreaName + '有空位');
                 allValid = false;
             }
 
@@ -898,8 +912,8 @@ $(function () {
 
         // 根據站點區域控制 V Cut checkbox 顯示
         // T 區會自動標記為已加工完成，不需要顯示 checkbox
-        // J 區（3F 插針室）不需要 V Cut 標記
-        if (stationArea === "T" || stationArea === "J") {
+        // J 區（3F 插針室）和 Q區（出貨區）不需要 V Cut 標記
+        if (stationArea === "T" || stationArea === "J" || stationArea === "Q") {
             $("#vcutCheckboxRow").hide();
         } else if (stationArea === "M") {
             $("#vcutCheckboxRow").show();
@@ -912,7 +926,7 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：M/T/J 區為物料登記區，O/P/S/N/G 區為 Release 操作區
+        // 判斷區域類型：M/T/J/Q 區為物料登記區，O/P/S/N/G 區為 Release 操作區
         var releaseAreas = ['O', 'P', 'S', 'N', 'G'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
@@ -1400,6 +1414,30 @@ function filterBeginStationOptions(selectedValue) {
 
                 // J 區且有料 (HaveFlag = 3)
                 if (!tracname.startsWith("J") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var workOrder = station.workOrder || "";
+                var displayWorkOrder = workOrder;
+                // 截斷過長的文字
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
+        case "Q":
+            // Q 區（出貨區）作為起點：顯示有料的站點 (HaveFlag = 3)
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // Q 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("Q") || station.haveFlag !== "3") return false;
 
                 // 更新顯示文字：StationNo + WorkOrder
                 var workOrder = station.workOrder || "";
