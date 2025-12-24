@@ -516,7 +516,7 @@ namespace SCP.Controllers
                 var stationArea = stationNo.Substring(0, 1).ToUpper();
                 oPort emptySlot = null;
 
-                if (stationArea == "E")
+                if (stationArea == "G")
                 {
                     // EE 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
                     emptySlot = _DBContext.oPort

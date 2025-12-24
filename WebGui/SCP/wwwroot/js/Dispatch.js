@@ -50,9 +50,8 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 M/T/J 區（物料登記）和 O/P/S/N/EE 區（標記空板/Release）
-    // 注意：EE 區站點以 'E' 開頭，所以用 'E' 代表
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'E'];
+    // 處理 M/T/J 區（物料登記）和 O/P/S/N/G 區（標記空板/Release）
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -307,10 +306,10 @@ $(function () {
                 autoSelectEndStation("E", "0", "N");
                 break;
             case "J":
-                autoSelectEndStation("EE", "0", "N");
+                autoSelectEndStation("G", "0", "N");  // J區（3F 插針室）→ G區（1F 電梯暫存區）
                 break;
-            case "EE":
-                autoSelectEndStation("J", "0", "N");
+            case "G":
+                autoSelectEndStation("J", "0", "N");  // G區（1F 電梯暫存區）→ J區（3F 插針室）
                 break;
             case "H":
                 autoSelectEndStation("K", "0", "N");  // H區（2F成型後）→ K區（4F烘烤前入貨區）
@@ -913,9 +912,8 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：M/T/J 區為物料登記區，O/P/S/N/EE 區為 Release 操作區
-        // EE 區以 'E' 開頭，所以用 'E' 代表
-        var releaseAreas = ['O', 'P', 'S', 'N', 'E'];
+        // 判斷區域類型：M/T/J 區為物料登記區，O/P/S/N/G 區為 Release 操作區
+        var releaseAreas = ['O', 'P', 'S', 'N', 'G'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
