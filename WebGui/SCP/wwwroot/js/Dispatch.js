@@ -35,7 +35,7 @@ function bindStationLotEvents() {
     // 標記 M、T、Q 區的站點（支援物料登記）
     $('.station-btn').each(function () {
         var stationNo = $(this).attr('id');
-        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T') || stationNo.startsWith('Q'))) {
+        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T') || stationNo.startsWith('Q') || stationNo.startsWith('R'))) {
             $(this).addClass('lot-manageable');
             $(this).css('cursor', 'pointer');
             console.log("標記可管理站點:", stationNo);
@@ -51,7 +51,7 @@ $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
     // 處理 M/T/J/Q 區（物料登記）和 O/P/S/N/G 區（標記空板/Release）
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q'];
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -497,6 +497,15 @@ $(function () {
                     console.log("Q 區自動填入工單:", beginStationCache.workOrder);
                 }
             }
+            // R 區（廢料區）特別處理：工單選填，如有則自動帶入
+            else if (area === "R" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單
+                    $("#WorkOrder").val(beginStationCache.workOrder);
+                    console.log("R 區自動填入工單:", beginStationCache.workOrder);
+                }
+            }
             // 需要輸入工單/供單號的區域：A, H, L, M, T（注意：MT、J、Q 已自動帶入，跳過驗證）
             else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'H' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
@@ -913,7 +922,7 @@ $(function () {
         // 根據站點區域控制 V Cut checkbox 顯示
         // T 區會自動標記為已加工完成，不需要顯示 checkbox
         // J 區（3F 插針室）和 Q區（出貨區）不需要 V Cut 標記
-        if (stationArea === "T" || stationArea === "J" || stationArea === "Q") {
+        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R") {
             $("#vcutCheckboxRow").hide();
         } else if (stationArea === "M") {
             $("#vcutCheckboxRow").show();
@@ -1117,8 +1126,10 @@ $(function () {
         var rackId = $("#registerLotRackId").val().trim();
         var isVcutMaterial = $("#registerLotVcut").is(":checked");
 
-        // 驗證：工單必填
-        if (!workOrder) {
+        // 驗證：工單必填（R 區例外，工單選填）
+        var stationArea = currentLotStation.substring(0, 1).toUpperCase();
+        console.log("submitLotForm - currentLotStation:", currentLotStation, "stationArea:", stationArea);
+        if (!workOrder && stationArea !== "R") {
             alert("請輸入工單條碼");
             $("#registerLotWorkOrder").focus();
             return;
@@ -1447,6 +1458,33 @@ function filterBeginStationOptions(selectedValue) {
                     displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
                 }
                 $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
+        case "R":
+            // R 區（廢料區）作為起點：顯示有料的站點 (HaveFlag = 3)
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // R 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("R") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder（如有）
+                var workOrder = station.workOrder || "";
+                var displayText = tracname;
+                if (workOrder) {
+                    var displayWorkOrder = workOrder;
+                    if (displayWorkOrder.length > 35) {
+                        displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                    }
+                    displayText = tracname + " - " + displayWorkOrder;
+                }
+                $(this).text(displayText);
                 return true;
             }).show();
             break;

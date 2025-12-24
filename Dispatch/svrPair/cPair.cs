@@ -79,7 +79,7 @@ namespace svrPair
 
         private SqlHelper CreateSqlHelper()
         {
-            return new SqlHelper("Data Source=DESKTOP-2I3FKA2;Initial Catalog=agvDB_1400004;Persist Security Info=True;User ID=mcs;Password=Zz123456");
+            return new SqlHelper($"Data Source={mDbIp};Initial Catalog={mDbName};Persist Security Info=True;User ID=mcs;Password=Zz123456");
         }
 
         #endregion
@@ -395,7 +395,7 @@ namespace svrPair
 
             //DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='0' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
             //                                       " Block in(" + Block + ") order by Priority desc").Tables[0];
-            
+
             var dt = mSql.QuerySqlByAutoOpen(sql).Tables[0];
 
             return dt;

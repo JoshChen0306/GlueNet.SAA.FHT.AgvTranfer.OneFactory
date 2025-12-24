@@ -288,14 +288,14 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請選擇站點" });
                 }
 
-                // 驗證：工單必填
-                if (string.IsNullOrEmpty(workOrder))
+                // 驗證：工單必填（R 區例外，工單選填）
+                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                if (string.IsNullOrEmpty(workOrder) && stationArea != "R")
                 {
                     return BadRequest(new { message = "請輸入工單條碼" });
                 }
 
                 // 驗證：J 區（3F 插針室）RackId 必填
-                var stationArea = stationNo.Substring(0, 1).ToUpper();
                 if (stationArea == "J" && string.IsNullOrEmpty(rackId))
                 {
                     return BadRequest(new { message = "請輸入貨架條碼" });
