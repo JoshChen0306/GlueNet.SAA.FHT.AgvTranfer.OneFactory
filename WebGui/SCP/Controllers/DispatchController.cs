@@ -16,7 +16,7 @@ namespace SCP.Controllers
         private readonly agvDB_1400004Context _DBContext;
         public DispatchController(IConfiguration configuration, agvDB_1400004Context DBContext)
         {
-            _DBContext= DBContext;
+            _DBContext = DBContext;
             _configuration = configuration;
 
         }
@@ -31,7 +31,7 @@ namespace SCP.Controllers
             switch (groupId)
             {
                 case "2":
-                    filterAreas = areas.Where(item => item.Value=="A");
+                    filterAreas = areas.Where(item => item.Value == "A");
                     break;
                 case "6":
                     filterAreas = areas.Where(item => item.Value == "C" || item.Value == "D");
@@ -40,16 +40,16 @@ namespace SCP.Controllers
                     filterAreas = areas.Where(item => item.Value == "F");
                     break;
             }
-                
+
 
 
             foreach (var item in filterAreas)
             {
                 areaList.Add(new SelectListItem { Value = item.Value, Text = item.Key });
-            }      
+            }
 
             ViewBag.AreaList = areaList;
-            ViewBag.Site = _DBContext.oPort.Where(p=>p.UseFlag =="Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
+            ViewBag.Site = _DBContext.oPort.Where(p => p.UseFlag == "Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
             ViewBag.Role = groupId;
 
             // 樓層選擇器
@@ -69,21 +69,21 @@ namespace SCP.Controllers
         {
             ViewBag.Dispatchs = _DBContext.oRequire
                 .ToList()
-                .Select(item=> new
+                .Select(item => new
                 {
                     item.BeginStation,
                     item.EndStation,
-                    WorkOrder = item.WorkOrder.Split('^').Length > 3 ? item.WorkOrder.Split('^')[3] : string.Empty,                   
-                    Status = item.AssignFlag == "Y" && item.OkFlag =="R" ? "執行中": item.AssignFlag == "Y" ? "已派車" : item.AssignFlag == "C" ? "取消" : "異常",
+                    WorkOrder = item.WorkOrder.Split('^').Length > 3 ? item.WorkOrder.Split('^')[3] : string.Empty,
+                    Status = item.AssignFlag == "Y" && item.OkFlag == "R" ? "執行中" : item.AssignFlag == "Y" ? "已派車" : item.AssignFlag == "C" ? "取消" : "異常",
                     TextColor = item.AssignFlag == "Y" && item.OkFlag == "R" ? "text-primary" : item.AssignFlag == "Y" ? "text-success" : item.AssignFlag == "C" ? "text-secondary" : "text-danger"
                 });
             ViewBag.Role = User.FindFirst(ClaimTypes.Role)?.Value;
             return PartialView("_DispatchPartial");
         }
 
-        public IActionResult InsertoNeed([FromBody] Dictionary<string ,string> need)
+        public IActionResult InsertoNeed([FromBody] Dictionary<string, string> need)
         {
-            
+
             string area = need["Area"];
             string objStation = need["BegingStation"];
             string endStation = need["EndStation"];
@@ -91,32 +91,32 @@ namespace SCP.Controllers
             string workOrder = need["WorkOrder"];
             string btnName = need["btnName"];
             string status = need["Status"];
-            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "ChangeButton") ? "R" :"";
+            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "ChangeButton") ? "R" : "";
 
-            if(btnName == "RejectdButton")
+            if (btnName == "RejectdButton")
             {
-                workOrder = (status=="1")?"":_DBContext.oPort.Where(p => p.StationNo == need["EndStation"]).FirstOrDefault()?.WorkOrder?.ToString() ?? "";    
-                endStation = _DBContext.oPort.Where(p=>p.Block=="B" && p.UseFlag=="Y" && p.HaveFlag=="0" && (p.BgnToEnd==""||p.BgnToEnd ==null)).FirstOrDefault()?.StationNo.ToString()??"";
+                workOrder = (status == "1") ? "" : _DBContext.oPort.Where(p => p.StationNo == need["EndStation"]).FirstOrDefault()?.WorkOrder?.ToString() ?? "";
+                endStation = _DBContext.oPort.Where(p => p.Block == "B" && p.UseFlag == "Y" && p.HaveFlag == "0" && (p.BgnToEnd == "" || p.BgnToEnd == null)).FirstOrDefault()?.StationNo.ToString() ?? "";
                 objStation = need["EndStation"];
             }
-            if (string.IsNullOrEmpty(endStation)) return BadRequest(new{message = "暫存區無空架" });
+            if (string.IsNullOrEmpty(endStation)) return BadRequest(new { message = "暫存區無空架" });
 
             string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
             try
             {
-                _DBContext.Database.ExecuteSqlRaw(sql,objStation, rackId, workOrder,endStation,"Web",DateTime.Now.ToString("yyyyMMddHHmmssffffff"),assignFlag);
+                _DBContext.Database.ExecuteSqlRaw(sql, objStation, rackId, workOrder, endStation, "Web", DateTime.Now.ToString("yyyyMMddHHmmssffffff"), assignFlag);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
 
             }
-           
+
             return Ok();
         }
 
-        public IActionResult UpdateoPort([FromBody]Dictionary<string, string> need)
+        public IActionResult UpdateoPort([FromBody] Dictionary<string, string> need)
         {
-           
+
             string objStation = need["BegingStation"];
 
             try
@@ -135,7 +135,7 @@ namespace SCP.Controllers
             return Ok();
         }
 
-        public IActionResult DeleteoNeed([FromBody] Dictionary<string,string> need)
+        public IActionResult DeleteoNeed([FromBody] Dictionary<string, string> need)
         {
             string begingStation = need["beginStation"];
             string endStation = need["endStation"];
@@ -158,13 +158,13 @@ namespace SCP.Controllers
             return Ok();
         }
 
-        public IActionResult ReLogin([FromBody] Dictionary<string,string> need)
+        public IActionResult ReLogin([FromBody] Dictionary<string, string> need)
         {
             var userId = need["userId"];
             var password = need["password"];
 
-            var result = _DBContext.pUser.Where(u => u.UserId == userId && u.Password == password).FirstOrDefault()?.GroupId?.ToString()??"";
-            if( result =="1" || result == "7")
+            var result = _DBContext.pUser.Where(u => u.UserId == userId && u.Password == password).FirstOrDefault()?.GroupId?.ToString() ?? "";
+            if (result == "1" || result == "7")
             {
                 return Ok();
             }
@@ -172,7 +172,7 @@ namespace SCP.Controllers
             {
                 return BadRequest();
             }
-           
+
         }
         public IActionResult GetoNeed()
         {
@@ -244,7 +244,7 @@ namespace SCP.Controllers
                     .ToList();
 
                 var stations = _DBContext.oPort
-                    .Where(p => p.UseFlag == "Y" && 
+                    .Where(p => p.UseFlag == "Y" &&
                                 !allExcludedStations.Contains(p.StationNo))  // 排除所有進行中任務的站點（起點和終點）
                     .Select(p => new
                     {
@@ -310,19 +310,19 @@ namespace SCP.Controllers
 
                 // 檢查該站點是否為待處理任務的終點（避免與 Release 回送任務衝突）
                 var pendingAsEndTask = _DBContext.oNeed
-                    .FirstOrDefault(n => n.EndStation == stationNo && 
-                                         (n.AssignFlag == null || n.AssignFlag == ""));
+                    .FirstOrDefault(n => n.EndStation == stationNo &&
+                                         (n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y"));
                 if (pendingAsEndTask != null)
                 {
                     return BadRequest(new { message = $"此站點有待處理的回送任務（來自 {pendingAsEndTask.ObjStation}），請等待任務完成後再登記" });
                 }
 
                 // 檢查該站點是否為進行中任務的起點（不能修改有任務的站點物料）
-                var hasPendingAsBegin = 
+                var hasPendingAsBegin =
                     _DBContext.oNeed.Any(n => n.ObjStation == stationNo && (n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y")) ||
                     _DBContext.oRequire.Any(r => r.BeginStation == stationNo && (r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")) ||
                     _DBContext.oMission.Any(m => m.BeginStation == stationNo && (m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R"));
-                
+
                 if (hasPendingAsBegin)
                 {
                     return BadRequest(new { message = "此站點有進行中的派送任務，無法修改物料資訊" });
@@ -340,9 +340,9 @@ namespace SCP.Controllers
                 // 處理 V Cut 標記
                 // 先移除現有的 ^VCUT 和 ^DONE 標記（如果有的話）
                 workOrder = workOrder.Replace("^VCUT^DONE", "").Replace("^VCUT", "").Replace("^DONE", "");
-                
+
                 // 判斷站點區域（stationArea 已在前面宣告）
-                
+
                 if (stationArea == "T")
                 {
                     // T 區（V Cut區）建立物料時，自動標記為已加工完成
@@ -395,11 +395,11 @@ namespace SCP.Controllers
                 }
 
                 // 檢查該站點是否有進行中的派送任務（不能清除有任務的站點）
-                var hasPendingTask = 
+                var hasPendingTask =
                     _DBContext.oNeed.Any(n => n.ObjStation == stationNo && (n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y")) ||
                     _DBContext.oRequire.Any(r => r.BeginStation == stationNo && (r.OkFlag == null || r.OkFlag == "" || r.OkFlag == "R")) ||
                     _DBContext.oMission.Any(m => m.BeginStation == stationNo && (m.OkFlag == null || m.OkFlag == "" || m.OkFlag == "Y" || m.OkFlag == "R"));
-                
+
                 if (hasPendingTask)
                 {
                     return BadRequest(new { message = "此站點有進行中的派送任務，無法清除物料" });
@@ -499,7 +499,7 @@ namespace SCP.Controllers
 
                 // 檢查是否已有待處理的派送任務（防止重複派送）
                 var existingTask = _DBContext.oNeed
-                    .FirstOrDefault(n => n.ObjStation == stationNo && 
+                    .FirstOrDefault(n => n.ObjStation == stationNo &&
                                          (n.AssignFlag == null || n.AssignFlag == ""));
                 if (existingTask != null)
                 {
@@ -520,8 +520,8 @@ namespace SCP.Controllers
                 {
                     // EE 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
                     emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "J" && 
-                                    p.HaveFlag == "0" && 
+                        .Where(p => p.Block == "J" &&
+                                    p.HaveFlag == "0" &&
                                     (p.BgnToEnd == null || p.BgnToEnd == "") &&
                                     p.UseFlag == "Y" &&
                                     !pendingEndStations.Contains(p.StationNo))
@@ -538,8 +538,8 @@ namespace SCP.Controllers
                 {
                     // O/P/S/N 區 → 依序尋找：M 區（雷雕區）→ Q 區（出貨區）→ R 區
                     emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "M" && 
-                                    p.HaveFlag == "0" && 
+                        .Where(p => p.Block == "M" &&
+                                    p.HaveFlag == "0" &&
                                     (p.BgnToEnd == null || p.BgnToEnd == "") &&
                                     p.UseFlag == "Y" &&
                                     !pendingEndStations.Contains(p.StationNo))
@@ -550,8 +550,8 @@ namespace SCP.Controllers
                     {
                         // M 區滿，查詢 Q 區（出貨區）
                         emptySlot = _DBContext.oPort
-                            .Where(p => p.Block == "Q" && 
-                                        p.HaveFlag == "0" && 
+                            .Where(p => p.Block == "Q" &&
+                                        p.HaveFlag == "0" &&
                                         (p.BgnToEnd == null || p.BgnToEnd == "") &&
                                         p.UseFlag == "Y" &&
                                         !pendingEndStations.Contains(p.StationNo))
@@ -563,8 +563,8 @@ namespace SCP.Controllers
                     {
                         // Q 區滿，查詢 R 區
                         emptySlot = _DBContext.oPort
-                            .Where(p => p.Block == "R" && 
-                                        p.HaveFlag == "0" && 
+                            .Where(p => p.Block == "R" &&
+                                        p.HaveFlag == "0" &&
                                         (p.BgnToEnd == null || p.BgnToEnd == "") &&
                                         p.UseFlag == "Y" &&
                                         !pendingEndStations.Contains(p.StationNo))
