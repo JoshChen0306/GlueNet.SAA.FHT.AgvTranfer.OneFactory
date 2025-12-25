@@ -57,9 +57,15 @@ $(function () {
 
                     // 決定站點圖示
                     var imgSrc = item.ImgSrc;
-                    // V Cut 物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
+                    // 特殊物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
                     if (item.HaveFlag === "3" && item.WorkOrder) {
-                        if (item.WorkOrder.includes("^VCUT^DONE")) {
+                        if (item.WorkOrder.includes("^NG")) {
+                            // 橙色：NG 回送物料（品檢失敗）
+                            imgSrc = "/img/ng-material.svg";
+                        } else if (item.WorkOrder.includes("^RETURN")) {
+                            // 黃色：Release 回送空板（不可派送）
+                            imgSrc = "/img/return-material.svg";
+                        } else if (item.WorkOrder.includes("^VCUT^DONE")) {
                             // 紫色：V Cut 已加工完成
                             imgSrc = "/img/vcut-done.svg";
                         } else if (item.WorkOrder.includes("^VCUT")) {

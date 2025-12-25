@@ -172,10 +172,21 @@ namespace SCP.Controllers
                 haveFlag = "0";
             }
 
-            // V Cut 物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
+            // 特殊物料顏色判斷：只有 HaveFlag=3 且有 WorkOrder 時才檢查
             if (haveFlag == "3" && !string.IsNullOrEmpty(workOrder))
             {
-                if (workOrder.Contains("^VCUT^DONE"))
+                // 優先順序：^NG → ^RETURN → ^VCUT^DONE → ^VCUT
+                if (workOrder.Contains("^NG"))
+                {
+                    // 橙色：NG 回送物料（品檢失敗）
+                    return "/img/ng-material.svg";
+                }
+                else if (workOrder.Contains("^RETURN"))
+                {
+                    // 黃色：Release 回送空板（不可派送）
+                    return "/img/return-material.svg";
+                }
+                else if (workOrder.Contains("^VCUT^DONE"))
                 {
                     // 紫色：V Cut 已加工完成
                     return "/img/vcut-done.svg";

@@ -290,8 +290,8 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請輸入工單條碼" });
                 }
 
-                // 驗證：J 區（3F 插針室）和 H 區（2F 成型後）RackId 必填
-                if ((stationArea == "J" || stationArea == "H") && string.IsNullOrEmpty(rackId))
+                // 驗證：J 區（3F 插針室）、H 區（2F 成型後）、I 區（3F 品檢區）、K 區（4F 烘烤前）、L 區（4F 烘烤後）RackId 必填
+                if ((stationArea == "J" || stationArea == "H" || stationArea == "I" || stationArea == "K" || stationArea == "L") && string.IsNullOrEmpty(rackId))
                 {
                     return BadRequest(new { message = "請輸入貨架條碼" });
                 }
@@ -335,6 +335,8 @@ namespace SCP.Controllers
                 // 處理 V Cut 標記
                 // 先移除現有的 ^VCUT 和 ^DONE 標記（如果有的話）
                 workOrder = workOrder.Replace("^VCUT^DONE", "").Replace("^VCUT", "").Replace("^DONE", "");
+                // 同時移除 ^NG 和 ^RETURN 標記（避免重複）
+                workOrder = workOrder.Replace("^NG", "").Replace("^RETURN", "");
 
                 // 判斷站點區域（stationArea 已在前面宣告）
 
@@ -347,6 +349,12 @@ namespace SCP.Controllers
                 {
                     // M 區（雷雕區）勾選 V Cut 專用時，附加 ^VCUT 標記
                     workOrder = workOrder + "^VCUT";
+                }
+                else if (stationArea == "I")
+                {
+                    // I 區（3F 品檢區）建立物料時，自動標記為 NG 回送
+                    // 表示品檢失敗，需送回 4F 烘烤後再加工
+                    workOrder = workOrder + "^NG";
                 }
 
                 // 更新 oPort 表
@@ -546,6 +554,25 @@ namespace SCP.Controllers
                         return BadRequest(new { message = "2F 成型後 (H區) 沒有可放置的空位" });
                     }
                 }
+                else if (stationArea == "I")
+                {
+                    // I 區（3F品檢區）→ 回送到 L 區（4F烘烤後）L1-L4
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "L" &&
+                                    p.HaveFlag == "0" &&
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    p.Port >= 1 && p.Port <= 4 &&  // 只選 L1-L4
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "4F 烘烤後 (L1-L4) 沒有可放置的空位" });
+                    }
+                }
                 else
                 {
                     // O/P/S/N 區 → 依序尋找：M 區（雷雕區）→ Q 區（出貨區）→ R 區
@@ -592,11 +619,19 @@ namespace SCP.Controllers
 
                 // 建立派送任務 (oNeed) - 帶入起點站的 RackId
                 string rackId = port.RackId ?? "";
+                
+                // I 區回送到 K 區時，寫入 ^RETURN 標記（避免回送物料再次被派送）
+                string workOrderForRelease = "";
+                if (stationArea == "I")
+                {
+                    workOrderForRelease = "^RETURN";
+                }
+                
                 string sql = "INSERT INTO oNeed (ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime, AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
                 _DBContext.Database.ExecuteSqlRaw(sql,
                     stationNo,                                    // ObjStation (起點)
                     rackId,                                       // RackId (從起點站讀取)
-                    "",                                           // WorkOrder (空)
+                    workOrderForRelease,                          // WorkOrder (I區回送帶 ^RETURN)
                     emptySlot.StationNo,                          // EndStation (終點)
                     "Web",                                        // TaskSource
                     DateTime.Now.ToString("yyyyMMddHHmmssffffff"), // TaskDateTime

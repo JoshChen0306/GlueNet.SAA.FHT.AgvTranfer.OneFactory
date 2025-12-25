@@ -50,8 +50,8 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 M/T/J/Q/H 區（物料登記）和 O/P/S/N/G/K 區（標記空板/Release）
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K'];
+    // 處理 M/T/J/Q/H/K/L 區（物料登記）和 O/P/S/N/G/K/I 區（標記空板/Release）
+    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K', 'I', 'L'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -173,6 +173,17 @@ $(function () {
             // 隱藏 Rack 碼和工單欄位（3F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
+        } else if (selectedFloor === "4F") {
+            // 4F 樓層：區域預設選擇 L（烘烤前出貨區）
+            if ($("#Area option[value='L']").length > 0) {
+                $("#Area").val("L").trigger("change");
+                console.log("4F 樓層：區域預設選擇 L（烘烤前出貨區）");
+            }
+            // 隱藏掃描機台按鈕（4F 不需要）
+            $("#machineScanRow").hide();
+            // 隱藏 Rack 碼和工單欄位（4F 已有建物料流程）
+            $("#rackIdRow").hide();
+            $("#workOrderRow").hide();
         } else {
             $("#machineScanRow").hide();
             // 顯示 Rack 碼和工單欄位
@@ -183,6 +194,8 @@ $(function () {
 
     //選擇派送區域選擇完後得事件
     $("#Area").on("change", function () {
+        var area = $(this).val();
+
         $("#BeginStation").prop("disabled", false);
         $.ajax({
             type: "GET",
@@ -197,12 +210,22 @@ $(function () {
         // 重置第二個選項的選擇
         $('#BeginStation').val('');
         $('#EndStation').val('');
-        if ($(this).val() == "C") {
+        if (area == "C") {
             $('#ChangeButton').show();
             $('#RejectdButton').show();
         } else {
             $('#ChangeButton').hide();
             $('#RejectdButton').hide();
+        }
+
+        // L 區（4F 烘烤後）和 I 區（3F 品檢區）派送時，隱藏 Rack碼 和 掃描工單
+        // 因為這些資料已在物料登記時設定好
+        if (area === "L" || area === "I") {
+            $("#rackIdRow").hide();
+            $("#workOrderRow").hide();
+        } else {
+            $("#rackIdRow").show();
+            $("#workOrderRow").show();
         }
     });
 
@@ -360,8 +383,26 @@ $(function () {
             case "R":
                 autoSelectEndStation("N", "0", "N");  // 廢料區 → 廢料回收區
                 break;
+            case "L":
+                autoSelectEndStation("I", "0", "N");  // L區（4F烘烤後）→ I區（3F品檢區）
+                // L 區派送時，隱藏 Rack碼 和 掃描工單（這些資料已在物料登記時設定）
+                $("#rackIdRow").hide();
+                $("#workOrderRow").hide();
+                break;
+            case "I":
+                autoSelectEndStationInRange("L", "0", "N", 1, 4);  // I區（3F品檢區）→ L1-L4
+                // I 區派送時，隱藏 Rack碼 和 掃描工單（這些資料已在物料登記時設定）
+                $("#rackIdRow").hide();
+                $("#workOrderRow").hide();
+                break;
             case "E":
                 break;
+        }
+
+        // 非 L/I 區時，恢復顯示 Rack碼 和 掃描工單 欄位
+        if (area !== "I" && area !== "L") {
+            $("#rackIdRow").show();
+            $("#workOrderRow").show();
         }
 
         if (area == "C" || area == "H") {
@@ -528,8 +569,26 @@ $(function () {
                     console.log("H 區自動填入工單:", beginStationCache.workOrder);
                 }
             }
-            // 需要輸入工單/供單號的區域：A, L, M, T（注意：MT、J、Q、H 已自動帶入，跳過驗證）
-            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'L' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
+            // L 區（4F 烘烤後）特別處理：工單已在物料登記時輸入，自動帶入
+            else if (area === "L" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單
+                    $("#WorkOrder").val(beginStationCache.workOrder);
+                    console.log("L 區自動填入工單:", beginStationCache.workOrder);
+                }
+            }
+            // I 區（3F 品檢區）特別處理：工單已在物料登記時輸入，自動帶入
+            else if (area === "I" && beginStation) {
+                var beginStationCache = stationCache[beginStation];
+                if (beginStationCache && beginStationCache.workOrder) {
+                    // 自動填入工單
+                    $("#WorkOrder").val(beginStationCache.workOrder);
+                    console.log("I 區自動填入工單:", beginStationCache.workOrder);
+                }
+            }
+            // 需要輸入工單/供單號的區域：A, M, T（注意：MT、J、Q、H、L、I 已自動帶入，跳過驗證）
+            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
                 var workOrder = $("#WorkOrder").val();
                 if (!workOrder || !workOrder.trim()) {
                     // M 和 T 區顯示「供單號」，其他區顯示「工單」
@@ -942,8 +1001,8 @@ $(function () {
         $("#registerLotVcut").prop("checked", false);
 
         // T 區會自動標記為已加工完成，不需要顯示 checkbox
-        // J 區（3F 插針室）、Q區（出貨區）、H 區（2F 成型後）不需要 V Cut 標記
-        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H") {
+        // J/Q/R/H/I/K/L 區不需要 V Cut 標記
+        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L") {
             $("#vcutCheckboxRow").hide();
         } else if (stationArea === "M") {
             $("#vcutCheckboxRow").show();
@@ -956,20 +1015,35 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：M/T/J/Q/H 區為物料登記區，O/P/S/N/G/K 區為 Release 操作區
-        var releaseAreas = ['O', 'P', 'S', 'N', 'G', 'K'];
+        // 判斷區域類型：M/T/J/Q/H/K/I 區為物料登記區，O/P/S/N/G/K/I 區為 Release 操作區
+        var releaseAreas = ['O', 'P', 'S', 'N', 'G', 'K', 'I'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
-            // O/P/S/N/EE 區 - 顯示「標記空板」和「Release」按鈕
-            if (stationInfo.haveFlag === "3") {
-                // 料盤 - 可標記為空板
-                footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
-            } else if (stationInfo.haveFlag === "1") {
-                // 空板 - 可 Release 回送
-                footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+            // I 區特別處理：支援物料登記（用於 NG 回送）
+            if (stationArea === "I") {
+                if (stationInfo.haveFlag === "3") {
+                    // 料盤 - 可標記為空板
+                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
+                } else if (stationInfo.haveFlag === "1") {
+                    // 空板 - 可 Release 回送 或 物料登記（NG 回送）
+                    footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                    footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+                } else if (stationInfo.haveFlag === "0") {
+                    // 空架 - 可物料登記
+                    footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+                }
+            } else {
+                // O/P/S/N/G/K 區 - 顯示「標記空板」和「Release」按鈕
+                if (stationInfo.haveFlag === "3") {
+                    // 料盤 - 可標記為空板
+                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
+                } else if (stationInfo.haveFlag === "1") {
+                    // 空板 - 可 Release 回送
+                    footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                }
+                // HaveFlag=0 (空架) 時不顯示任何操作按鈕
             }
-            // HaveFlag=0 (空架) 時不顯示任何操作按鈕
         } else {
             // M/T/J/Q/R 區 - 物料登記操作
             if (stationInfo.haveFlag === "0" || stationInfo.haveFlag === "1") {
@@ -1530,6 +1604,61 @@ function filterBeginStationOptions(selectedValue) {
             }).show();
             break;
 
+        case "L":
+            // L 區（4F 烘烤後）作為起點：只顯示 L1-L4 有料且非回送物料
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // L 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("L") || station.haveFlag !== "3") return false;
+
+                // 只顯示 L1-L4
+                var portNum = parseInt(tracname.replace("L", ""));
+                if (portNum < 1 || portNum > 4) return false;
+
+                // ★ 排除回送物料 ★
+                var workOrder = station.workOrder || "";
+                if (workOrder.includes("^RETURN") || workOrder.includes("^NG")) {
+                    return false;  // 回送物料不可再次派送
+                }
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var displayWorkOrder = workOrder;
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
+        case "I":
+            // I 區（3F 品檢區）作為起點：顯示有料的站點 (HaveFlag = 3)
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // I 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("I") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var workOrder = station.workOrder || "";
+                var displayWorkOrder = workOrder;
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
         default:
             // 其他區：顯示符合區域且 HaveFlag 不為 0 的站點
             $('#BeginStation option').filter(function () {
@@ -1632,6 +1761,44 @@ function filterEndStationOptions(prefix, requiredHaveFlag) {
 
         return station.haveFlag === requiredHaveFlag;
     }).show();
+}
+
+/**
+ * 自動選擇終點站（限定編號範圍）
+ * @param {string} prefix - 終點區域前綴
+ * @param {string} requiredHaveFlag - HaveFlag 條件
+ * @param {string} requiredReserve - Reserve 條件 (Y/N)
+ * @param {number} minPort - 最小站點編號
+ * @param {number} maxPort - 最大站點編號
+ */
+function autoSelectEndStationInRange(prefix, requiredHaveFlag, requiredReserve, minPort, maxPort) {
+    var found = false;
+    $('#EndStation option').each(function () {
+        if (found) return false;
+
+        var tracname = $(this).val();
+        if (!tracname || !tracname.startsWith(prefix)) return true;
+
+        var station = stationCache[tracname];
+        if (!station) return true;
+
+        // 檢查站點編號範圍
+        var portNum = parseInt(tracname.replace(prefix, ""));
+        if (portNum < minPort || portNum > maxPort) return true;
+
+        var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
+        var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
+
+        if (haveFlagMatch && reserveMatch) {
+            $('#EndStation').val(tracname);
+            found = true;
+            return false;
+        }
+    });
+
+    if (!found) {
+        console.warn(`找不到符合條件的 ${prefix}${minPort}-${prefix}${maxPort} 區站點`);
+    }
 }
 
 //即時更新右側任務列表

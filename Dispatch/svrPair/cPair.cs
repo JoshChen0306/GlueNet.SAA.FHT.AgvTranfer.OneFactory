@@ -187,7 +187,9 @@ namespace svrPair
                                 //暫存區B >> 生產區C，將放RACK及製程前材料運至生產區的地方，如B2 >> C1
                     case "E":   //暫存區E >> 上料區F，將放RACK及製程完材料運至退pin區的地方，如E2 >> F1
                     case "G":   // ★★★ G區（1F電梯暫存區）→ J區（3F插針室）：Release 回送空板 ★★★
-            case "K":   // ★★★ K區（4F烘烤前入貨區）→ H區（2F成型後）：Release 回送空板 ★★★
+                    case "K":   // ★★★ K區（4F烘烤前入貨區）→ H區（2F成型後）：Release 回送空板 ★★★
+                    case "I":   // ★★★ I區（3F品檢區）→ L區（4F烘烤後）：Release 回送空板 / NG回送 ★★★
+                    case "L":   // ★★★ L區（4F烘烤後）→ I區（3F品檢區）★★★
                         WriteLog("05.處理系統配對");
                         ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
                         break;
