@@ -6,8 +6,6 @@ namespace SCP
     public static class LogMgt
     {
         public static ILogger Logger { get; set; }
-        public static ILogger RcsLogger { get; set; }
-        public static ILogger BridgeLogger { get; set; }
 
         static LogMgt()
         {

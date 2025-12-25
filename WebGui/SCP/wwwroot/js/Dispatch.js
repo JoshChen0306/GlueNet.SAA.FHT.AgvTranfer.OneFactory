@@ -950,12 +950,23 @@ $(function () {
             }
             // HaveFlag=0 (空架) 時不顯示任何操作按鈕
         } else {
-            // M/T/J 區 - 物料登記操作
-            if (stationInfo.haveFlag === "0") {
-                // 空架 - 顯示「物料登記」
+            // M/T/J/Q/R 區 - 物料登記操作
+            if (stationInfo.haveFlag === "0" || stationInfo.haveFlag === "1") {
+                // 空架或空板 - 顯示「物料登記」
                 footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+            } else if (stationArea === "T" && stationInfo.haveFlag === "3") {
+                // T 區特別處理：根據 WorkOrder 是否包含 DONE 決定顯示按鈕
+                var workOrder = stationInfo.workOrder || "";
+                if (workOrder.indexOf("DONE") === -1) {
+                    // 未完成加工：顯示「標記空板」（讓人員取走物料去加工）
+                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
+                } else {
+                    // 已完成加工：顯示「物料修改」和「清除物料」
+                    footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
+                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
+                }
             } else {
-                // 有物料 - 顯示「物料修改」和「清除物料」
+                // M/J/Q/R 區 - 有物料時顯示「物料修改」和「清除物料」
                 footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
                 footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
             }
