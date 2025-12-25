@@ -218,9 +218,9 @@ $(function () {
             $('#RejectdButton').hide();
         }
 
-        // L 區（4F 烘烤後）和 I 區（3F 品檢區）派送時，隱藏 Rack碼 和 掃描工單
+        // L 區（4F 烘烤後）、I 區（3F 品檢區）、J 區（3F 插針室）派送時，隱藏 Rack碼 和 掃描工單
         // 因為這些資料已在物料登記時設定好
-        if (area === "L" || area === "I") {
+        if (area === "L" || area === "I" || area === "J") {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
@@ -399,8 +399,8 @@ $(function () {
                 break;
         }
 
-        // 非 L/I 區時，恢復顯示 Rack碼 和 掃描工單 欄位
-        if (area !== "I" && area !== "L") {
+        // 非 L/I/J 區時，恢復顯示 Rack碼 和 掃描工單 欄位
+        if (area !== "I" && area !== "L" && area !== "J") {
             $("#rackIdRow").show();
             $("#workOrderRow").show();
         }
@@ -727,12 +727,23 @@ $(function () {
             success: function (response) {
                 // 處理成功響應
                 console.log("表單資料已成功送出", response);
+
+                // 先儲存當前樓層，避免 reset 後遺失
+                var currentFloor = $("#Floor").val();
+                console.log("派送成功，保持當前樓層:", currentFloor);
+
                 form[0].reset();
 
                 // 清除站點快取，防止重複派工（下次會重新從 API 載入）
                 isCacheLoaded = false;
                 stationCache = {};
                 console.log("已清除站點快取");
+
+                // 恢復樓層選擇並觸發 change 事件重新載入地圖
+                if (currentFloor) {
+                    $("#Floor").val(currentFloor).trigger("change");
+                    console.log("已恢復樓層選擇:", currentFloor);
+                }
 
                 var myModal = bootstrap.Modal.getOrCreateInstance($('#dispatchModalToggle2'), {
                     keyboard: false
