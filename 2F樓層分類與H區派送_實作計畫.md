@@ -87,9 +87,10 @@ graph LR
 3. 點擊「標記為空板」
    - `HaveFlag` 改為 `1`（無料有板）
    - `WorkOrder` 清除為 `NULL`
+   - **`RackId` 保留**（確保貨架追蹤連續性）
 4. 點擊「Release」
    - 系統自動尋找 **H 區空位**（HaveFlag=0）
-   - 找到空位 → 派車回送
+   - 找到空位 → 派車回送（**帶入原始 RackId**）
    - 無空位 → 彈出提示「2F 成型後 (H區) 沒有可放置的空位」
 
 ### UI 設計：K 區站點操作彈窗
@@ -127,12 +128,14 @@ Release(stationNo) {
     1. 檢查站點狀態是否為 HaveFlag=1（空板）
        → 若不是，提示「請先標記為空板」
     
-    2. 尋找 H 區（2F 成型後）可放置位置：
+    2. 讀取起點站的 RackId
+    
+    3. 尋找 H 區（2F 成型後）可放置位置：
        WHERE Block='H' AND HaveFlag=0 AND BgnToEnd IS NULL AND UseFlag='Y'
        ORDER BY Priority DESC
     
-    3. 結果處理：
-       → 找到空位：建立派送任務 (K → H)
+    4. 結果處理：
+       → 找到空位：建立派送任務 (K → H)，帶入 RackId
        → 無空位：彈出提示「2F 成型後 (H區) 沒有可放置的空位」
 }
 ```
@@ -335,6 +338,50 @@ case "K":   // ★★★ 新增：K區（4F烘烤前入貨區）→ H區（2F成
 
 ---
 
+### 5. 額外修改項目
+
+#### 5.1 樓層下拉選單動態讀取 (DispatchController.cs)
+
+```csharp
+// 修改前：硬編碼樓層
+ViewBag.FloorList = new List<SelectListItem>
+{
+    new SelectListItem { Value = "1F", Text = "1F" },
+    new SelectListItem { Value = "2F", Text = "2F" },
+    // ...
+};
+
+// 修改後：從 FloorArea 動態讀取
+var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+ViewBag.FloorList = floorArea.Keys.Select(k => new SelectListItem { Value = k, Text = k }).ToList();
+```
+
+#### 5.2 標記空板保留 RackId (DispatchController.cs)
+
+```csharp
+// MarkEmptyTray - 只清除 WorkOrder，保留 RackId
+_DBContext.oPort
+    .Where(p => p.StationNo == stationNo)
+    .ExecuteUpdate(setters => setters
+        .SetProperty(p => p.HaveFlag, "1")      // 設為空板
+        .SetProperty(p => p.WorkOrder, ""));    // 清除工單（保留 RackId）
+```
+
+#### 5.3 Release 帶入 RackId (DispatchController.cs)
+
+```csharp
+// Release - 從起點站讀取 RackId，建立任務時帶入
+string rackId = port.RackId ?? "";
+_DBContext.Database.ExecuteSqlRaw(sql,
+    stationNo,    // 起點
+    rackId,       // RackId (從起點站讀取)
+    "",           // WorkOrder
+    emptySlot.StationNo,  // 終點
+    ...);
+```
+
+---
+
 ## 驗證步驟
 
 ### H 區物料登記
@@ -374,4 +421,57 @@ case "K":   // ★★★ 新增：K區（4F烘烤前入貨區）→ H區（2F成
 > [!IMPORTANT]
 > - H 區 RackId 必填（與 J 區相同）
 > - K 區 Release 只能回送到 H 區
+
+---
+
+## 📋 任務檢查表
+
+### 1. 設定檔修改 (appsettings.json)
+
+- [x] **1.1** 修改 FloorArea 設定，將 2F 分為「站內運輸」和「站外運輸」
+
+---
+
+### 2. 前端修改 (Dispatch.js)
+
+#### 2.1 區域定義
+- [x] **2.1.1** 新增 H 區和 K 區到 `validAreas` 陣列
+- [x] **2.1.2** 新增 K 區到 `releaseAreas` 陣列
+
+#### 2.2 樓層選擇邏輯
+- [x] **2.2.1** 修改樓層選擇事件（選擇「2F - 站外運輸」時預設 H 區、隱藏工單欄位）
+
+#### 2.3 H 區派送邏輯
+- [x] **2.3.1** H 區起點過濾 - 只顯示有料站點 (HaveFlag = 3)
+- [x] **2.3.2** H 區終點自動選擇 - 自動選擇 K 區空架
+- [x] **2.3.3** H 區工單自動帶入
+
+#### 2.4 站點操作 Modal
+- [x] **2.4.1** `openStationLotModal` 支援 H 區（物料登記）
+- [x] **2.4.2** `openStationLotModal` 支援 K 區（標記空板 + Release）
+
+#### 2.5 防護機制
+- [x] **2.5.1** 派工成功後清除站點快取
+- [x] **2.5.2** 終點站驗證
+
+---
+
+### 3. 後端修改
+
+#### 3.1 DispatchController.cs
+- [x] **3.1.1** `RegisterLot` - H 區 RackId 必填驗證
+- [x] **3.1.2** `GetAllStations` - 排除已指派的終點站
+- [x] **3.1.3** `Release` - K 區回送到 H 區邏輯
+
+#### 3.2 cPair.cs
+- [x] **3.2.1** 新增 K 區 case 處理
+
+---
+
+### 4. 驗證測試
+
+- [ ] **4.1** H 區物料登記測試（RackId 必填驗證）
+- [ ] **4.2** H 區派送測試（起點過濾 + 終點自動選擇）
+- [ ] **4.3** K 區 Release 測試（回送到 H 區）
+- [ ] **4.4** 防重複派工驗證
 

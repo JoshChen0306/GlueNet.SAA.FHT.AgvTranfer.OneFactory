@@ -52,15 +52,10 @@ namespace SCP.Controllers
             ViewBag.Site = _DBContext.oPort.Where(p => p.UseFlag == "Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
             ViewBag.Role = groupId;
 
-            // 樓層選擇器
-            ViewBag.FloorList = new List<SelectListItem>
-            {
-                new SelectListItem { Value = "1F", Text = "1F" },
-                new SelectListItem { Value = "2F", Text = "2F" },
-                new SelectListItem { Value = "3F", Text = "3F" },
-                new SelectListItem { Value = "4F", Text = "4F" }
-            };
-            ViewBag.FloorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+            // 樓層選擇器 - 從 FloorArea 設定動態讀取
+            var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+            ViewBag.FloorList = floorArea.Keys.Select(k => new SelectListItem { Value = k, Text = k }).ToList();
+            ViewBag.FloorArea = floorArea;
 
             return View();
         }
@@ -295,8 +290,8 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請輸入工單條碼" });
                 }
 
-                // 驗證：J 區（3F 插針室）RackId 必填
-                if (stationArea == "J" && string.IsNullOrEmpty(rackId))
+                // 驗證：J 區（3F 插針室）和 H 區（2F 成型後）RackId 必填
+                if ((stationArea == "J" || stationArea == "H") && string.IsNullOrEmpty(rackId))
                 {
                     return BadRequest(new { message = "請輸入貨架條碼" });
                 }
@@ -451,13 +446,12 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "站點狀態不是料盤，無法標記為空板" });
                 }
 
-                // 更新 oPort 表 - 標記為空板
+                // 更新 oPort 表 - 標記為空板（保留 RackId）
                 _DBContext.oPort
                     .Where(p => p.StationNo == stationNo)
                     .ExecuteUpdate(setters => setters
                         .SetProperty(p => p.HaveFlag, "1")      // 設為空板
-                        .SetProperty(p => p.WorkOrder, "")      // 清除工單
-                        .SetProperty(p => p.RackId, ""));       // 清除貨架
+                        .SetProperty(p => p.WorkOrder, ""));    // 清除工單（保留 RackId）
 
                 return Ok(new { message = "標記成功", stationNo = stationNo });
             }
@@ -518,7 +512,7 @@ namespace SCP.Controllers
 
                 if (stationArea == "G")
                 {
-                    // EE 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
+                    // G 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
                     emptySlot = _DBContext.oPort
                         .Where(p => p.Block == "J" &&
                                     p.HaveFlag == "0" &&
@@ -532,6 +526,24 @@ namespace SCP.Controllers
                     if (emptySlot == null)
                     {
                         return BadRequest(new { message = "3F 插針室 (J區) 沒有可放置的空位" });
+                    }
+                }
+                else if (stationArea == "K")
+                {
+                    // K 區（4F烘烤前入貨區）→ 回送到 H 區（2F成型後）
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "H" &&
+                                    p.HaveFlag == "0" &&
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "2F 成型後 (H區) 沒有可放置的空位" });
                     }
                 }
                 else
@@ -578,11 +590,12 @@ namespace SCP.Controllers
                     }
                 }
 
-                // 建立派送任務 (oNeed)
+                // 建立派送任務 (oNeed) - 帶入起點站的 RackId
+                string rackId = port.RackId ?? "";
                 string sql = "INSERT INTO oNeed (ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime, AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
                 _DBContext.Database.ExecuteSqlRaw(sql,
                     stationNo,                                    // ObjStation (起點)
-                    "",                                           // RackId (空)
+                    rackId,                                       // RackId (從起點站讀取)
                     "",                                           // WorkOrder (空)
                     emptySlot.StationNo,                          // EndStation (終點)
                     "Web",                                        // TaskSource
