@@ -43,8 +43,7 @@ namespace HikAGVWebAPI
         {
             try
             {
-                //mDB = new SQLData(DBSettings.DBName, DBSettings.DBIP);//SQL Server 連線
-                mDB = new SQLData("","");//SQL Server 連線
+                mDB = new SQLData(DBSettings.DBName, DBSettings.DBIP);//SQL Server 連線
                 mLog = new Log(LogSettings.LogPath, "AGVAPI");
                 mLog.KeepDate = LogSettings.KeepDate;
             }
