@@ -92,8 +92,8 @@ namespace SCP.Controllers
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0]),
-                    Bottom = ConvertY(item.Remark.Split(",")[1]),
+                    Left = ConvertX(item.Remark.Split(",")[0], area),
+                    Bottom = ConvertY(item.Remark.Split(",")[1], area),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
@@ -119,8 +119,8 @@ namespace SCP.Controllers
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0]),
-                    Bottom = ConvertY(item.Remark.Split(",")[1]),
+                    Left = ConvertX(item.Remark.Split(",")[0], item.Area),
+                    Bottom = ConvertY(item.Remark.Split(",")[1], item.Area),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
@@ -142,8 +142,8 @@ namespace SCP.Controllers
             List<oShuttle> AgvPositions = _DBContext.oShuttle.Where(x => x.MapCode == area).ToList();
             foreach (var item in AgvPositions)
             {
-                item.PosX = ConvertX(item.PosX);
-                item.PosY = ConvertY(item.PosY);
+                item.PosX = ConvertX(item.PosX, area);
+                item.PosY = ConvertY(item.PosY, area);
             }
             #endregion
             return AgvPositions;
@@ -154,8 +154,8 @@ namespace SCP.Controllers
             List<oShuttle> AgvPositions = _DBContext.oShuttle.ToList();
             foreach (var item in AgvPositions)
             {
-                item.PosX = ConvertX(item.PosX);
-                item.PosY = ConvertY(item.PosY);
+                item.PosX = ConvertX(item.PosX, item.MapCode);
+                item.PosY = ConvertY(item.PosY, item.MapCode);
             }
             #endregion
             return AgvPositions;
@@ -203,13 +203,14 @@ namespace SCP.Controllers
             return imgSrc ?? "/img/empty.svg";
         }
 
-        private string ConvertX(string posX)
+        private string ConvertX(string posX, string area)
         {
             string result;
-            double minPercentX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minPercentX").Value);
-            double maxPercentX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxPercentX").Value);
-            double minX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minX").Value);
-            double maxX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxX").Value);
+            var setting = _configuration.GetSection($"AgvSetting:{area}");
+            double minPercentX = Convert.ToDouble(setting["minPercentX"]);
+            double maxPercentX = Convert.ToDouble(setting["maxPercentX"]);
+            double minX = Convert.ToDouble(setting["minX"]);
+            double maxX = Convert.ToDouble(setting["maxX"]);
             double percentRangeX = maxPercentX - minPercentX;
             double rangeX = maxX - minX;
 
@@ -219,13 +220,14 @@ namespace SCP.Controllers
             return result;
         }
 
-        private String ConvertY(string posY)
+        private string ConvertY(string posY, string area)
         {
             string result;
-            double minPercentY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minPercentY").Value);
-            double maxPercentY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxPercentY").Value);
-            double minY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minY").Value);
-            double maxY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxY").Value);
+            var setting = _configuration.GetSection($"AgvSetting:{area}");
+            double minPercentY = Convert.ToDouble(setting["minPercentY"]);
+            double maxPercentY = Convert.ToDouble(setting["maxPercentY"]);
+            double minY = Convert.ToDouble(setting["minY"]);
+            double maxY = Convert.ToDouble(setting["maxY"]);
             double percentRangeY = maxPercentY - minPercentY;
             double rangeY = maxY - minY;
 
