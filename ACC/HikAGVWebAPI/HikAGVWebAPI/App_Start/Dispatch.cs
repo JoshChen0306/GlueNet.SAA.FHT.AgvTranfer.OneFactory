@@ -18,6 +18,7 @@ namespace HikAGVWebAPI
         private DBSettings DBSettings = new DBSettings();
         private LogSettings LogSettings = new LogSettings();
         private FHtSettings FHtSettings = new FHtSettings();
+        private ElevatorSettings ElevatorSettings = new ElevatorSettings();
 
         private Thread DispatchThread;//執行續
         private bool _stopThread = false;
@@ -96,6 +97,10 @@ namespace HikAGVWebAPI
                 //載入這套系統要搭配的 Config FHt 資訊
                 SectionFHt SectionFHt = config.GetSection(nameof(SectionFHt)) as SectionFHt;
                 FHtSettings = SectionFHt?.FHtSettings;
+
+                //載入電梯配置
+                SectionElevator SectionElevator = config.GetSection(nameof(SectionElevator)) as SectionElevator;
+                ElevatorSettings = SectionElevator?.ElevatorSettings ?? new ElevatorSettings();
             }
             catch
             {
@@ -464,7 +469,12 @@ namespace HikAGVWebAPI
             try
             {
                 var rackId = string.IsNullOrEmpty(oMission.RackId) ? "-1" : oMission.RackId;
-                string PositionCode = $@"{oMission.BeginStation},00;{oMission.EndStation},00";
+                
+                // 計算電梯路徑
+                var pathCalculator = new ElevatorPathCalculator(ElevatorSettings);
+                var fullPath = pathCalculator.CalculatePath(oMission.BeginStation, oMission.EndStation);
+                string PositionCode = string.Join(";", fullPath.Select(p => $"{p},00"));
+                mLog.TraceOut($"Calculated Path: {PositionCode}", Log.LogType.NONE);
                 SchedulingTask AGVStatus = new SchedulingTask()
                 {
                     reqCode = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikAGVWebAPI", "HikAGVWebAP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikAGV", "..\HikAGV\HikAGV.csproj", "{D78C97A8-C186-4D70-A834-B3812CADD647}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HikAGVWebAPITests", "..\HikAGVWebAPITests\HikAGVWebAPITests.csproj", "{3D581F94-E63F-4FE7-8AA0-5B381827086C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D78C97A8-C186-4D70-A834-B3812CADD647}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D78C97A8-C186-4D70-A834-B3812CADD647}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D78C97A8-C186-4D70-A834-B3812CADD647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D581F94-E63F-4FE7-8AA0-5B381827086C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D581F94-E63F-4FE7-8AA0-5B381827086C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D581F94-E63F-4FE7-8AA0-5B381827086C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D581F94-E63F-4FE7-8AA0-5B381827086C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

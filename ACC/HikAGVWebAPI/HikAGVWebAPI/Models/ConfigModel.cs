@@ -220,4 +220,68 @@ namespace HikAGVWebAPI
         }
     }
     #endregion Log Config
+
+    #region Elevator Config
+    public class SectionElevator : ConfigurationSection
+    {
+        [ConfigurationProperty(nameof(ElevatorSettings))]
+        public ElevatorSettings ElevatorSettings
+        {
+            get { return (ElevatorSettings)this[nameof(ElevatorSettings)]; }
+            set { this[nameof(ElevatorSettings)] = value; }
+        }
+    }
+
+    public class ElevatorSettings : ConfigurationElement
+    {
+        [ConfigurationProperty(nameof(CustomerElevatorFloors), DefaultValue = "1F,2F,3F")]
+        public string CustomerElevatorFloors
+        {
+            get { return (string)this[nameof(CustomerElevatorFloors)]; }
+            set { this[nameof(CustomerElevatorFloors)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(CustomerElevatorWaitPoints), DefaultValue = "1F:U1,2F:V1,3F:W1")]
+        public string CustomerElevatorWaitPoints
+        {
+            get { return (string)this[nameof(CustomerElevatorWaitPoints)]; }
+            set { this[nameof(CustomerElevatorWaitPoints)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(CustomerElevatorInsidePoints), DefaultValue = "1F:U2,2F:V2,3F:W2")]
+        public string CustomerElevatorInsidePoints
+        {
+            get { return (string)this[nameof(CustomerElevatorInsidePoints)]; }
+            set { this[nameof(CustomerElevatorInsidePoints)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(FreightElevatorFloors), DefaultValue = "3F,4F")]
+        public string FreightElevatorFloors
+        {
+            get { return (string)this[nameof(FreightElevatorFloors)]; }
+            set { this[nameof(FreightElevatorFloors)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(FreightElevatorWaitPoints), DefaultValue = "3F:X1,4F:Y1")]
+        public string FreightElevatorWaitPoints
+        {
+            get { return (string)this[nameof(FreightElevatorWaitPoints)]; }
+            set { this[nameof(FreightElevatorWaitPoints)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(FreightElevatorInsidePoints), DefaultValue = "3F:X2,4F:Y2")]
+        public string FreightElevatorInsidePoints
+        {
+            get { return (string)this[nameof(FreightElevatorInsidePoints)]; }
+            set { this[nameof(FreightElevatorInsidePoints)] = value; }
+        }
+
+        [ConfigurationProperty(nameof(StationFloorMapping), DefaultValue = "A:1F,B:1F,C:1F,D:1F,E:1F,G:1F,H:2F,I:3F,J:3F,K:4F,L:4F,M:2F,N:2F,O:2F,P:2F,Q:2F,R:2F,S:2F,T:2F")]
+        public string StationFloorMapping
+        {
+            get { return (string)this[nameof(StationFloorMapping)]; }
+            set { this[nameof(StationFloorMapping)] = value; }
+        }
+    }
+    #endregion Elevator Config
 }

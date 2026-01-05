@@ -1,0 +1,212 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace HikAGVWebAPI
+{
+    /// <summary>
+    /// 電梯路徑計算引擎
+    /// 根據起終點計算包含電梯中繼點的完整路徑
+    /// </summary>
+    public class ElevatorPathCalculator
+    {
+        private readonly ElevatorSettings _settings;
+
+        // 客梯站點
+        private Dictionary<string, string> _customerWaitPoints;    // 樓層 -> 等待點
+        private Dictionary<string, string> _customerInsidePoints;  // 樓層 -> 電梯內點
+        private HashSet<string> _customerFloors;
+
+        // 客貨梯站點
+        private Dictionary<string, string> _freightWaitPoints;     // 樓層 -> 等待點
+        private Dictionary<string, string> _freightInsidePoints;   // 樓層 -> 電梯內點
+        private HashSet<string> _freightFloors;
+
+        // 站點樓層對照
+        private Dictionary<string, string> _stationFloorMapping;   // 站點首字母 -> 樓層
+
+        public ElevatorPathCalculator(ElevatorSettings settings)
+        {
+            _settings = settings;
+            ParseSettings();
+        }
+
+        /// <summary>
+        /// 解析配置設定
+        /// </summary>
+        private void ParseSettings()
+        {
+            // 解析客梯樓層
+            _customerFloors = new HashSet<string>(
+                _settings.CustomerElevatorFloors.Split(',').Select(s => s.Trim()));
+
+            // 解析客梯等待點
+            _customerWaitPoints = ParsePointMapping(_settings.CustomerElevatorWaitPoints);
+
+            // 解析客梯電梯內點
+            _customerInsidePoints = ParsePointMapping(_settings.CustomerElevatorInsidePoints);
+
+            // 解析客貨梯樓層
+            _freightFloors = new HashSet<string>(
+                _settings.FreightElevatorFloors.Split(',').Select(s => s.Trim()));
+
+            // 解析客貨梯等待點
+            _freightWaitPoints = ParsePointMapping(_settings.FreightElevatorWaitPoints);
+
+            // 解析客貨梯電梯內點
+            _freightInsidePoints = ParsePointMapping(_settings.FreightElevatorInsidePoints);
+
+            // 解析站點樓層對照
+            _stationFloorMapping = ParsePointMapping(_settings.StationFloorMapping);
+        }
+
+        /// <summary>
+        /// 解析 "Key:Value,Key:Value" 格式的字串
+        /// </summary>
+        private Dictionary<string, string> ParsePointMapping(string mapping)
+        {
+            return mapping.Split(',')
+                .Select(s => s.Trim().Split(':'))
+                .Where(parts => parts.Length == 2)
+                .ToDictionary(parts => parts[0].Trim(), parts => parts[1].Trim());
+        }
+
+        /// <summary>
+        /// 取得站點所屬樓層（根據首字母）
+        /// </summary>
+        public string GetFloor(string station)
+        {
+            if (string.IsNullOrEmpty(station))
+                return null;
+
+            var prefix = station[0].ToString().ToUpper();
+            if (_stationFloorMapping.ContainsKey(prefix))
+                return _stationFloorMapping[prefix];
+
+            return null;
+        }
+
+        /// <summary>
+        /// 計算完整路徑（包含電梯中繼點）
+        /// </summary>
+        public List<string> CalculatePath(string beginStation, string endStation)
+        {
+            var path = new List<string> { beginStation };
+
+            var beginFloor = GetFloor(beginStation);
+            var endFloor = GetFloor(endStation);
+
+            // 無法判斷樓層時，直接返回起終點
+            if (beginFloor == null || endFloor == null)
+            {
+                path.Add(endStation);
+                return path;
+            }
+
+            // 同樓層，直接返回起終點
+            if (beginFloor == endFloor)
+            {
+                path.Add(endStation);
+                return path;
+            }
+
+            // 判斷使用哪個電梯
+            bool needCustomerElevator = NeedCustomerElevator(beginFloor, endFloor);
+            bool needFreightElevator = NeedFreightElevator(beginFloor, endFloor);
+            bool isGoingUp = CompareFloor(beginFloor, endFloor) < 0;
+
+            if (needCustomerElevator && needFreightElevator)
+            {
+                // 雙電梯換乘（經過 3F）
+                if (isGoingUp)
+                {
+                    // 上行：客梯(起點→3F) → 客貨梯(3F→4F)
+                    AddElevatorPath(path, beginFloor, "3F", isGoingUp, isCustomer: true);
+                    AddElevatorPath(path, "3F", endFloor, isGoingUp, isCustomer: false);
+                }
+                else
+                {
+                    // 下行：客貨梯(4F→3F) → 客梯(3F→終點)
+                    AddElevatorPath(path, beginFloor, "3F", isGoingUp, isCustomer: false);
+                    AddElevatorPath(path, "3F", endFloor, isGoingUp, isCustomer: true);
+                }
+            }
+            else if (needCustomerElevator)
+            {
+                // 只需客梯
+                AddElevatorPath(path, beginFloor, endFloor, isGoingUp, isCustomer: true);
+            }
+            else if (needFreightElevator)
+            {
+                // 只需客貨梯
+                AddElevatorPath(path, beginFloor, endFloor, isGoingUp, isCustomer: false);
+            }
+
+            path.Add(endStation);
+            return path;
+        }
+
+        /// <summary>
+        /// 判斷是否需要客梯（1F-3F）
+        /// </summary>
+        private bool NeedCustomerElevator(string beginFloor, string endFloor)
+        {
+            // 起點或終點在 1F 或 2F 時需要客梯
+            return beginFloor == "1F" || beginFloor == "2F" || endFloor == "1F" || endFloor == "2F";
+        }
+
+        /// <summary>
+        /// 判斷是否需要客貨梯（3F-4F）
+        /// </summary>
+        private bool NeedFreightElevator(string beginFloor, string endFloor)
+        {
+            // 起點或終點在 4F 時需要客貨梯
+            return beginFloor == "4F" || endFloor == "4F";
+        }
+
+        /// <summary>
+        /// 比較樓層（返回 -1 表示 floor1 < floor2）
+        /// </summary>
+        private int CompareFloor(string floor1, string floor2)
+        {
+            int f1 = int.Parse(floor1.Replace("F", ""));
+            int f2 = int.Parse(floor2.Replace("F", ""));
+            return f1.CompareTo(f2);
+        }
+
+        /// <summary>
+        /// 添加電梯路徑
+        /// </summary>
+        /// <param name="path">路徑列表</param>
+        /// <param name="fromFloor">起始樓層</param>
+        /// <param name="toFloor">目標樓層</param>
+        /// <param name="isGoingUp">是否上行</param>
+        /// <param name="isCustomer">是否為客梯</param>
+        private void AddElevatorPath(List<string> path, string fromFloor, string toFloor, bool isGoingUp, bool isCustomer)
+        {
+            var waitPoints = isCustomer ? _customerWaitPoints : _freightWaitPoints;
+            var insidePoints = isCustomer ? _customerInsidePoints : _freightInsidePoints;
+
+            if (isGoingUp)
+            {
+                // 上行：等待點(起) → 電梯內(起) → 電梯內(終)
+                if (waitPoints.ContainsKey(fromFloor))
+                    path.Add(waitPoints[fromFloor]);
+                if (insidePoints.ContainsKey(fromFloor))
+                    path.Add(insidePoints[fromFloor]);
+                if (insidePoints.ContainsKey(toFloor))
+                    path.Add(insidePoints[toFloor]);
+            }
+            else
+            {
+                // 下行：等待點(起) → 電梯內(起) → 電梯內(終)
+                if (waitPoints.ContainsKey(fromFloor))
+                    path.Add(waitPoints[fromFloor]);
+                if (insidePoints.ContainsKey(fromFloor))
+                    path.Add(insidePoints[fromFloor]);
+                if (insidePoints.ContainsKey(toFloor))
+                    path.Add(insidePoints[toFloor]);
+            }
+        }
+    }
+}
