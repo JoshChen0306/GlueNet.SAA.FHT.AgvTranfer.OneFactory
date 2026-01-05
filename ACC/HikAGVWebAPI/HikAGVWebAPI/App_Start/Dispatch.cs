@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace HikAGVWebAPI
 {
@@ -469,7 +470,7 @@ namespace HikAGVWebAPI
             try
             {
                 var rackId = string.IsNullOrEmpty(oMission.RackId) ? "-1" : oMission.RackId;
-                
+
                 // 計算電梯路徑
                 var pathCalculator = new ElevatorPathCalculator(ElevatorSettings);
                 var fullPath = pathCalculator.CalculatePath(oMission.BeginStation, oMission.EndStation);
@@ -483,6 +484,9 @@ namespace HikAGVWebAPI
                     positionCodePath = PositionCode.Split(';').Select(x => x.Split(','))
                                                      .Select(x => new CodePath { positionCode = x[0], type = x[1] }).ToList(),
                 };
+
+                mLog.TraceOut($"SchedulingTask : {JsonConvert.SerializeObject(AGVStatus)}", Log.LogType.NONE);
+
 
                 ReturnAck = hikAGV.SchedulingTask(AGVStatus);
             }
