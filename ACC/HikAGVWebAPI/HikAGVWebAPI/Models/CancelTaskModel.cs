@@ -1,7 +1,7 @@
 ﻿/// <summary>
 /// 取消任務
 /// </summary>
-public class CancelTask
+public class PreCancelTask
 {
     /// <summary>
     /// 请求编号，每个请求都要一个唯一编号， 同一个请求重复提交， 使用同一编号 。
@@ -29,7 +29,7 @@ public class CancelTask
 /// <summary>
 /// 取消任務回應
 /// </summary>
-public class CancelTaskAck
+public class PreCancelTaskAck
 {
     public string code { get; set; }
     public string message { get; set; }

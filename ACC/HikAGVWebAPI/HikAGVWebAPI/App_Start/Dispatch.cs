@@ -504,6 +504,28 @@ namespace HikAGVWebAPI
             {
                 foreach (oMissionModel DeleteMission in oMissionDetete)
                 {
+                    // 若任務已派發至 RCS (有 TaskCode)，先呼叫海康取消任務 API
+                    if (!string.IsNullOrEmpty(DeleteMission.TaskCode))
+                    {
+                        CancelTask preCancelRequest = new CancelTask()
+                        {
+                            reqCode = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),
+                            taskCode = DeleteMission.TaskCode,
+                            forceCancel = "0"  // 軟取消 (預設)
+                        };
+
+                        mLog.TraceOut($"Send Cancel Task API! TaskCode: {DeleteMission.TaskCode}", Log.LogType.NONE);
+                        CancelTaskAck ack = hikAGV.CancelTask(preCancelRequest);
+
+                        mLog.TraceOut($"Cancel Task API Response: {ack?.ToString()}", Log.LogType.NONE);
+
+                        if (ack?.code != "0")
+                        {
+                            mLog.TraceOut($"Cancel Task Failed! TaskCode: {DeleteMission.TaskCode}, Message: {ack?.message}", Log.LogType.NONE);
+                            continue; // 取消失敗，暫不刪除，等待下次重試
+                        }
+                    }
+
                     mDB.Delete_oMission(DeleteMission);
                     mLog.TraceOut($"Delete Cancel Mission! {DeleteMission?.ToString()}", Log.LogType.NONE);
                 }
