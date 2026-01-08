@@ -38,6 +38,7 @@ namespace SCP.Controllers
                 var agvPositions = GetAgv(area);
                 LogMgt.Logger?.Info($"[ShowMap] AGV 資料載入成功, 共 {agvPositions.Count} 個 AGV");
                 ViewBag.AgvPositions = agvPositions;
+                ViewBag.CurrentArea = area;
 
                 LogMgt.Logger?.Info($"[ShowMap] 地圖載入完成");
                 return PartialView("_MapPartial");
