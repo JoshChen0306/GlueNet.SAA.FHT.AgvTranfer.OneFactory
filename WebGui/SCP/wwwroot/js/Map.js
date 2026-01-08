@@ -10,7 +10,16 @@ export function loadMapData(area) {
             $("#Map").html(data);
 
             const mapSrc = area || 'FHT2-1F';
-            $('#map-img').attr('src', `/img/${mapSrc}.png`);
+            // 優先嘗試 SVG，如果載入失敗則回退到 PNG
+            const $mapImg = $('#map-img');
+            $mapImg.off('error').on('error', function () {
+                // SVG 載入失敗，嘗試 PNG
+                const currentSrc = $(this).attr('src');
+                if (currentSrc && currentSrc.endsWith('.svg')) {
+                    $(this).attr('src', `/img/${mapSrc}.png`);
+                }
+            });
+            $mapImg.attr('src', `/img/${mapSrc}.svg`);
 
             // 初始化所有庫位的 Bootstrap Tooltip
             $('[data-bs-toggle="tooltip"]').tooltip({

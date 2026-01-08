@@ -26,7 +26,10 @@
             string agvColor = !string.IsNullOrEmpty(agvName) ? (Configuration.GetSection("AgvColor")[agvName] ?? "#333") : "#333";
             <div class="position-absolute agv-transition" id="@agvName" style="bottom:@agv.PosY; left:@agv.PosX; z-index:10"><i class="fa-solid fa-car" style="color:@agvColor"></i></div>
         }
-        <div class="position-absolute" style="top:64%; left:12%"><img src="/img/ChargingStation-off.png" /></div>
+        @if (ViewBag.CurrentArea == "FHT2-1F")
+        {
+            <div class="position-absolute" style="top:64%; left:12%"><img src="/img/ChargingStation-off.png" /></div>
+        }
         @foreach (var style in ViewBag.positions)
         {
             // 變數宣告
