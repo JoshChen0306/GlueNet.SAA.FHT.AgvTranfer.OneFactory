@@ -116,6 +116,19 @@ namespace HikAGVDll
             }
         }
 
+        [ConfigurationProperty("CrossFloorTaskType", DefaultValue = "F34")]
+        public string CrossFloorTaskType
+        {
+            get
+            {
+                return (string)this["CrossFloorTaskType"];
+            }
+            private set
+            {
+                this["CrossFloorTaskType"] = value;
+            }
+        }
+
         [ConfigurationProperty("WarnContent", DefaultValue = "安全告警-前碰撞条触发,安全告警-后碰撞条触发")]
         public string WarnContent
         {

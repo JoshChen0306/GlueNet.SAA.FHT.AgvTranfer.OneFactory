@@ -87,6 +87,20 @@ namespace HikAGVWebAPI
         }
 
         /// <summary>
+        /// 判斷是否為跨樓層任務
+        /// </summary>
+        public bool IsCrossFloor(string beginStation, string endStation)
+        {
+            var beginFloor = GetFloor(beginStation);
+            var endFloor = GetFloor(endStation);
+            
+            if (beginFloor == null || endFloor == null)
+                return false;
+                
+            return beginFloor != endFloor;
+        }
+
+        /// <summary>
         /// 計算完整路徑（包含電梯中繼點）
         /// </summary>
         public List<string> CalculatePath(string beginStation, string endStation)

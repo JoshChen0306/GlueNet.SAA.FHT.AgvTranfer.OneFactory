@@ -474,13 +474,21 @@ namespace HikAGVWebAPI
                 // 計算電梯路徑
                 var pathCalculator = new ElevatorPathCalculator(ElevatorSettings);
                 var fullPath = pathCalculator.CalculatePath(oMission.BeginStation, oMission.EndStation);
+                
+                // 判斷是否為跨樓層，選擇對應的 TaskType
+                bool isCrossFloor = pathCalculator.IsCrossFloor(oMission.BeginStation, oMission.EndStation);
+                string actualTaskType = isCrossFloor 
+                    ? hikAGV.AGVSettings.CrossFloorTaskType 
+                    : TaskType;
+                mLog.TraceOut($"TaskType: {actualTaskType}, IsCrossFloor: {isCrossFloor}", Log.LogType.NONE);
+                
                 string PositionCode = string.Join(";", fullPath.Select(p => $"{p},00"));
                 mLog.TraceOut($"Calculated Path: {PositionCode}", Log.LogType.NONE);
                 SchedulingTask AGVStatus = new SchedulingTask()
                 {
                     reqCode = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),
                     podCode = rackId,
-                    taskTyp = TaskType,
+                    taskTyp = actualTaskType,
                     positionCodePath = PositionCode.Split(';').Select(x => x.Split(','))
                                                      .Select(x => new CodePath { positionCode = x[0], type = x[1] }).ToList(),
                 };
