@@ -9,19 +9,28 @@ export function loadMapData(area) {
         success: function (data) {
             $("#Map").html(data);
 
-            const mapSrc = area || 'FHT2-1F';
+            // 從後端返回的 HTML 中讀取實際的當前樓層
+            const $mapImg = $('#map-img');
+            const currentImgSrc = $mapImg.attr('src') || '';
+            // 從圖片 src 中解析當前樓層名稱 (e.g., /img/FHT2-3F.png -> FHT2-3F)
+            const srcMatch = currentImgSrc.match(/\/img\/(FHT2-\dF)\.(png|svg)/);
+            const mapSrc = area || (srcMatch ? srcMatch[1] : 'FHT2-1F');
+
             // 更新全域變數追蹤當前樓層（供 Dispatch.js 使用）
             window.currentMapArea = mapSrc;
-            // 優先嘗試 SVG，如果載入失敗則回退到 PNG
-            const $mapImg = $('#map-img');
-            $mapImg.off('error').on('error', function () {
-                // SVG 載入失敗，嘗試 PNG
-                const currentSrc = $(this).attr('src');
-                if (currentSrc && currentSrc.endsWith('.svg')) {
-                    $(this).attr('src', `/img/${mapSrc}.png`);
-                }
-            });
-            $mapImg.attr('src', `/img/${mapSrc}.svg`);
+
+            // 如果有指定 area 參數，則更新圖片 src，否則使用後端設定的圖片
+            if (area) {
+                // 優先嘗試 SVG，如果載入失敗則回退到 PNG
+                $mapImg.off('error').on('error', function () {
+                    // SVG 載入失敗，嘗試 PNG
+                    const currentSrc = $(this).attr('src');
+                    if (currentSrc && currentSrc.endsWith('.svg')) {
+                        $(this).attr('src', `/img/${mapSrc}.png`);
+                    }
+                });
+                $mapImg.attr('src', `/img/${mapSrc}.svg`);
+            }
 
             // 初始化所有庫位的 Bootstrap Tooltip
             $('[data-bs-toggle="tooltip"]').tooltip({

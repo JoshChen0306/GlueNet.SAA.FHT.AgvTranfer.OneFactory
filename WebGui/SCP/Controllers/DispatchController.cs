@@ -27,21 +27,64 @@ namespace SCP.Controllers
             var areaList = new List<SelectListItem>();
             IEnumerable<KeyValuePair<string, string>> filterAreas = areas;
             string groupId = User.FindFirst(ClaimTypes.Role)?.Value;
+            string userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            switch (groupId)
+            // 使用路線權限過濾區域（新機制）
+            var userRoutes = _DBContext.pUserRoute
+                .Where(ur => ur.UserId == userId)
+                .Join(_DBContext.pRoute.Where(r => r.ControlFlag == "Y"),
+                      ur => ur.RouteId,
+                      r => r.RouteId,
+                      (ur, r) => r)
+                .ToList();
+
+            // 儲存允許的起點區域（用於過濾派送起點）
+            List<string> allowedSourceAreas = new List<string>();
+            // 儲存允許的所有區域（包含起點和終點，用於樓層過濾）
+            List<string> allowedAllAreas = new List<string>();
+
+            if (userRoutes.Any())
             {
-                case "2":
-                    filterAreas = areas.Where(item => item.Value == "A");
-                    break;
-                case "6":
-                    filterAreas = areas.Where(item => item.Value == "C" || item.Value == "D");
-                    break;
-                case "5":
-                    filterAreas = areas.Where(item => item.Value == "F");
-                    break;
+                // 使用者有設定路線權限，使用新機制
+                // 只取得「一般派送」(DISPATCH) 路線的起點區域作為可選派送區域
+                // RELEASE 類型路線不顯示在派送頁面
+                allowedSourceAreas = userRoutes
+                    .Where(r => !string.IsNullOrEmpty(r.SourceAreas) && 
+                                (r.DispatchMode == "DISPATCH" || string.IsNullOrEmpty(r.DispatchMode)))
+                    .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
+                    .Distinct()
+                    .ToList();
+
+                // 取得所有路線的起點區域，用於樓層過濾
+                // 注意：只使用 SourceAreas，不包含 TargetAreas
+                // 這樣使用者只能看到他可以操作的樓層，而不是所有相關樓層
+                allowedAllAreas = userRoutes
+                    .Where(r => !string.IsNullOrEmpty(r.SourceAreas))
+                    .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
+                    .Distinct()
+                    .ToList();
+
+                // 只使用「一般派送」起點區域過濾派送區域選單
+                filterAreas = areas.Where(item => allowedSourceAreas.Contains(item.Value));
             }
-
-
+            else
+            {
+                // 使用者無路線權限設定，使用舊的 switch-case 邏輯（相容舊資料）
+                switch (groupId)
+                {
+                    case "2":
+                        filterAreas = areas.Where(item => item.Value == "A");
+                        break;
+                    case "6":
+                        filterAreas = areas.Where(item => item.Value == "C" || item.Value == "D");
+                        break;
+                    case "5":
+                        filterAreas = areas.Where(item => item.Value == "F");
+                        break;
+                }
+                // 舊機制：所有區域都是允許的
+                allowedAllAreas = filterAreas.Select(a => a.Value).ToList();
+            }
 
             foreach (var item in filterAreas)
             {
@@ -54,8 +97,33 @@ namespace SCP.Controllers
 
             // 樓層選擇器 - 從 FloorArea 設定動態讀取
             var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
-            ViewBag.FloorList = floorArea.Keys.Select(k => new SelectListItem { Value = k, Text = k }).ToList();
-            ViewBag.FloorArea = floorArea;
+            
+            // 根據路線權限過濾樓層（只使用起點區域）
+            var allowedAreasSet = allowedAllAreas.Any() ? allowedAllAreas.ToHashSet() : filterAreas.Select(a => a.Value).ToHashSet();
+            var filteredFloorArea = new Dictionary<string, string[]>();
+            var filteredFloorList = new List<SelectListItem>();
+
+            foreach (var floor in floorArea)
+            {
+                // 檢查該樓層的區域是否有使用者可用的區域
+                var matchedAreas = floor.Value.Where(a => allowedAreasSet.Contains(a)).ToArray();
+                if (matchedAreas.Any())
+                {
+                    filteredFloorArea[floor.Key] = matchedAreas;
+                    filteredFloorList.Add(new SelectListItem { Value = floor.Key, Text = floor.Key });
+                }
+            }
+
+            ViewBag.FloorList = filteredFloorList;
+            ViewBag.FloorArea = filteredFloorArea;
+
+            // 傳遞路線資訊給前端（用於驗證完整路線）
+            ViewBag.UserRoutes = userRoutes.Select(r => new {
+                r.RouteId,
+                r.RouteName,
+                r.SourceAreas,
+                r.TargetAreas
+            }).ToList();
 
             return View();
         }

@@ -23,10 +23,20 @@ namespace SCP.Controllers
         }
 
         [HttpGet("ShowMap")]
-        public IActionResult ShowMap(string area = "FHT2-1F")
+        public IActionResult ShowMap(string area = "")
         {
             try
             {
+                // 根據使用者路線權限過濾可見樓層
+                var allowedFloors = GetUserAllowedFloors();
+                ViewBag.AllowedFloors = allowedFloors;
+
+                // 如果未指定 area 或指定的 area 不在允許的樓層中，使用第一個允許的樓層
+                if (string.IsNullOrEmpty(area) || !allowedFloors.Contains(area))
+                {
+                    area = allowedFloors.FirstOrDefault() ?? "FHT2-1F";
+                }
+
                 LogMgt.Logger?.Info($"[ShowMap] 開始載入地圖, area={area}");
                 
                 LogMgt.Logger?.Debug($"[ShowMap] 正在取得站點資料...");
@@ -48,6 +58,77 @@ namespace SCP.Controllers
                 LogMgt.Logger?.Error(ex, $"[ShowMap] 錯誤: {ex.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// 取得使用者允許的樓層清單（根據路線權限）
+        /// </summary>
+        private List<string> GetUserAllowedFloors()
+        {
+            // 預設所有樓層
+            var allFloors = new List<string> { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" };
+            
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                // 未登入使用者，顯示所有樓層
+                return allFloors;
+            }
+
+            // 取得使用者的路線權限
+            var userRoutes = _DBContext.pUserRoute
+                .Where(ur => ur.UserId == userId)
+                .Join(_DBContext.pRoute.Where(r => r.ControlFlag == "Y"),
+                      ur => ur.RouteId,
+                      r => r.RouteId,
+                      (ur, r) => r)
+                .ToList();
+
+            if (!userRoutes.Any())
+            {
+                // 使用者沒有設定路線權限，使用舊的邏輯，顯示所有樓層
+                return allFloors;
+            }
+
+            // 取得使用者所有允許的起點區域（只使用 SourceAreas）
+            // 使用者只能看到他可以操作的樓層
+            var allowedAreas = userRoutes
+                .Where(r => !string.IsNullOrEmpty(r.SourceAreas))
+                .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
+                .Distinct()
+                .ToList();
+
+            // 讀取 FloorArea 設定，判斷哪些樓層包含使用者允許的區域
+            var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+            var allowedFloors = new List<string>();
+
+            // 樓層名稱到地圖區域的映射
+            var floorToMapArea = new Dictionary<string, string>
+            {
+                { "1F", "FHT2-1F" },
+                { "2F - 站內運輸", "FHT2-2F" },
+                { "2F - 站外運輸", "FHT2-2F" },
+                { "3F", "FHT2-3F" },
+                { "4F", "FHT2-4F" }
+            };
+
+            foreach (var floor in floorArea)
+            {
+                // 檢查該樓層的區域是否有使用者可用的區域
+                if (floor.Value.Any(a => allowedAreas.Contains(a)))
+                {
+                    if (floorToMapArea.ContainsKey(floor.Key))
+                    {
+                        var mapArea = floorToMapArea[floor.Key];
+                        if (!allowedFloors.Contains(mapArea))
+                        {
+                            allowedFloors.Add(mapArea);
+                        }
+                    }
+                }
+            }
+
+            return allowedFloors.Any() ? allowedFloors : allFloors;
         }
 
         [HttpGet("UpdateTrac")]

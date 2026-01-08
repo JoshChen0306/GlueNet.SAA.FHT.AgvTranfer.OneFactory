@@ -35,6 +35,10 @@ public partial class agvDB_1400004Context : DbContext
 
     public virtual DbSet<ubMission> ubMission { get; set; }
 
+    public virtual DbSet<pRoute> pRoute { get; set; }
+
+    public virtual DbSet<pUserRoute> pUserRoute { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<oMission>(entity =>
@@ -241,6 +245,29 @@ public partial class agvDB_1400004Context : DbContext
             entity.Property(e => e.TaskDateTime).HasMaxLength(20);
             entity.Property(e => e.TaskSource).HasMaxLength(20);
             entity.Property(e => e.WorkOrder).HasMaxLength(100);
+        });
+
+        modelBuilder.Entity<pRoute>(entity =>
+        {
+            entity.HasKey(e => e.RouteId);
+
+            entity.Property(e => e.RouteId).HasMaxLength(30);
+            entity.Property(e => e.RouteName).HasMaxLength(50);
+            entity.Property(e => e.SourceFloor).HasMaxLength(10);
+            entity.Property(e => e.TargetFloor).HasMaxLength(10);
+            entity.Property(e => e.RouteType).HasMaxLength(20);
+            entity.Property(e => e.SourceAreas).HasMaxLength(100);
+            entity.Property(e => e.TargetAreas).HasMaxLength(100);
+            entity.Property(e => e.ControlFlag).HasMaxLength(1);
+            entity.Property(e => e.DispatchMode).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<pUserRoute>(entity =>
+        {
+            entity.HasKey(e => new { e.UserId, e.RouteId });
+
+            entity.Property(e => e.UserId).HasMaxLength(20);
+            entity.Property(e => e.RouteId).HasMaxLength(30);
         });
 
         OnModelCreatingPartial(modelBuilder);

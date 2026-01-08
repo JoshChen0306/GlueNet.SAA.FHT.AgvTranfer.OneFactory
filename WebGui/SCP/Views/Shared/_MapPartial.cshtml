@@ -1,25 +1,32 @@
 ﻿@*
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
+@{
+    var allowedFloors = ViewBag.AllowedFloors as List<string> ?? new List<string> { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" };
+    var floorDisplayNames = new Dictionary<string, string>
+    {
+        { "FHT2-1F", "1F" },
+        { "FHT2-2F", "2F" },
+        { "FHT2-3F", "3F" },
+        { "FHT2-4F", "4F" }
+    };
+}
 <div class="bg-white d-flex flex-column">
     <div>
         <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-area="FHT2-1F">1F</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-area="FHT2-2F">2F</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-area="FHT2-3F">3F</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" data-area="FHT2-4F">4F</a>
-            </li>
+            @foreach (var floor in new[] { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" })
+            {
+                if (allowedFloors.Contains(floor))
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-area="@floor">@floorDisplayNames[floor]</a>
+                    </li>
+                }
+            }
         </ul>
     </div>
     <div class="mx-auto d-block position-relative">
-        <img id="map-img" src="/img/FHT2-1F.png" height="500" class="d-block mw-100" />
+        <img id="map-img" src="/img/@(ViewBag.CurrentArea).png" height="500" class="d-block mw-100" />
         @foreach (var agv in ViewBag.AgvPositions)
         {
             string agvName = agv.GustomerName ?? "";

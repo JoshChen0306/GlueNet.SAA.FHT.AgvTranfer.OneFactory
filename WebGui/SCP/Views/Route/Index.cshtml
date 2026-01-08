@@ -1,0 +1,222 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = "路線權限管理";
+    var userList = ViewBag.UserList as IEnumerable<SelectListItem>;
+    var routes = ViewBag.Routes as List<SCP.Models.pRoute>;
+}
+
+<div class="container-fluid mt-3" style="min-height: 600px;">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fa-solid fa-route me-2"></i>路線權限管理</h5>
+                </div>
+                <div class="card-body">
+                    <!-- 使用者選擇 -->
+                    <div class="row mb-4">
+                        <label class="col-sm-3 col-form-label fw-bold">選擇使用者</label>
+                        <div class="col-sm-9">
+                            <select id="userSelect" class="form-select">
+                                <option value="">-- 請選擇使用者 --</option>
+                                @if (userList != null)
+                                {
+                                    @foreach (var user in userList)
+                                    {
+                                        <option value="@user.Value">@user.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 路線權限勾選清單 -->
+                    <div class="row mb-3">
+                        <label class="col-sm-3 col-form-label fw-bold">派送路線權限</label>
+                        <div class="col-sm-9">
+                            <div id="routeList" class="border rounded p-3" style="max-height: 400px; overflow-y: auto;">
+                                @if (routes != null)
+                                {
+                                    @foreach (var route in routes)
+                                    {
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input route-checkbox" type="checkbox" 
+                                                   value="@route.RouteId" id="route_@route.RouteId" disabled>
+                                            <label class="form-check-label" for="route_@route.RouteId">
+                                                <span class="fw-semibold">@route.RouteName</span>
+                                                <small class="text-muted ms-2">
+                                                    (@route.SourceAreas → @route.TargetAreas)
+                                                </small>
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                                else
+                                {
+                                    <p class="text-muted mb-0">尚未設定路線定義，請先執行資料庫腳本。</p>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速選擇按鈕 -->
+                    <div class="row mb-4">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-9">
+                            <button type="button" id="btnSelectAll" class="btn btn-outline-secondary btn-sm me-2" disabled>
+                                <i class="fa-solid fa-check-double me-1"></i>全選
+                            </button>
+                            <button type="button" id="btnDeselectAll" class="btn btn-outline-secondary btn-sm" disabled>
+                                <i class="fa-solid fa-xmark me-1"></i>取消全選
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 操作按鈕 -->
+                    <div class="row">
+                        <div class="col-sm-3"></div>
+                        <div class="col-sm-9">
+                            <button type="button" id="btnSave" class="btn btn-primary me-2" disabled>
+                                <i class="fa-solid fa-save me-1"></i>儲存
+                            </button>
+                            <button type="button" id="btnCancel" class="btn btn-secondary" disabled>
+                                <i class="fa-solid fa-times me-1"></i>取消
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 儲存成功 Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fa-solid fa-check-circle me-2"></i>成功</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="successMessage">權限儲存成功！</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    $(function () {
+        var originalRoutes = [];
+
+        // 觸發 iframe resize（確保父頁面的 iFrameResize 能正確計算高度）
+        if (window.parentIFrame) {
+            window.parentIFrame.size();
+        }
+
+        // 使用者選擇變更事件
+        $("#userSelect").on("change", function () {
+            var userId = $(this).val();
+            
+            if (!userId) {
+                // 未選擇使用者，禁用所有控制項
+                $(".route-checkbox").prop("disabled", true).prop("checked", false);
+                $("#btnSelectAll, #btnDeselectAll, #btnSave, #btnCancel").prop("disabled", true);
+                originalRoutes = [];
+                return;
+            }
+
+            // 載入使用者的路線權限
+            $.ajax({
+                type: "GET",
+                url: "/Route/GetUserRoutes",
+                data: { userId: userId },
+                success: function (data) {
+                    // 啟用勾選框
+                    $(".route-checkbox").prop("disabled", false);
+                    $("#btnSelectAll, #btnDeselectAll, #btnSave, #btnCancel").prop("disabled", false);
+
+                    // 清除之前的勾選
+                    $(".route-checkbox").prop("checked", false);
+
+                    // 勾選使用者擁有的路線權限
+                    if (data && data.length > 0) {
+                        data.forEach(function (routeId) {
+                            $("#route_" + routeId).prop("checked", true);
+                        });
+                    }
+
+                    // 保存原始狀態
+                    originalRoutes = data || [];
+                },
+                error: function (error) {
+                    alert("載入使用者權限失敗：" + (error.responseJSON?.message || error.statusText));
+                }
+            });
+        });
+
+        // 全選按鈕
+        $("#btnSelectAll").on("click", function () {
+            $(".route-checkbox").prop("checked", true);
+        });
+
+        // 取消全選按鈕
+        $("#btnDeselectAll").on("click", function () {
+            $(".route-checkbox").prop("checked", false);
+        });
+
+        // 儲存按鈕
+        $("#btnSave").on("click", function () {
+            var userId = $("#userSelect").val();
+            if (!userId) {
+                alert("請先選擇使用者");
+                return;
+            }
+
+            // 取得勾選的路線 ID
+            var selectedRoutes = [];
+            $(".route-checkbox:checked").each(function () {
+                selectedRoutes.push($(this).val());
+            });
+
+            // 發送儲存請求
+            $.ajax({
+                type: "POST",
+                url: "/Route/SaveUserRoutes",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    userId: userId,
+                    routeIds: selectedRoutes
+                }),
+                success: function (response) {
+                    // 更新原始狀態
+                    originalRoutes = selectedRoutes;
+                    
+                    // 顯示成功訊息
+                    $("#successMessage").text(response.message || "權限儲存成功！");
+                    var modal = new bootstrap.Modal(document.getElementById('successModal'));
+                    modal.show();
+                },
+                error: function (error) {
+                    alert("儲存失敗：" + (error.responseJSON?.message || error.statusText));
+                }
+            });
+        });
+
+        // 取消按鈕 - 還原到原始狀態
+        $("#btnCancel").on("click", function () {
+            // 清除所有勾選
+            $(".route-checkbox").prop("checked", false);
+            
+            // 還原原始勾選狀態
+            originalRoutes.forEach(function (routeId) {
+                $("#route_" + routeId).prop("checked", true);
+            });
+        });
+    });
+</script>
+}
