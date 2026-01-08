@@ -35,6 +35,9 @@ namespace SCP.Controllers
                 .ToList();
             List<Position> result = new List<Position>();
 
+            // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT2-1F")
+            string area = $"FHT2-{floor}";
+            
             foreach (var item in query)
             {
                 // 跳過沒有座標設定的站點
@@ -44,8 +47,8 @@ namespace SCP.Controllers
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0]),
-                    Bottom = ConvertY(item.Remark.Split(",")[1]),
+                    Left = ConvertX(item.Remark.Split(",")[0], area),
+                    Bottom = ConvertY(item.Remark.Split(",")[1], area),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
@@ -124,13 +127,14 @@ namespace SCP.Controllers
             return imgSrc ?? "/img/empty.svg";
         }
 
-        private string ConvertX(string posX)
+        private string ConvertX(string posX, string area)
         {
             string result;
-            double minPercentX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minPercentX").Value);
-            double maxPercentX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxPercentX").Value);
-            double minX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minX").Value);
-            double maxX = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxX").Value);
+            var setting = _configuration.GetSection($"AgvSetting:{area}");
+            double minPercentX = Convert.ToDouble(setting["minPercentX"]);
+            double maxPercentX = Convert.ToDouble(setting["maxPercentX"]);
+            double minX = Convert.ToDouble(setting["minX"]);
+            double maxX = Convert.ToDouble(setting["maxX"]);
             double percentRangeX = maxPercentX - minPercentX;
             double rangeX = maxX - minX;
 
@@ -140,18 +144,19 @@ namespace SCP.Controllers
             return result;
         }
 
-        private String ConvertY(string posY)
+        private string ConvertY(string posY, string area)
         {
             string result;
-            double minPercentY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minPercentY").Value);
-            double maxPercentY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxPercentY").Value);
-            double minY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("minY").Value);
-            double maxY = Convert.ToDouble(_configuration.GetSection("AgvSetting").GetSection("maxY").Value);
+            var setting = _configuration.GetSection($"AgvSetting:{area}");
+            double minPercentY = Convert.ToDouble(setting["minPercentY"]);
+            double maxPercentY = Convert.ToDouble(setting["maxPercentY"]);
+            double minY = Convert.ToDouble(setting["minY"]);
+            double maxY = Convert.ToDouble(setting["maxY"]);
             double percentRangeY = maxPercentY - minPercentY;
             double rangeY = maxY - minY;
 
             double normalizedY = (Convert.ToDouble(posY) - minY) / rangeY;
-            // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
+            // 將0-1範圍的Y座標轉換為minPercent-maxPercent%範圍
             result = (minPercentY + (normalizedY * percentRangeY)).ToString() + "%";
             return result;
         }
