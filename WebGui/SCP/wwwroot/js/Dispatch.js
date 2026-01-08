@@ -4,6 +4,9 @@ console.log("=== Dispatch.js 已載入 ===");
 console.log("floorAreaMap from window:", window.floorAreaMap);
 // 本地 loadMapData 函數 (避免跨模組 import 問題)
 function loadMapDataLocal(area) {
+    // 更新 window 層級的當前地圖區域
+    window.currentMapArea = area || 'FHT2-1F';
+
     $.ajax({
         type: "GET",
         url: "/api/Common/ShowMap",
@@ -93,6 +96,10 @@ var floorToMapArea = {
 // 全域變數：站點資料快取
 var stationCache = {};
 var isCacheLoaded = false;
+// 初始化 window 層級的地圖區域追蹤變數（供 Map.js 和 Dispatch.js 共用）
+if (!window.currentMapArea) {
+    window.currentMapArea = 'FHT2-1F';
+}
 
 $(function () {
     var form = $('#DispatchForm');
@@ -315,7 +322,7 @@ $(function () {
         if (area === "MT" && selectedStation && selectedStation.workOrder) {
             // ★ 變更起點時，先清空舊終點 ★
             $("#EndStation").val("");
-            
+
             var workOrder = selectedStation.workOrder;
             var stationPrefix = selectedValue.substring(0, 1);
 
@@ -1292,10 +1299,10 @@ $(function () {
 
     // 重新載入地圖
     function refreshMap() {
-        var currentFloor = $("#Floor").val() || "2F";
-        if (floorToMapArea[currentFloor]) {
-            loadMapDataLocal(floorToMapArea[currentFloor]);
-        }
+        // 使用 window 層級變數追蹤的當前地圖區域
+        var area = window.currentMapArea || 'FHT2-1F';
+        console.log("refreshMap - 重新載入地圖:", area);
+        loadMapDataLocal(area);
         stationCache = {};
         isCacheLoaded = false;
     }
@@ -1682,7 +1689,7 @@ function filterBeginStationOptions(selectedValue) {
                 return true;
             }).show();
             break;
-            
+
         default:
             // 其他區：顯示符合區域且 HaveFlag 不為 0 的站點
             $('#BeginStation option').filter(function () {
