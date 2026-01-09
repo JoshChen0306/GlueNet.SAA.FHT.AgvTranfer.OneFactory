@@ -124,6 +124,9 @@ namespace SCP.Controllers
                 r.SourceAreas,
                 r.TargetAreas
             }).ToList();
+            
+            // 傳遞路線 ID 清單（用於前端權限過濾，如 V Cut 物料權限）
+            ViewBag.UserRouteIds = userRoutes.Select(r => r.RouteId).ToList();
 
             return View();
         }

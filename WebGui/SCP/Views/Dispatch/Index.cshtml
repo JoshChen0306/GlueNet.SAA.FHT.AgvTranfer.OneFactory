@@ -373,6 +373,8 @@
         <script>
             // 樓層與區域對應 (從後端傳入) - 掛載到 window 供 ES module 存取
             window.floorAreaMap = @Html.Raw(Json.Serialize(ViewBag.FloorArea));
+            // 使用者的路線權限 ID 清單（用於前端權限過濾）
+            window.userRouteIds = @Html.Raw(Json.Serialize(ViewBag.UserRouteIds));
         </script>
         <script src="~/lib/html5-qrcode/html5-qrcode.min.js"></script>
         <script type="module" src="~/js/Map.js"></script>
