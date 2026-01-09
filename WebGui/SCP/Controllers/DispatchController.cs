@@ -116,6 +116,9 @@ namespace SCP.Controllers
 
             ViewBag.FloorList = filteredFloorList;
             ViewBag.FloorArea = filteredFloorArea;
+            
+            // 設定預設樓層（使用者可用的第一個樓層）
+            ViewBag.DefaultFloor = filteredFloorList.FirstOrDefault()?.Value ?? "";
 
             // 傳遞路線資訊給前端（用於驗證完整路線）
             ViewBag.UserRoutes = userRoutes.Select(r => new {

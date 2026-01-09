@@ -146,12 +146,27 @@ $(function () {
         $("#Area").removeAttr("disabled");
         console.log("Area disabled 狀態:", $("#Area").prop("disabled"));
 
+        // 輔助函數：選擇第一個可見的區域選項
+        function selectFirstVisibleArea() {
+            var firstVisible = $("#Area option:visible").not("[value='']").first();
+            if (firstVisible.length > 0) {
+                var areaValue = firstVisible.val();
+                $("#Area").val(areaValue).trigger("change");
+                console.log("自動選擇第一個可見區域:", areaValue);
+                return true;
+            }
+            return false;
+        }
+
         // 5. 樓層預設區域選擇
         if (selectedFloor === "2F - 站內運輸") {
-            // 2F 站內運輸：區域預設選擇 MT（雷雕區&V cut備貨區）
-            if ($("#Area option[value='MT']").length > 0) {
+            // 2F 站內運輸：區域預設選擇 MT（雷雕區&V cut備貨區），若無則選擇第一個可見區域
+            if ($("#Area option[value='MT']:visible").length > 0) {
                 $("#Area").val("MT").trigger("change");
                 console.log("2F 站內運輸：區域預設選擇 MT");
+            } else {
+                // MT 不可用，選擇第一個可見的區域（如 Q、M、R）
+                selectFirstVisibleArea();
             }
             // 顯示掃描機台按鈕
             $("#machineScanRow").show();
@@ -159,10 +174,12 @@ $(function () {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else if (selectedFloor === "2F - 站外運輸") {
-            // 2F 站外運輸：區域預設選擇 H（成型後）
-            if ($("#Area option[value='H']").length > 0) {
+            // 2F 站外運輸：區域預設選擇 H（成型後），若無則選擇第一個可見區域
+            if ($("#Area option[value='H']:visible").length > 0) {
                 $("#Area").val("H").trigger("change");
                 console.log("2F 站外運輸：區域預設選擇 H（成型後）");
+            } else {
+                selectFirstVisibleArea();
             }
             // 隱藏掃描機台按鈕（H 區不需要）
             $("#machineScanRow").hide();
@@ -170,10 +187,12 @@ $(function () {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else if (selectedFloor === "3F") {
-            // 3F 樓層：區域預設選擇 J（插針室）
-            if ($("#Area option[value='J']").length > 0) {
+            // 3F 樓層：區域預設選擇 J（插針室），若無則選擇第一個可見區域
+            if ($("#Area option[value='J']:visible").length > 0) {
                 $("#Area").val("J").trigger("change");
                 console.log("3F 樓層：區域預設選擇 J（插針室）");
+            } else {
+                selectFirstVisibleArea();
             }
             // 隱藏掃描機台按鈕（3F 不需要）
             $("#machineScanRow").hide();
@@ -181,10 +200,12 @@ $(function () {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else if (selectedFloor === "4F") {
-            // 4F 樓層：區域預設選擇 L（烘烤前出貨區）
-            if ($("#Area option[value='L']").length > 0) {
+            // 4F 樓層：區域預設選擇 L（烘烤前出貨區），若無則選擇第一個可見區域
+            if ($("#Area option[value='L']:visible").length > 0) {
                 $("#Area").val("L").trigger("change");
                 console.log("4F 樓層：區域預設選擇 L（烘烤前出貨區）");
+            } else {
+                selectFirstVisibleArea();
             }
             // 隱藏掃描機台按鈕（4F 不需要）
             $("#machineScanRow").hide();
@@ -192,6 +213,8 @@ $(function () {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
+            // 其他樓層：選擇第一個可見區域
+            selectFirstVisibleArea();
             $("#machineScanRow").hide();
             // 顯示 Rack 碼和工單欄位
             $("#rackIdRow").show();
@@ -1382,6 +1405,24 @@ $(function () {
 
             currentScanTarget = null;
         });
+    }
+
+    // 自動選擇預設樓層（從後端傳入）- 必須在所有事件綁定完成之後執行
+    // 自動選擇預設樓層（從後端傳入）- 必須在所有事件綁定完成之後執行
+    if (window.defaultFloor && window.defaultFloor !== "") {
+        console.log("自動選擇預設樓層:", window.defaultFloor);
+        $("#Floor").val(window.defaultFloor);
+    }
+
+    // Fallback: 如果沒有選擇任何樓層（且有選項），自動選擇第一個
+    if (!$("#Floor").val() && $("#Floor option").length > 0) {
+        $("#Floor").prop('selectedIndex', 0);
+        console.log("Fallback: 自動選擇第一個樓層:", $("#Floor").val());
+    }
+
+    // 觸發 change 事件，確保後續的地圖載入和區域篩選邏輯被執行
+    if ($("#Floor").val()) {
+        $("#Floor").trigger("change");
     }
 });
 
