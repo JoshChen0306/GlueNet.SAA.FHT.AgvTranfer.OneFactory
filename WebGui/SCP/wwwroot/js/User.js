@@ -40,7 +40,7 @@
 
     //儲存按鈕點擊事件
     $('#maintain-save').on('click', function () {
-        if (Object.keys(insertdata).length > 0 ||Object.keys(updatedata).length > 0 || Object.keys(deletedata).length > 0) {
+        if (Object.keys(insertdata).length > 0 || Object.keys(updatedata).length > 0 || Object.keys(deletedata).length > 0) {
             $.ajax({
                 type: 'POST',
                 url: '/User/DataChange',
@@ -113,9 +113,9 @@
                         }
                         else {
                             row.find('td').eq(columnIndex).text(item.value);
-                        }                        
+                        }
                     }
-                });              
+                });
                 //將更新資料存入陣列
                 updatedata[formDataObject["UserId"]] = formDataObject;
             }
@@ -124,7 +124,7 @@
             icon.addClass('fa-square-check');
             icon.css('color', '#4CCD99');
             //只顯示該列按鈕
-            $(".edit-btn,.delete-btn,tfoot").css("visibility", "hidden");           
+            $(".edit-btn,.delete-btn,tfoot").css("visibility", "hidden");
             $('#maintain-save ,#maintain-cancel').toggleClass('d-none');
             row.find('.edit-btn,.delete-btn').css('visibility', 'visible');
             originformdata = form.serialize();
@@ -132,7 +132,7 @@
     });
 
     //刪除按鈕點擊事件
-    $(document).on('click','.delete-btn', function () {
+    $(document).on('click', '.delete-btn', function () {
         var form = $(this).closest('tr').next().find('form');
         var row = $(this).closest('tr')
 
@@ -146,43 +146,65 @@
             if (!deletedata['userId']) {
                 deletedata['userId'] = [];
             }
-            
+
             deletedata['userId'].push(userId);
             row.hide();
         }
-       
+
     });
 
     //新增按鈕點擊事件
     $(document).on('click', '#InsertData', function () {
         var btn = $(this).closest('tr');
-        if (!$(this).hasClass("collapsed")) {     
-             $(".edit-btn,.delete-btn").fadeOut(300, function () {
+        if (!$(this).hasClass("collapsed")) {
+            $(".edit-btn,.delete-btn").fadeOut(300, function () {
                 $(this).css("visibility", "hidden").show();
-            }); 
+            });
             $('#maintain-save ,#maintain-cancel').toggleClass('d-none');
             $("#confirm-btn,#cancel-btn").css("visibility", "visible").hide().fadeIn(300);
             btn.hide();
         }
-       
+
     });
 
     //新增確認按鈕點擊事件
     $('#confirm-btn').on('click', function (e) {
         //var form = $(this).closest('tr').find('form');
-        var form = $('#InsertForm');     
+        var form = $('#InsertForm');
         var formData = form.serializeArray();
         var formDataObject = {};
         if (!form[0].checkValidity()) {
             alert('請輸入員工編號');
-            return ;
+            return;
         }
-        CreateNewRow(formData, groupname, fieldToColumnIndex);
+
         $.each(formData, function (i, item) {
             formDataObject[item.name] = item.value;
         });
-        //將更新資料存入陣列
-        insertdata[formDataObject["userId"]] = formDataObject;
+
+        // 檢查員工編號是否重複
+        var newUserId = formDataObject["UserId"];
+        var isDuplicate = false;
+        $('#maintain-table tbody tr').each(function () {
+            // 略過折疊內容列 (colspan)
+            if ($(this).find('td').length <= 1) return;
+
+            var existingId = $(this).find('td').eq(1).text().trim();
+            if (existingId === newUserId) {
+                isDuplicate = true;
+                return false; // break loop
+            }
+        });
+
+        if (isDuplicate) {
+            alert('員工編號重複，請使用其他編號');
+            return;
+        }
+
+        CreateNewRow(formData, groupname, fieldToColumnIndex);
+
+        //將更新資料存入陣列 (修正 key 大小寫問題: userId -> UserId)
+        insertdata[formDataObject["UserId"]] = formDataObject;
         form[0].reset();
         $('#insertcollapse').collapse('hide');
     });
@@ -191,7 +213,7 @@
     $(document).on('hide.bs.collapse', '.collapse', function () {
 
         var btn = $(this).closest('tr').prev().find('button');
-        var icon = $(this).closest('tr').prev().find('i').first();      
+        var icon = $(this).closest('tr').prev().find('i').first();
         //修改按鈕icon圖示
         if (icon.hasClass('fa-square-check')) {
             icon.removeClass('fa-square-check');
@@ -211,55 +233,55 @@
 function CreateNewRow(formData, groupname, fieldToColumnIndex) {
     var userId = formData.find(item => item.name === 'UserId').value;
     // 獲取行數
-    var lastRow = ($('tbody tr').length/2+1);
+    var lastRow = ($('tbody tr').length / 2 + 1);
 
-  
+
 
     var newRow = $(
         '<tr class="text-center">' +
-            `<td class="align-middle">${lastRow}</td>` + // #
-            '<td class="align-middle"></td>' + // UserId
-            '<td class="align-middle"></td>' + // UserName
-            '<td class="align-middle"></td>' + // GroupId
-            '<td class="align-middle"></td>' + // Mail
-            '<td class="align-middle"></td>' + // Tel
-            '<td class="align-middle">' +
-                `<button data-bs-toggle="collapse" data-bs-target="#edit-${userId}" aria-expanded="false" aria-controls="${userId}" class="btn edit-btn p-0">` +
-                    '<i class="fa-solid fa-square-pen fa-xl" style="color: #40B1FF;"></i>' +
-                '</button> ' +  
-                `<button class="btn delete-btn p-0" id="delete-${userId}"><i class="fa-solid fa-square-minus fa-xl" style="color: #E25E3E;"></i></button>` +
-            '</td>' +
+        `<td class="align-middle">${lastRow}</td>` + // #
+        '<td class="align-middle"></td>' + // UserId
+        '<td class="align-middle"></td>' + // UserName
+        '<td class="align-middle"></td>' + // GroupId
+        '<td class="align-middle"></td>' + // Mail
+        '<td class="align-middle"></td>' + // Tel
+        '<td class="align-middle">' +
+        `<button data-bs-toggle="collapse" data-bs-target="#edit-${userId}" aria-expanded="false" aria-controls="${userId}" class="btn edit-btn p-0">` +
+        '<i class="fa-solid fa-square-pen fa-xl" style="color: #40B1FF;"></i>' +
+        '</button> ' +
+        `<button class="btn delete-btn p-0" id="delete-${userId}"><i class="fa-solid fa-square-minus fa-xl" style="color: #E25E3E;"></i></button>` +
+        '</td>' +
         '</tr>' +
         '<tr>' +
-            '<td colspan="6" class="border-0 p-0">' +
-                `<div id="edit-${userId}" class="collapse ps-3">` +
-                    '<form>' +
-                        '<div class="row row-cols-2 gy-3 m-0">' +
-                            '<div class="col d-flex align-items-center">' +
-                                '<label class="me-3">員工編號</label>' +
-                                '<input class="form-control-plaintext  w-25" name="UserId" readonly value="@item.UserId" />' +
-                            '</div>' +
-                            '<div class="col d-flex align-items-center">' +
-                                '<label class="me-3">人員名稱</label>' +
-                                '<input class="form-control p-0 w-25" name="UserName" autocomplete="off" value="@item.UserName" />' +
-                            '</div>' +
-                            '<div class="col d-flex align-items-center">' +
-                                '<label class="me-3">群組類別</label>' +
-                                '<select class="form-select p-0 w-50" name="GroupId" id="GroupId">' +
-                                '</select>' +
-                            '</div>' +
-                            '<div class="col d-flex align-items-center">' +
-                                '<label class="me-3">電子郵件</label>' +
-                                '<input class="form-control p-0 w-75" name="Mail" autocomplete="off" value="@item.Mail" />' +
-                            '</div>' +
-                            '<div class="col d-flex align-items-center">' +
-                                '<label class="me-3">連絡電話</label>' +
-                                '<input class="form-control p-0 w-50" name="Tel" autocomplete="off" value="@item.Tel" />' +
-                            '</div>' +
-                        '</div>' +
-                    '</form>' +
-                '</div>' +
-            '</td>' +
+        '<td colspan="6" class="border-0 p-0">' +
+        `<div id="edit-${userId}" class="collapse ps-3">` +
+        '<form>' +
+        '<div class="row row-cols-2 gy-3 m-0">' +
+        '<div class="col d-flex align-items-center">' +
+        '<label class="me-3">員工編號</label>' +
+        '<input class="form-control-plaintext  w-25" name="UserId" readonly value="@item.UserId" />' +
+        '</div>' +
+        '<div class="col d-flex align-items-center">' +
+        '<label class="me-3">人員名稱</label>' +
+        '<input class="form-control p-0 w-25" name="UserName" autocomplete="off" value="@item.UserName" />' +
+        '</div>' +
+        '<div class="col d-flex align-items-center">' +
+        '<label class="me-3">群組類別</label>' +
+        '<select class="form-select p-0 w-50" name="GroupId" id="GroupId">' +
+        '</select>' +
+        '</div>' +
+        '<div class="col d-flex align-items-center">' +
+        '<label class="me-3">電子郵件</label>' +
+        '<input class="form-control p-0 w-75" name="Mail" autocomplete="off" value="@item.Mail" />' +
+        '</div>' +
+        '<div class="col d-flex align-items-center">' +
+        '<label class="me-3">連絡電話</label>' +
+        '<input class="form-control p-0 w-50" name="Tel" autocomplete="off" value="@item.Tel" />' +
+        '</div>' +
+        '</div>' +
+        '</form>' +
+        '</div>' +
+        '</td>' +
         '</tr>'
     );
 
