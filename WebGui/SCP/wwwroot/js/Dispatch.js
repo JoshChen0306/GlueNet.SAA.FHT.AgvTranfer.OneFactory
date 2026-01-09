@@ -1454,7 +1454,9 @@ function filterBeginStationOptions(selectedValue) {
 
     // 檢查使用者是否有 ROUTE_2F_VCUT 權限（用於 V Cut 物料過濾）
     var hasVcutPermission = window.userRouteIds && window.userRouteIds.includes("ROUTE_2F_VCUT");
-    console.log("V Cut 權限檢查:", hasVcutPermission, "路線清單:", window.userRouteIds);
+    // 檢查使用者是否有 ROUTE_2F_MT_TO_OP 權限（用於 T 區 V Cut 完成品 -> O/P 區）
+    var hasMtOpPermission = window.userRouteIds && window.userRouteIds.includes("ROUTE_2F_MT_TO_OP");
+    console.log("V Cut 權限檢查:", hasVcutPermission, "MT_TO_OP 權限檢查:", hasMtOpPermission, "路線清單:", window.userRouteIds);
 
     // MT 選項特別處理：顯示三種物料類型
     // 1. M 區一般物料（不含 ^VCUT）→ 派送到 O/P 區
@@ -1486,8 +1488,8 @@ function filterBeginStationOptions(selectedValue) {
                 }
             } else if (tracname.startsWith("T")) {
                 // T 區：只顯示含 ^VCUT^DONE 標記的已加工物料 → 派送到 O/P 區
-                // ★ 需要 ROUTE_2F_VCUT 權限才能看到 ★
-                if (hasVcutPermission && workOrder.includes("^VCUT^DONE")) {
+                // ★ 需要 ROUTE_2F_VCUT 或 ROUTE_2F_MT_TO_OP 權限才能看到 ★
+                if ((hasVcutPermission || hasMtOpPermission) && workOrder.includes("^VCUT^DONE")) {
                     isValid = true;
                     vcutLabel = " [V cut加工完成]";
                 }
