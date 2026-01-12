@@ -462,7 +462,24 @@ $(function () {
             // M (雷雕區) 和 T (V Cut區)：終點可選，供單號必填
             console.log("=== M/T 區：啟用供單號 ===");
             console.log("area:", area, "selectedValue:", selectedValue);
-            $("#EndStation").prop("disabled", false);
+
+            // M 區 V Cut 物料特別處理：終點自動帶出 T，需保持 disabled
+            var isVcutMaterial = false;
+            if (area === "M" && stationCache[selectedValue] && stationCache[selectedValue].workOrder) {
+                var wo = stationCache[selectedValue].workOrder;
+                if (wo.includes("^VCUT") && !wo.includes("^VCUT^DONE")) {
+                    isVcutMaterial = true;
+                }
+            }
+
+            if (isVcutMaterial) {
+                // V Cut 物料：終點不可選
+                $("#EndStation").prop("disabled", true);
+            } else {
+                // 一般物料 或 T 區：終點可選
+                $("#EndStation").prop("disabled", false);
+            }
+
             $("#WorkOrder").prop("disabled", false);  // 啟用供單號輸入
             console.log("WorkOrder disabled 狀態:", $("#WorkOrder").prop("disabled"));
         } else if (area == "MT") {
@@ -1585,9 +1602,18 @@ function filterBeginStationOptions(selectedValue) {
 
                 var workOrder = station.workOrder || "";
 
-                // ★ V Cut 權限檢查：沒有 ROUTE_2F_VCUT 權限的用戶不能看到 V Cut 物料 ★
-                if (workOrder.includes("^VCUT") && !hasVcutPermission) {
-                    return false;  // 隱藏 V Cut 物料
+                // ★ V Cut 權限檢查：ROUTE_2F_VCUT 只能看到「V Cut 待加工」物料
+                var isVcutPending = workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE");
+
+                if (isVcutPending) {
+                    if (!hasVcutPermission) {
+                        return false;  // 隱藏 V Cut 待加工物料
+                    }
+                } else {
+                    // ★ 其他物料（一般物料 or V Cut 已完成）：只有 ROUTE_2F_MT_TO_OP 可見 ★
+                    if (!hasMtOpPermission) {
+                        return false;
+                    }
                 }
 
                 // 更新顯示文字
