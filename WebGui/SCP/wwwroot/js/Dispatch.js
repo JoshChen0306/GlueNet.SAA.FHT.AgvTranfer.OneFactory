@@ -589,14 +589,14 @@ $(function () {
         });
 
         if (allValid) {
-            // MT 區特別處理：工單已在起點物料資料中，自動帶入
-            if (area === "MT" && beginStation) {
+            // MT 區 或 M 區 特別處理：工單已在起點物料資料中，自動帶入
+            if ((area === "MT" || area === "M") && beginStation) {
                 var beginStationCache = stationCache[beginStation];
                 if (beginStationCache && beginStationCache.workOrder) {
                     // 自動填入工單（移除 ^VCUT 標記）
                     var autoWorkOrder = beginStationCache.workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
                     $("#WorkOrder").val(autoWorkOrder);
-                    console.log("MT 區自動填入工單:", autoWorkOrder);
+                    console.log("MT/M 區自動填入工單:", autoWorkOrder);
                 }
             }
             // J 區（3F 插針室）特別處理：工單已在物料登記时輸入，自動帶入
@@ -653,15 +653,24 @@ $(function () {
                     console.log("I 區自動填入工單:", beginStationCache.workOrder);
                 }
             }
-            // 需要輸入工單/供單號的區域：A, M, T（注意：MT、J、Q、H、L、I 已自動帶入，跳過驗證）
+            // 需要輸入工單/供單號的區域：A, M, T（如果快取已有工單則自動帶入並跳過驗證）
             else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
-                var workOrder = $("#WorkOrder").val();
-                if (!workOrder || !workOrder.trim()) {
-                    // M 和 T 區顯示「供單號」，其他區顯示「工單」
-                    var fieldName = (beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') ? '供單號' : '工單';
-                    alert('請輸入' + fieldName);
-                    allValid = false;
-                    return false;
+                var beginStationCache = stationCache[beginStation];
+                // M/T 區：如果快取中已有工單資料，自動帶入並跳過驗證
+                if ((beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') && beginStationCache && beginStationCache.workOrder) {
+                    var autoWorkOrder = beginStationCache.workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
+                    $("#WorkOrder").val(autoWorkOrder);
+                    console.log("自動填入工單:", autoWorkOrder);
+                } else {
+                    // 快取中沒有工單資料，需要驗證
+                    var workOrder = $("#WorkOrder").val();
+                    if (!workOrder || !workOrder.trim()) {
+                        // M 和 T 區顯示「供單號」，其他區顯示「工單」
+                        var fieldName = (beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') ? '供單號' : '工單';
+                        alert('請輸入' + fieldName);
+                        allValid = false;
+                        return false;
+                    }
                 }
             }
 
