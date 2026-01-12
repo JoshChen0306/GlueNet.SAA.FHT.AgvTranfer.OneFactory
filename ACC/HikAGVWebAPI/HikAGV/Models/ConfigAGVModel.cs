@@ -116,16 +116,19 @@ namespace HikAGVDll
             }
         }
 
-        [ConfigurationProperty("CrossFloorTaskType", DefaultValue = "F34")]
-        public string CrossFloorTaskType
+        /// <summary>
+        /// 跨樓層 TaskType 對照表 (格式: "1F>3F:F13Test,3F>1F:F31Test,...")
+        /// </summary>
+        [ConfigurationProperty("CrossFloorTaskTypeMap", DefaultValue = "1F>3F:F13Test,3F>1F:F31Test,3F>4F:F34Test,4F>3F:F43Test,2F>4F:F24Test,4F>2F:F42Test")]
+        public string CrossFloorTaskTypeMap
         {
             get
             {
-                return (string)this["CrossFloorTaskType"];
+                return (string)this["CrossFloorTaskTypeMap"];
             }
             private set
             {
-                this["CrossFloorTaskType"] = value;
+                this["CrossFloorTaskTypeMap"] = value;
             }
         }
 

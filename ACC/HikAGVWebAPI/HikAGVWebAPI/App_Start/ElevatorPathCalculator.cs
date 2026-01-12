@@ -87,6 +87,52 @@ namespace HikAGVWebAPI
         }
 
         /// <summary>
+        /// 根據起終樓層取得對應的 TaskType
+        /// </summary>
+        /// <param name="beginStation">起點站點</param>
+        /// <param name="endStation">終點站點</param>
+        /// <param name="taskTypeMap">TaskType 對照表字串</param>
+        /// <param name="defaultTaskType">預設 TaskType（同樓層用）</param>
+        /// <returns>對應的 TaskType</returns>
+        public string GetTaskType(string beginStation, string endStation, 
+                                  string taskTypeMap, string defaultTaskType)
+        {
+            var beginFloor = GetFloor(beginStation);
+            var endFloor = GetFloor(endStation);
+            
+            // 無法判斷樓層或同樓層：返回預設 TaskType
+            if (beginFloor == null || endFloor == null || beginFloor == endFloor)
+                return defaultTaskType;
+            
+            // 跨樓層：查詢對照表
+            var map = ParseTaskTypeMap(taskTypeMap);
+            var routeKey = $"{beginFloor}>{endFloor}";
+            
+            if (map.TryGetValue(routeKey, out string taskType))
+                return taskType;
+            
+            // 找不到對應路線，返回預設值
+            return defaultTaskType;
+        }
+
+        /// <summary>
+        /// 解析 TaskType 對照表字串
+        /// </summary>
+        private Dictionary<string, string> ParseTaskTypeMap(string mapString)
+        {
+            var result = new Dictionary<string, string>();
+            if (string.IsNullOrEmpty(mapString)) return result;
+            
+            foreach (var pair in mapString.Split(','))
+            {
+                var parts = pair.Trim().Split(':');
+                if (parts.Length == 2)
+                    result[parts[0].Trim()] = parts[1].Trim();
+            }
+            return result;
+        }
+
+        /// <summary>
         /// 判斷是否為跨樓層任務
         /// </summary>
         public bool IsCrossFloor(string beginStation, string endStation)
