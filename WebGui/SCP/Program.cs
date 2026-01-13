@@ -22,7 +22,7 @@ builder.Services.AddLocalization(options => options.ResourcesPath = "Resources")
 
 // Add services to the container.
 builder.Services.AddControllersWithViews().AddViewLocalization().AddDataAnnotationsLocalization();
-// �t�m�ШD���a�ƿﶵ
+// 配置請求本地化選項
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
     var supportedCultures = new[]
@@ -52,12 +52,13 @@ builder.Services.AddDbContext<agvDB_1400004Context>(option => option.UseSqlServe
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(option =>
 {
     option.AccessDeniedPath = new PathString("/Account/AccessDenied");
-    //���n�J�ɷ|�۰ʾɨ�o�Ӻ��}
+    //未登入時會自動導到這個網址
     option.LoginPath = new PathString("/Account/Login");
 
 });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<Service>();
+builder.Services.AddHostedService<AutoDispatchService>();  // 工廠1 路線6 M→K 自動派送
 
 var app = builder.Build();
 

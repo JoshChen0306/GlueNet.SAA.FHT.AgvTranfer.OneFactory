@@ -612,7 +612,27 @@ namespace SCP.Controllers
                 }
                 else if (stationArea == "K")
                 {
-                    // K 區（4F烘烤前入貨區）→ 回送到 H 區（2F成型後）
+                    // ============================================
+                    // 工廠1 路線2: K區（3F上料區）→ L區（3F下料區）
+                    // ============================================
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "L" &&
+                                    p.HaveFlag == "0" &&
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "L區（3F下料區）沒有可放置的空位" });
+                    }
+                    
+                    // [原二廠邏輯] K 區（4F烘烤前入貨區）→ 回送到 H 區（2F成型後）
+                    // 如需切回二廠，將上方 L 區邏輯註解，取消註解以下區塊
+                    /*
                     emptySlot = _DBContext.oPort
                         .Where(p => p.Block == "H" &&
                                     p.HaveFlag == "0" &&
@@ -626,6 +646,47 @@ namespace SCP.Controllers
                     if (emptySlot == null)
                     {
                         return BadRequest(new { message = "2F 成型後 (H區) 沒有可放置的空位" });
+                    }
+                    */
+                }
+                else if (stationArea == "M")
+                {
+                    // ============================================
+                    // 工廠1 路線3: M區（3F暫存區）→ A區（1F備貨區）跨樓層
+                    // ============================================
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "A" &&
+                                    p.HaveFlag == "0" &&
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "A區（1F備貨區）沒有可放置的空位" });
+                    }
+                }
+                else if (stationArea == "B")
+                {
+                    // ============================================
+                    // 工廠1 路線5: B區（1F下料區）→ A區（1F備貨區）
+                    // ============================================
+                    emptySlot = _DBContext.oPort
+                        .Where(p => p.Block == "A" &&
+                                    p.HaveFlag == "0" &&
+                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
+                                    p.UseFlag == "Y" &&
+                                    !pendingEndStations.Contains(p.StationNo))
+                        .OrderByDescending(p => p.Priority)
+                        .ThenBy(p => p.Port)
+                        .FirstOrDefault();
+
+                    if (emptySlot == null)
+                    {
+                        return BadRequest(new { message = "A區（1F備貨區）沒有可放置的空位" });
                     }
                 }
                 else if (stationArea == "I")

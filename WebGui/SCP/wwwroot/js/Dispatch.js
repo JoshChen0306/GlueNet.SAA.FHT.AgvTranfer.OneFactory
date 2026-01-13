@@ -83,14 +83,10 @@ $(document).on('click', '.station-btn', function (e) {
     }
 });
 
-// 樓層與地圖區域對應
+// 樓層與地圖區域對應（工廠1）
 var floorToMapArea = {
-    "1F": "FHT2-1F",
-    "2F": "FHT2-2F",
-    "2F - 站內運輸": "FHT2-2F",
-    "2F - 站外運輸": "FHT2-2F",
-    "3F": "FHT2-3F",
-    "4F": "FHT2-4F"
+    "1F": "FHT1-1F",
+    "3F": "FHT1-3F"
 };
 
 // 全域變數：站點資料快取
@@ -373,7 +369,12 @@ $(function () {
 
         switch (area) {
             case "A":
-                autoSelectEndStation("B", "0", "N");
+                // ============================================
+                // 工廠1 路線1: A區 → K區（優先）/ M區（備用）
+                // ============================================
+                autoSelectEndStationWithFallback("K", "M", "0", "N");
+                // 終點自動選擇，保持 disabled
+                $("#EndStation").prop("disabled", true);
                 break;
             case "C":
                 $('#EndStation').val('');
@@ -394,7 +395,12 @@ $(function () {
                 autoSelectEndStation("K", "0", "N");  // H區（2F成型後）→ K區（4F烘烤前入貨區）
                 break;
             case "L":
-                autoSelectEndStation("I", "0", "N");  // L區（4F出貨區）→ I區（3F品檢區）
+                // ============================================
+                // 工廠1 路線4: L區 → B區
+                // ============================================
+                autoSelectEndStation("B", "0", "N");  // L區（3F下料區）→ B區（1F下料區）
+                // 終點自動選擇，保持 disabled
+                $("#EndStation").prop("disabled", true);
                 break;
             case "M":
                 // 雷雕區：根據選擇的物料類型決定終點
@@ -516,7 +522,9 @@ $(function () {
 
         switch (firstChar) {
             case "A":
-                filterEndStationOptions("B", "0");
+                // 工廠1: A → K（優先）/ M（備用）
+                filterEndStationOptions("K", "0");
+                filterEndStationOptions("M", "0");
                 break;
             case "B":
                 filterEndStationOptions("C", null);
@@ -528,7 +536,8 @@ $(function () {
                 filterEndStationOptions("K", "0");
                 break;
             case "L":
-                filterEndStationOptions("I", "0");
+                // 工廠1: L → B
+                filterEndStationOptions("B", "0");
                 break;
             case "M":
                 // 顯示 O, P, T 區空架
@@ -1796,6 +1805,56 @@ function filterBeginStationOptions(selectedValue) {
             }).show();
             break;
 
+        case "A":
+            // ============================================
+            // 工廠1 路線1: A區作為起點，顯示有料的站點 (HaveFlag = 3)
+            // ============================================
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // A 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("A") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var workOrder = station.workOrder || "";
+                var displayWorkOrder = workOrder;
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
+        case "L":
+            // ============================================
+            // 工廠1 路線4: L區作為起點，顯示有料的站點 (HaveFlag = 3)
+            // ============================================
+            $('#BeginStation option').filter(function () {
+                var tracname = $(this).val();
+                if (!tracname) return false;
+
+                var station = stationCache[tracname];
+                if (!station) return false;
+
+                // L 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("L") || station.haveFlag !== "3") return false;
+
+                // 更新顯示文字：StationNo + WorkOrder
+                var workOrder = station.workOrder || "";
+                var displayWorkOrder = workOrder;
+                if (displayWorkOrder.length > 35) {
+                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+                }
+                $(this).text(tracname + " - " + displayWorkOrder);
+                return true;
+            }).show();
+            break;
+
         default:
             // 其他區：顯示符合區域且 HaveFlag 不為 0 的站點
             $('#BeginStation option').filter(function () {
@@ -1881,6 +1940,71 @@ function autoSelectEndStation(prefix, requiredHaveFlag, requiredReserve) {
     if (!found) {
         console.warn(`找不到符合條件的 ${prefix} 區站點`);
     }
+
+    return found;
+}
+
+/**
+ * 自動選擇終點站（含備用區域）- 工廠1專用
+ * @param {string} primaryPrefix - 優先區域前綴（如 K）
+ * @param {string} fallbackPrefix - 備用區域前綴（如 M）
+ * @param {string} requiredHaveFlag - HaveFlag 條件
+ * @param {string} requiredReserve - Reserve 條件 (Y/N)
+ */
+function autoSelectEndStationWithFallback(primaryPrefix, fallbackPrefix, requiredHaveFlag, requiredReserve) {
+    var found = false;
+
+    // 優先嘗試 primaryPrefix 區域
+    $('#EndStation option').each(function () {
+        if (found) return false;
+
+        var tracname = $(this).val();
+        if (!tracname || !tracname.startsWith(primaryPrefix)) return true;
+
+        var station = stationCache[tracname];
+        if (!station) return true;
+
+        var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
+        var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
+
+        if (haveFlagMatch && reserveMatch) {
+            $('#EndStation').val(tracname);
+            found = true;
+            console.log(`終點自動選擇: ${tracname} (${primaryPrefix}區)`);
+            return false;
+        }
+    });
+
+    // 若優先區域無空位，嘗試備用區域
+    if (!found && fallbackPrefix) {
+        $('#EndStation option').each(function () {
+            if (found) return false;
+
+            var tracname = $(this).val();
+            if (!tracname || !tracname.startsWith(fallbackPrefix)) return true;
+
+            var station = stationCache[tracname];
+            if (!station) return true;
+
+            var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
+            var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
+
+            if (haveFlagMatch && reserveMatch) {
+                $('#EndStation').val(tracname);
+                found = true;
+                console.log(`終點自動選擇: ${tracname} (${fallbackPrefix}區 - 備用)`);
+                return false;
+            }
+        });
+    }
+
+    if (!found) {
+        console.warn(`找不到符合條件的 ${primaryPrefix} 或 ${fallbackPrefix} 區站點`);
+        // 工廠1：顯示提示視窗
+        alert(`${primaryPrefix}區和${fallbackPrefix}區都沒有可放置的空位`);
+    }
+
+    return found;
 }
 
 /**
