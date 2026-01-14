@@ -161,26 +161,25 @@ namespace SCP.Services
                 var mMaterial = mMaterials[i];
                 var kSlot = kSlots[i];
 
-                // 建立自動派送任務
-                var oNeed = new oNeed
-                {
-                    ObjStation = mMaterial.StationNo,
-                    EndStation = kSlot.StationNo,
-                    RackId = mMaterial.RackId ?? "",
-                    WorkOrder = mMaterial.WorkOrder ?? "",
-                    TaskSource = "Auto",  // 標記為自動派送
-                    TaskDateTime = DateTime.Now.ToString("yyyyMMddHHmmssffffff"),
-                    AssignFlag = ""
-                };
 
-                dbContext.oNeed.Add(oNeed);
+                // 參照 DispatchController.InsertoNeed，改用 Raw SQL 插入
+                string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
+                await dbContext.Database.ExecuteSqlRawAsync(sql, 
+                    mMaterial.StationNo, 
+                    mMaterial.RackId ?? "", 
+                    mMaterial.WorkOrder ?? "", 
+                    kSlot.StationNo, 
+                    "Auto", 
+                    DateTime.Now.ToString("yyyyMMddHHmmssffffff"), 
+                    "");
 
                 _logger.LogInformation($"AutoDispatch: {mMaterial.StationNo} → {kSlot.StationNo} (PutTime: {mMaterial.PutTime})");
             }
 
-            var savedCount = await dbContext.SaveChangesAsync(stoppingToken);
+            // Raw SQL 已經執行，不需要 SaveChanges
+            // var savedCount = await dbContext.SaveChangesAsync(stoppingToken);
             
-            if (savedCount > 0)
+            if (dispatchCount > 0)
             {
                 _logger.LogInformation($"AutoDispatch completed: {dispatchCount} task(s) created.");
             }
