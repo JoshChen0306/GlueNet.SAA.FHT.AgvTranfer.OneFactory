@@ -644,24 +644,7 @@ namespace SCP.Controllers
                         return BadRequest(new { message = "L區（3F下料區）沒有可放置的空位" });
                     }
                     
-                    // [原二廠邏輯] K 區（4F烘烤前入貨區）→ 回送到 H 區（2F成型後）
-                    // 如需切回二廠，將上方 L 區邏輯註解，取消註解以下區塊
-                    /*
-                    emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "H" &&
-                                    p.HaveFlag == "0" &&
-                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                    p.UseFlag == "Y" &&
-                                    !pendingEndStations.Contains(p.StationNo))
-                        .OrderByDescending(p => p.Priority)
-                        .ThenBy(p => p.Port)
-                        .FirstOrDefault();
 
-                    if (emptySlot == null)
-                    {
-                        return BadRequest(new { message = "2F 成型後 (H區) 沒有可放置的空位" });
-                    }
-                    */
                 }
                 else if (stationArea == "M")
                 {

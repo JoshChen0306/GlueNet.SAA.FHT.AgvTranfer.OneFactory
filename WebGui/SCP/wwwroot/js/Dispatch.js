@@ -154,39 +154,12 @@ $(function () {
             return false;
         }
 
-        // 5. 樓層預設區域選擇
-        if (selectedFloor === "2F - 站內運輸") {
-            // 2F 站內運輸：區域預設選擇 MT（雷雕區&V cut備貨區），若無則選擇第一個可見區域
-            if ($("#Area option[value='MT']:visible").length > 0) {
-                $("#Area").val("MT").trigger("change");
-                console.log("2F 站內運輸：區域預設選擇 MT");
-            } else {
-                // MT 不可用，選擇第一個可見的區域（如 Q、M、R）
-                selectFirstVisibleArea();
-            }
-            // 顯示掃描機台按鈕
-            $("#machineScanRow").show();
-            // 隱藏 Rack 碼和工單欄位（2F 已有建物料流程）
-            $("#rackIdRow").hide();
-            $("#workOrderRow").hide();
-        } else if (selectedFloor === "2F - 站外運輸") {
-            // 2F 站外運輸：區域預設選擇 H（成型後），若無則選擇第一個可見區域
-            if ($("#Area option[value='H']:visible").length > 0) {
-                $("#Area").val("H").trigger("change");
-                console.log("2F 站外運輸：區域預設選擇 H（成型後）");
-            } else {
-                selectFirstVisibleArea();
-            }
-            // 隱藏掃描機台按鈕（H 區不需要）
-            $("#machineScanRow").hide();
-            // 隱藏 Rack 碼和工單欄位（H 區已有建物料流程）
-            $("#rackIdRow").hide();
-            $("#workOrderRow").hide();
-        } else if (selectedFloor === "3F") {
-            // 3F 樓層：區域預設選擇 J（插針室），若無則選擇第一個可見區域
-            if ($("#Area option[value='J']:visible").length > 0) {
-                $("#Area").val("J").trigger("change");
-                console.log("3F 樓層：區域預設選擇 J（插針室）");
+        // 5. 樓層預設區域選擇（工廠1：僅 FHT1-1F 和 FHT1-3F）
+        if (selectedFloor === "FHT1-3F") {
+            // 3F 樓層：區域預設選擇 K（左側上料區），若無則選擇第一個可見區域
+            if ($("#Area option[value='K']:visible").length > 0) {
+                $("#Area").val("K").trigger("change");
+                console.log("3F 樓層：區域預設選擇 K（左側上料區）");
             } else {
                 selectFirstVisibleArea();
             }
@@ -195,20 +168,7 @@ $(function () {
             // 隱藏 Rack 碼和工單欄位（3F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
-        } else if (selectedFloor === "4F") {
-            // 4F 樓層：區域預設選擇 L（烘烤前出貨區），若無則選擇第一個可見區域
-            if ($("#Area option[value='L']:visible").length > 0) {
-                $("#Area").val("L").trigger("change");
-                console.log("4F 樓層：區域預設選擇 L（烘烤前出貨區）");
-            } else {
-                selectFirstVisibleArea();
-            }
-            // 隱藏掃描機台按鈕（4F 不需要）
-            $("#machineScanRow").hide();
-            // 隱藏 Rack 碼和工單欄位（4F 已有建物料流程）
-            $("#rackIdRow").hide();
-            $("#workOrderRow").hide();
-        } else if (selectedFloor === "1F") {
+        } else if (selectedFloor === "FHT1-1F") {
             // 1F 樓層：區域預設選擇 A（供貨區），若無則選擇第一個可見區域
             if ($("#Area option[value='A']:visible").length > 0) {
                 $("#Area").val("A").trigger("change");
@@ -258,10 +218,8 @@ $(function () {
             $('#RejectdButton').hide();
         }
 
-        // 2F 站內運輸、2F 站外運輸、H/L/I/J 區：隱藏 Rack碼 和 掃描工單
-        // 因為這些資料已在物料登記時設定好
-        if (currentFloor === "2F - 站內運輸" || currentFloor === "2F - 站外運輸" ||
-            area === "H" || area === "L" || area === "I" || area === "J") {
+        // 工廠1：FHT1-1F 和 FHT1-3F 隱藏 Rack碼 和 掃描工單（已在物料登記時設定）
+        if (currentFloor === "FHT1-3F" || currentFloor === "FHT1-1F") {
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
@@ -351,35 +309,6 @@ $(function () {
         // 從快取取得選中站點的資料
         var selectedStation = stationCache[selectedValue];
 
-        // MT 區特別處理：根據物料類型決定終點
-        if (area === "MT" && selectedStation && selectedStation.workOrder) {
-            // ★ 變更起點時，先清空舊終點 ★
-            $("#EndStation").val("");
-
-            var workOrder = selectedStation.workOrder;
-            var stationPrefix = selectedValue.substring(0, 1);
-
-            if (stationPrefix === "M" && workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE")) {
-                // M 區 V Cut 物料 → 自動帶出 T 區空架
-                console.log("=== MT區：選擇 V Cut 物料，自動帶出 T 區空架 ===");
-                autoSelectEndStation("T", "0", "N");
-                $("#machineScanRow").hide();
-                // V Cut 物料終點也保持 disabled
-                $("#EndStation").prop("disabled", true);
-            } else {
-                // M 區一般物料 或 T 區已完成物料 → 需掃描機台
-                console.log("=== MT區：選擇一般/已完成物料，顯示掃描機台按鈕 ===");
-                $("#machineScanRow").show();
-                // 如果終點已經有值（透過掃描機台設定），保持 disabled
-                if (!$("#EndStation").val()) {
-                    $("#EndStation").val("");
-                }
-                // MT 區終點始終保持 disabled
-                $("#EndStation").prop("disabled", true);
-            }
-            return;  // MT 區處理完畢，不進入 switch
-        }
-
         switch (area) {
             case "A":
                 // ============================================
@@ -389,130 +318,49 @@ $(function () {
                 // 終點自動選擇，保持 disabled
                 $("#EndStation").prop("disabled", true);
                 break;
-            case "C":
-                $('#EndStation').val('');
-                if (selectedStation && selectedStation.workOrder) {
-                    $('#WorkOrder').val(selectedStation.workOrder);
-                }
-                break;
-            case "D":
-                autoSelectEndStation("E", "0", "N");
-                break;
-            case "J":
-                autoSelectEndStation("G", "0", "N");  // J區（3F 插針室）→ G區（1F 電梯暫存區）
-                break;
-            case "G":
-                autoSelectEndStation("J", "0", "N");  // G區（1F 電梯暫存區）→ J區（3F 插針室）
-                break;
-            case "H":
-                autoSelectEndStation("K", "0", "N");  // H區（2F成型後）→ K區（4F烘烤前入貨區）
-                break;
-            case "L":
+            case "M":
                 // ============================================
-                // 工廠1 路線4: L區 → B區
+                // 工廠1 路線3: M區 → A區（跨樓層）
                 // ============================================
-                autoSelectEndStation("B", "0", "N");  // L區（3F下料區）→ B區（1F下料區）
+                autoSelectEndStation("A", "0", "N");
                 // 終點自動選擇，保持 disabled
                 $("#EndStation").prop("disabled", true);
                 break;
-            case "M":
-                // 雷雕區：根據選擇的物料類型決定終點
-                // 檢查所選物料是否為 V Cut 物料
-                if (selectedStation && selectedStation.workOrder) {
-                    var workOrder = selectedStation.workOrder;
-                    if (workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE")) {
-                        // V Cut 物料 → 自動帶出 T 區空架
-                        console.log("=== 選擇 V Cut 物料，自動帶出 T 區空架 ===");
-                        autoSelectEndStation("T", "0", "N");
-                        $("#machineScanRow").hide();  // 隱藏掃描機台按鈕
-                    } else {
-                        // 一般物料 → 顯示掃描機台按鈕，讓人員掃描機台
-                        console.log("=== 選擇一般物料，顯示掃描機台按鈕 ===");
-                        $("#machineScanRow").show();
-                        // 清空終點選擇
-                        $("#EndStation").val("");
-                    }
-                }
-                break;
-            case "T":
-                // V cut區可選: O(左上料), P(右上料) - 需要供單號
-                // 顯示掃描機台按鈕
-                $("#machineScanRow").show();
-                break;
-            case "Q":
-                autoSelectEndStation("S", "0", "N");  // 出料區 → 清洗區
-                break;
-            case "R":
-                autoSelectEndStation("N", "0", "N");  // 廢料區 → 廢料回收區
-                break;
-            case "L":
-                autoSelectEndStation("I", "0", "N");  // L區（4F烘烤後）→ I區（3F品檢區）
-                // L 區派送時，隱藏 Rack碼 和 掃描工單（這些資料已在物料登記時設定）
-                $("#rackIdRow").hide();
-                $("#workOrderRow").hide();
-                break;
-            case "I":
-                autoSelectEndStationInRange("L", "0", "N", 1, 4);  // I區（3F品檢區）→ L1-L4
-                // I 區派送時，隱藏 Rack碼 和 掃描工單（這些資料已在物料登記時設定）
-                $("#rackIdRow").hide();
-                $("#workOrderRow").hide();
-                break;
-            case "E":
+            case "K":
+                // ============================================
+                // 工廠1 路線2: K區 → H區
+                // 註：H區為 2F（已移除），目前 K 區派送邏輯可能需確認，暫時維持與 A 區類似或僅設為空
+                // 如 K 區僅為終點，則此處不需要邏輯；如 K 區可為起點，目的為何？
+                // 根據 appsettings.json, K 是 "3F 左側上料區"
+                // 假設 K 區主要作為 A 區的終點。若 K 為起點，去哪？
+                // 暫時保留空邏輯或預設
+                // ============================================
                 break;
         }
 
-        // 非 H/L/I/J 區時，恢復顯示 Rack碼 和 掃描工單 欄位
-        // 但 2F 站內/站外運輸樓層例外，保持隱藏
-        if (currentFloor !== "2F - 站內運輸" && currentFloor !== "2F - 站外運輸" &&
-            area !== "H" && area !== "I" && area !== "L" && area !== "J") {
+        // 工廠1：FHT1-1F 和 FHT1-3F 以外時顯示 Rack碼 和 掃描工單
+        // 因為工廠1目前只有這兩層，且都自動化，所以基本上都隱藏
+        // 但為了保有彈性，只在非這兩層時顯示
+        if (currentFloor !== "FHT1-3F" && currentFloor !== "FHT1-1F") {
             $("#rackIdRow").show();
             $("#workOrderRow").show();
+        } else {
+            // 確保在這些樓層是隱藏的 (以防被之前的邏輯打開)
+            $("#rackIdRow").hide();
+            $("#workOrderRow").hide();
         }
 
-        if (area == "C") {
-            // C 區：終點可選，供單號禁用
-            $("#EndStation").prop("disabled", false);
-            $("#WorkOrder").prop("disabled", true);
-        } else if (area == "H") {
-            // H 區（2F 站外運輸）：終點自動選擇 K 區，保持 disabled
-            $("#EndStation").prop("disabled", true);
-            $("#WorkOrder").prop("disabled", true);
-        } else if (area == "M" || area == "T") {
-            // M (雷雕區) 和 T (V Cut區)：終點可選，供單號必填
-            console.log("=== M/T 區：啟用供單號 ===");
-            console.log("area:", area, "selectedValue:", selectedValue);
-
-            // M 區 V Cut 物料特別處理：終點自動帶出 T，需保持 disabled
-            var isVcutMaterial = false;
-            if (area === "M" && stationCache[selectedValue] && stationCache[selectedValue].workOrder) {
-                var wo = stationCache[selectedValue].workOrder;
-                if (wo.includes("^VCUT") && !wo.includes("^VCUT^DONE")) {
-                    isVcutMaterial = true;
-                }
-            }
-
-            if (isVcutMaterial) {
-                // V Cut 物料：終點不可選
-                $("#EndStation").prop("disabled", true);
-            } else {
-                // 一般物料 或 T 區：終點可選
-                $("#EndStation").prop("disabled", false);
-            }
-
-            $("#WorkOrder").prop("disabled", false);  // 啟用供單號輸入
-            console.log("WorkOrder disabled 狀態:", $("#WorkOrder").prop("disabled"));
-        } else if (area == "MT") {
-            // MT 區（雷雕區 & V Cut 備貨區）：終點 disabled，透過掃描機台選擇
-            console.log("=== MT 區：終點 disabled，透過掃描機台選擇 ===");
-            $("#EndStation").prop("disabled", true);  // 終點設為 disabled
-            $("#machineScanRow").show();
-        } else if (area == "Q" || area == "R") {
-            // Q (出料區) 和 R (廢料區)：終點自動選擇，供單號禁用
-            $("#EndStation").prop("disabled", true);
-            $("#WorkOrder").prop("disabled", true);
+        if (area == "B") {
+            // B 區 (1F 下料區)：終點為 A (1F 備貨區) - 釋放空盤
+            $('#EndStation').val(''); // 或自動帶出？通常由系統決定或作業員選
+            // B 區邏輯在 filterEndStation 已經處理 (B -> A)
+            // 這裡設定 UI 狀態
+            $("#EndStation").prop("disabled", false); // 可選終點? 或固定?
+            $("#WorkOrder").prop("disabled", true);   // 不需要工單
         } else {
-            $("#EndStation").prop("disabled", true);
-            $("#WorkOrder").prop("disabled", false);
+            // 其他區域 (A, L, M, K) 終點多為自動，工單也不需要輸入
+            // 除非有特殊需求
+            // A, L, M 在上方 switch 已處理 disabled
         }
 
         // 從快取讀取 RackId
@@ -551,17 +399,6 @@ $(function () {
             case "L":
                 // 工廠1: L → B
                 filterEndStationOptions("B", "0");
-                break;
-            case "M":
-                // 顯示 O, P, T 區空架
-                filterEndStationOptions("O", "0");
-                filterEndStationOptions("P", "0");
-                filterEndStationOptions("T", "0");
-                break;
-            case "T":
-                // 顯示 O, P 區空架
-                filterEndStationOptions("O", "0");
-                filterEndStationOptions("P", "0");
                 break;
             case "Q":
                 filterEndStationOptions("S", "0");
@@ -611,54 +448,8 @@ $(function () {
         });
 
         if (allValid) {
-            // MT 區 或 M 區 特別處理：工單已在起點物料資料中，自動帶入
-            if ((area === "MT" || area === "M") && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單（移除 ^VCUT 標記）
-                    var autoWorkOrder = beginStationCache.workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
-                    $("#WorkOrder").val(autoWorkOrder);
-                    console.log("MT/M 區自動填入工單:", autoWorkOrder);
-                }
-            }
-            // J 區（3F 插針室）特別處理：工單已在物料登記时輸入，自動帶入
-            else if (area === "J" && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單
-                    $("#WorkOrder").val(beginStationCache.workOrder);
-                    console.log("J 區自動填入工單:", beginStationCache.workOrder);
-                }
-            }
-            // Q 區（出貨區）特別處理：工單已在物料登記時輸入，自動帶入
-            else if (area === "Q" && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單
-                    $("#WorkOrder").val(beginStationCache.workOrder);
-                    console.log("Q 區自動填入工單:", beginStationCache.workOrder);
-                }
-            }
-            // R 區（廢料區）特別處理：工單選填，如有則自動帶入
-            else if (area === "R" && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單
-                    $("#WorkOrder").val(beginStationCache.workOrder);
-                    console.log("R 區自動填入工單:", beginStationCache.workOrder);
-                }
-            }
-            // H 區（2F 成型後）特別處理：工單已在物料登記時輸入，自動帶入
-            else if (area === "H" && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單
-                    $("#WorkOrder").val(beginStationCache.workOrder);
-                    console.log("H 區自動填入工單:", beginStationCache.workOrder);
-                }
-            }
-            // L 區（4F 烘烤後）特別處理：工單已在物料登記時輸入，自動帶入
-            else if (area === "L" && beginStation) {
+            // L 區（3F 下料區）特別處理：工單選填，如有則自動帶入
+            if (area === "L" && beginStation) {
                 var beginStationCache = stationCache[beginStation];
                 if (beginStationCache && beginStationCache.workOrder) {
                     // 自動填入工單
@@ -666,58 +457,29 @@ $(function () {
                     console.log("L 區自動填入工單:", beginStationCache.workOrder);
                 }
             }
-            // I 區（3F 品檢區）特別處理：工單已在物料登記時輸入，自動帶入
-            else if (area === "I" && beginStation) {
-                var beginStationCache = stationCache[beginStation];
-                if (beginStationCache && beginStationCache.workOrder) {
-                    // 自動填入工單
-                    $("#WorkOrder").val(beginStationCache.workOrder);
-                    console.log("I 區自動填入工單:", beginStationCache.workOrder);
-                }
-            }
-            // 需要輸入工單/供單號的區域：A, M, T（如果快取已有工單則自動帶入並跳過驗證）
-            else if (beginStation && (beginStation.substring(0, 1) === 'A' || beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T')) {
-                var beginStationCache = stationCache[beginStation];
-                // M/T 區：如果快取中已有工單資料，自動帶入並跳過驗證
-                if ((beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') && beginStationCache && beginStationCache.workOrder) {
-                    var autoWorkOrder = beginStationCache.workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
-                    $("#WorkOrder").val(autoWorkOrder);
-                    console.log("自動填入工單:", autoWorkOrder);
-                } else {
-                    // 快取中沒有工單資料，需要驗證
-                    var workOrder = $("#WorkOrder").val();
-                    if (!workOrder || !workOrder.trim()) {
-                        // M 和 T 區顯示「供單號」，其他區顯示「工單」
-                        var fieldName = (beginStation.substring(0, 1) === 'M' || beginStation.substring(0, 1) === 'T') ? '供單號' : '工單';
-                        alert('請輸入' + fieldName);
-                        allValid = false;
-                        return false;
-                    }
-                }
-            }
+        }
 
-            // 驗證：終點站必選
-            if (!endStation || endStation === "" || endStation === "選擇站點") {
-                // 根據區域顯示不同的提示訊息
-                var endAreaName = "目標區域";
-                if (area === "Q") {
-                    endAreaName = "清洗區";
-                }
-                alert('沒有可用的派送終點，請確認' + endAreaName + '有空位');
-                allValid = false;
+        // 驗證：終點站必選
+        if (!endStation || endStation === "" || endStation === "選擇站點") {
+            // 根據區域顯示不同的提示訊息
+            var endAreaName = "目標區域";
+            if (area === "Q") {
+                endAreaName = "清洗區";
             }
+            alert('沒有可用的派送終點，請確認' + endAreaName + '有空位');
+            allValid = false;
+        }
 
-            // 從快取驗證站點狀態
-            var beginStationData = stationCache[beginStation];
-            var endStationData = stationCache[endStation];
+        // 從快取驗證站點狀態
+        var beginStationData = stationCache[beginStation];
+        var endStationData = stationCache[endStation];
 
-            if (allValid && beginStationData && beginStationData.haveFlag === "0") {
-                alert('派送起點為空貨架，請重新選擇站點');
-                allValid = false;
-            } else if (allValid && endStationData && endStationData.haveFlag !== "0" && area !== "C") {
-                alert('派送終點已有貨架，請重新選擇站點');
-                allValid = false;
-            }
+        if (allValid && beginStationData && beginStationData.haveFlag === "0") {
+            alert('派送起點為空貨架，請重新選擇站點');
+            allValid = false;
+        } else if (allValid && endStationData && endStationData.haveFlag !== "0" && area !== "C") {
+            alert('派送終點已有貨架，請重新選擇站點');
+            allValid = false;
         }
 
         if (!allValid) {
@@ -1500,64 +1262,8 @@ function updateStationCache(stations) {
 function filterBeginStationOptions(selectedValue) {
     var workoderMap = new Map();
 
-    // 檢查使用者是否有 ROUTE_2F_VCUT 權限（用於 V Cut 物料過濾）
-    var hasVcutPermission = window.userRouteIds && window.userRouteIds.includes("ROUTE_2F_VCUT");
-    // 檢查使用者是否有 ROUTE_2F_MT_TO_OP 權限（用於 T 區 V Cut 完成品 -> O/P 區）
-    var hasMtOpPermission = window.userRouteIds && window.userRouteIds.includes("ROUTE_2F_MT_TO_OP");
-    console.log("V Cut 權限檢查:", hasVcutPermission, "MT_TO_OP 權限檢查:", hasMtOpPermission, "路線清單:", window.userRouteIds);
-
-    // MT 選項特別處理：顯示三種物料類型
-    // 1. M 區一般物料（不含 ^VCUT）→ 派送到 O/P 區
-    // 2. M 區 V Cut 物料（含 ^VCUT 但不含 ^VCUT^DONE）→ 派送到 T 區（需要 ROUTE_2F_VCUT 權限）
-    // 3. T 區已完成物料（含 ^VCUT^DONE）→ 派送到 O/P 區（需要 ROUTE_2F_VCUT 權限）
-    if (selectedValue === "MT") {
-        $('#BeginStation option').filter(function () {
-            var tracname = $(this).val();
-            if (!tracname) return false;
-
-            var station = stationCache[tracname];
-            if (!station || station.haveFlag !== "3") return false;
-
-            var workOrder = station.workOrder || "";
-            var isValid = false;
-            var vcutLabel = "";
-
-            if (tracname.startsWith("M")) {
-                if (workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE")) {
-                    // M 區 V Cut 物料（待加工）→ 派送到 T 區
-                    // ★ 需要 ROUTE_2F_VCUT 權限才能看到 ★
-                    if (hasVcutPermission) {
-                        isValid = true;
-                        vcutLabel = " [V Cut待加工]";
-                    }
-                } else if (!workOrder.includes("^VCUT")) {
-                    // M 區一般物料 → 派送到 O/P 區
-                    isValid = true;
-                }
-            } else if (tracname.startsWith("T")) {
-                // T 區：只顯示含 ^VCUT^DONE 標記的已加工物料 → 派送到 O/P 區
-                // ★ 需要 ROUTE_2F_VCUT 或 ROUTE_2F_MT_TO_OP 權限才能看到 ★
-                if ((hasVcutPermission || hasMtOpPermission) && workOrder.includes("^VCUT^DONE")) {
-                    isValid = true;
-                    vcutLabel = " [V cut加工完成]";
-                }
-            }
-
-            if (isValid) {
-                // 更新顯示文字
-                var displayWorkOrder = workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder + vcutLabel);
-            }
-            return isValid;
-        }).show();
-        return;
-    }
-
     switch (selectedValue.substring(0, 1)) {
-        case "C":
+        case "B":
             // C 區：只顯示 B 區且 HaveFlag = 3 的站點
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
@@ -1595,32 +1301,10 @@ function filterBeginStationOptions(selectedValue) {
                 }
             });
             break;
-        case "H":  // H 區（成型後）作為起點：只顯示有料的站點 (HaveFlag = 3)
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
 
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // H 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("H") || station.haveFlag !== "3") return false;
-
-                // 更新顯示文字：StationNo + WorkOrder
-                var workOrder = station.workOrder || "";
-                var displayWorkOrder = workOrder;
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder);
-                return true;
-            }).show();
-            break;
 
         case "M":
-            // M 區（雷雕區）作為起點：顯示有料的站點
-            // 更新顯示格式為 StationNo + WorkOrder
-            // ★ V Cut 物料需要 ROUTE_2F_VCUT 權限 ★
+            // M 區（3F 暫存區）作為起點：顯示有料的站點 (HaveFlag = 3)
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
                 if (!tracname) return false;
@@ -1631,75 +1315,6 @@ function filterBeginStationOptions(selectedValue) {
                 // M 區且有料 (HaveFlag = 3)
                 if (!tracname.startsWith("M") || station.haveFlag !== "3") return false;
 
-                var workOrder = station.workOrder || "";
-
-                // ★ V Cut 權限檢查：ROUTE_2F_VCUT 只能看到「V Cut 待加工」物料
-                var isVcutPending = workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE");
-
-                if (isVcutPending) {
-                    if (!hasVcutPermission) {
-                        return false;  // 隱藏 V Cut 待加工物料
-                    }
-                } else {
-                    // ★ 其他物料（一般物料 or V Cut 已完成）：只有 ROUTE_2F_MT_TO_OP 可見 ★
-                    if (!hasMtOpPermission) {
-                        return false;
-                    }
-                }
-
-                // 更新顯示文字
-                // 移除 ^VCUT 標記以便顯示
-                var displayWorkOrder = workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
-                // 截斷過長的文字
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                // 標示 V Cut 物料
-                var vcutLabel = "";
-                if (workOrder.includes("^VCUT^DONE")) {
-                    vcutLabel = " [已完成]";
-                } else if (workOrder.includes("^VCUT")) {
-                    vcutLabel = " [V Cut]";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder + vcutLabel);
-                return true;
-            }).show();
-            break;
-
-        case "T":
-            // T 區（V Cut區）作為起點：顯示有 ^VCUT^DONE 標記的物料
-            // ★ T 區（V Cut區）需要 ROUTE_2F_VCUT 權限才能看到 ★
-            if (!hasVcutPermission) {
-                // 無權限，不顯示任何 T 區選項
-                break;
-            }
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
-
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // T 區且有料且標記為已加工完成
-                if (!tracname.startsWith("T") || station.haveFlag !== "3") return false;
-
-                var workOrder = station.workOrder || "";
-                return workOrder.includes("^VCUT^DONE");
-            }).show();
-            break;
-
-        case "J":
-            // J 區（3F 插針室）作為起點：顯示有料的站點 (HaveFlag = 3)
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
-
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // J 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("J") || station.haveFlag !== "3") return false;
-
                 // 更新顯示文字：StationNo + WorkOrder
                 var workOrder = station.workOrder || "";
                 var displayWorkOrder = workOrder;
@@ -1712,8 +1327,10 @@ function filterBeginStationOptions(selectedValue) {
             }).show();
             break;
 
-        case "Q":
-            // Q 區（出貨區）作為起點：顯示有料的站點 (HaveFlag = 3)
+
+
+        case "K":
+            // K 區（3F 左側上料區）作為起點：顯示有料的站點 (HaveFlag = 3)
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
                 if (!tracname) return false;
@@ -1721,13 +1338,12 @@ function filterBeginStationOptions(selectedValue) {
                 var station = stationCache[tracname];
                 if (!station) return false;
 
-                // Q 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("Q") || station.haveFlag !== "3") return false;
+                // K 區且有料 (HaveFlag = 3)
+                if (!tracname.startsWith("K") || station.haveFlag !== "3") return false;
 
                 // 更新顯示文字：StationNo + WorkOrder
                 var workOrder = station.workOrder || "";
                 var displayWorkOrder = workOrder;
-                // 截斷過長的文字
                 if (displayWorkOrder.length > 35) {
                     displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
                 }
@@ -1736,32 +1352,9 @@ function filterBeginStationOptions(selectedValue) {
             }).show();
             break;
 
-        case "R":
-            // R 區（廢料區）作為起點：顯示有料的站點 (HaveFlag = 3)
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
 
-                var station = stationCache[tracname];
-                if (!station) return false;
 
-                // R 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("R") || station.haveFlag !== "3") return false;
 
-                // 更新顯示文字：StationNo + WorkOrder（如有）
-                var workOrder = station.workOrder || "";
-                var displayText = tracname;
-                if (workOrder) {
-                    var displayWorkOrder = workOrder;
-                    if (displayWorkOrder.length > 35) {
-                        displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                    }
-                    displayText = tracname + " - " + displayWorkOrder;
-                }
-                $(this).text(displayText);
-                return true;
-            }).show();
-            break;
 
         case "L":
             // L 區（4F 烘烤後）作為起點：只顯示 L1-L4 有料且非回送物料
@@ -1795,28 +1388,7 @@ function filterBeginStationOptions(selectedValue) {
             }).show();
             break;
 
-        case "I":
-            // I 區（3F 品檢區）作為起點：顯示有料的站點 (HaveFlag = 3)
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
 
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // I 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("I") || station.haveFlag !== "3") return false;
-
-                // 更新顯示文字：StationNo + WorkOrder
-                var workOrder = station.workOrder || "";
-                var displayWorkOrder = workOrder;
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder);
-                return true;
-            }).show();
-            break;
 
         case "A":
             // ============================================
@@ -1845,7 +1417,7 @@ function filterBeginStationOptions(selectedValue) {
 
         case "L":
             // ============================================
-            // 工廠1 路線4: L區作為起點，顯示有料的站點 (HaveFlag = 3)
+            // 工廠1 路線4: L區（3F 右側下料區）作為起點，顯示有料的站點 (HaveFlag = 3)
             // ============================================
             $('#BeginStation option').filter(function () {
                 var tracname = $(this).val();
@@ -1887,44 +1459,7 @@ function filterBeginStationOptions(selectedValue) {
  * 依據終點區域過濾起點選項（用於掃描機台後的帳料選擇）
  * @param {string} destinationArea - 終點區域代號（O、P、T）
  */
-function filterBeginStationByDestination(destinationArea) {
-    $('#BeginStation option').hide();
 
-    if (destinationArea === "T") {
-        // 終點是 T 區（V Cut區）：只顯示 M 區含 ^VCUT 標記的物料
-        $('#BeginStation option').filter(function () {
-            var tracname = $(this).val();
-            if (!tracname || !tracname.startsWith("M")) return false;
-
-            var station = stationCache[tracname];
-            if (!station || station.haveFlag !== "3") return false;
-
-            var workOrder = station.workOrder || "";
-            // 含 ^VCUT 但不含 ^VCUT^DONE（待加工）
-            return workOrder.includes("^VCUT") && !workOrder.includes("^VCUT^DONE");
-        }).show();
-    } else if (destinationArea === "O" || destinationArea === "P") {
-        // 終點是 O/P 區（OP上料區）：顯示 M 區一般物料 + T 區已加工完成
-        $('#BeginStation option').filter(function () {
-            var tracname = $(this).val();
-            if (!tracname) return false;
-
-            var station = stationCache[tracname];
-            if (!station || station.haveFlag !== "3") return false;
-
-            var workOrder = station.workOrder || "";
-
-            if (tracname.startsWith("M")) {
-                // M 區：只顯示不含 ^VCUT 標記的一般物料
-                return !workOrder.includes("^VCUT");
-            } else if (tracname.startsWith("T")) {
-                // T 區：只顯示含 ^VCUT^DONE 標記的已加工物料
-                return workOrder.includes("^VCUT^DONE");
-            }
-            return false;
-        }).show();
-    }
-}
 
 /**
  * 自動選擇終點站（統一處理邏輯）
@@ -2248,3 +1783,20 @@ function stopScanner() {
         }
     }, 500);
 }
+
+/* ==========================================================================
+   Map & Form Synchronization
+   ========================================================================== */
+$(function () {
+    // 點擊地圖上方樓層 Tab 時，同步更新下方樓層下拉選單
+    $(document).on('click', '.nav-link', function () {
+        var area = $(this).data('area'); // 例如 FHT1-3F
+        if (area) {
+            console.log("Tab 點擊，同步更新樓層下拉選單為:", area);
+            // 檢查當前值是否不同，避免重複觸發
+            if ($("#Floor").val() !== area) {
+                $("#Floor").val(area).trigger('change');
+            }
+        }
+    });
+});
