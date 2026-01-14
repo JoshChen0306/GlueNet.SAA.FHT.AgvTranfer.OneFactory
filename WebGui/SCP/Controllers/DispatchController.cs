@@ -95,8 +95,20 @@ namespace SCP.Controllers
             ViewBag.Site = _DBContext.oPort.Where(p => p.UseFlag == "Y").Select(p => new SelectListItem { Value = p.StationNo, Text = p.MachineName });
             ViewBag.Role = groupId;
 
-            // 樓層選擇器 - 從 FloorArea 設定動態讀取
-            var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
+            // 樓層選擇器 - 從 FloorSettings 設定動態讀取
+            var floorSettings = _configuration.GetSection("FloorSettings").GetChildren();
+            
+            // 建立樓層區域對應字典
+            var floorArea = floorSettings.ToDictionary(
+                x => x.Key,
+                x => x.GetSection("Areas").Get<string[]>() ?? Array.Empty<string>()
+            );
+            
+            // 樓層顯示名稱對應
+            var floorDisplayNames = floorSettings.ToDictionary(
+                x => x.Key,
+                x => x.GetSection("DisplayName").Value ?? x.Key
+            );
             
             // 根據路線權限過濾樓層（只使用起點區域）
             var allowedAreasSet = allowedAllAreas.Any() ? allowedAllAreas.ToHashSet() : filterAreas.Select(a => a.Value).ToHashSet();
@@ -110,7 +122,9 @@ namespace SCP.Controllers
                 if (matchedAreas.Any())
                 {
                     filteredFloorArea[floor.Key] = matchedAreas;
-                    filteredFloorList.Add(new SelectListItem { Value = floor.Key, Text = floor.Key });
+                    // 使用 FloorSettings 中的 DisplayName 作為顯示文字
+                    var displayName = floorDisplayNames.ContainsKey(floor.Key) ? floorDisplayNames[floor.Key] : floor.Key;
+                    filteredFloorList.Add(new SelectListItem { Value = floor.Key, Text = displayName });
                 }
             }
 

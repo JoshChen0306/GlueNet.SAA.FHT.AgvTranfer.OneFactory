@@ -34,7 +34,7 @@ namespace SCP.Controllers
                 // 如果未指定 area 或指定的 area 不在允許的樓層中，使用第一個允許的樓層
                 if (string.IsNullOrEmpty(area) || !allowedFloors.Contains(area))
                 {
-                    area = allowedFloors.FirstOrDefault() ?? "FHT2-1F";
+                    area = allowedFloors.FirstOrDefault() ?? "FHT1-1F";
                 }
 
                 LogMgt.Logger?.Info($"[ShowMap] 開始載入地圖, area={area}");
@@ -50,6 +50,15 @@ namespace SCP.Controllers
                 ViewBag.AgvPositions = agvPositions;
                 ViewBag.CurrentArea = area;
 
+                // 傳遞樓層顯示名稱給前端
+                var floorDisplayNames = _configuration.GetSection("FloorSettings")
+                    .GetChildren()
+                    .ToDictionary(
+                        x => x.Key,
+                        x => x.GetSection("DisplayName").Value ?? x.Key
+                    );
+                ViewBag.FloorDisplayNames = floorDisplayNames;
+
                 LogMgt.Logger?.Info($"[ShowMap] 地圖載入完成");
                 return PartialView("_MapPartial");
             }
@@ -61,12 +70,19 @@ namespace SCP.Controllers
         }
 
         /// <summary>
-        /// 取得使用者允許的樓層清單（根據路線權限）
+        /// 取得使用者允許的樓層清單（根據 AgvSetting 和路線權限）
         /// </summary>
         private List<string> GetUserAllowedFloors()
         {
-            // 預設所有樓層
-            var allFloors = new List<string> { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" };
+            // 1. 從 AgvSetting 讀取系統可用樓層（有座標設定的樓層）
+            var agvSettings = _configuration.GetSection("AgvSetting").GetChildren();
+            var allFloors = agvSettings.Select(s => s.Key).ToList();
+            
+            if (!allFloors.Any())
+            {
+                LogMgt.Logger?.Warn("[GetUserAllowedFloors] AgvSetting 無任何樓層配置");
+                return new List<string>();
+            }
             
             var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -75,7 +91,7 @@ namespace SCP.Controllers
                 return allFloors;
             }
 
-            // 取得使用者的路線權限
+            // 2. 取得使用者的路線權限
             var userRoutes = _DBContext.pUserRoute
                 .Where(ur => ur.UserId == userId)
                 .Join(_DBContext.pRoute.Where(r => r.ControlFlag == "Y"),
@@ -86,47 +102,32 @@ namespace SCP.Controllers
 
             if (!userRoutes.Any())
             {
-                // 使用者沒有設定路線權限，使用舊的邏輯，顯示所有樓層
+                // 使用者沒有設定路線權限，顯示所有樓層
                 return allFloors;
             }
 
-            // 取得使用者所有允許的起點區域（只使用 SourceAreas）
-            // 使用者只能看到他可以操作的樓層
+            // 3. 取得使用者所有允許的起點區域
             var allowedAreas = userRoutes
                 .Where(r => !string.IsNullOrEmpty(r.SourceAreas))
                 .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
                 .Distinct()
                 .ToList();
 
-            // 讀取 FloorArea 設定，判斷哪些樓層包含使用者允許的區域
-            var floorArea = _configuration.GetSection("FloorArea").Get<Dictionary<string, string[]>>();
-            var allowedFloors = new List<string>();
+            // 4. 讀取 FloorSettings 配置，取得每個樓層包含的區域
+            var floorSettings = _configuration.GetSection("FloorSettings")
+                .GetChildren()
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.GetSection("Areas").Get<string[]>() ?? Array.Empty<string>()
+                );
 
-            // 樓層名稱到地圖區域的映射
-            var floorToMapArea = new Dictionary<string, string>
-            {
-                { "1F", "FHT2-1F" },
-                { "2F - 站內運輸", "FHT2-2F" },
-                { "2F - 站外運輸", "FHT2-2F" },
-                { "3F", "FHT2-3F" },
-                { "4F", "FHT2-4F" }
-            };
-
-            foreach (var floor in floorArea)
-            {
-                // 檢查該樓層的區域是否有使用者可用的區域
-                if (floor.Value.Any(a => allowedAreas.Contains(a)))
-                {
-                    if (floorToMapArea.ContainsKey(floor.Key))
-                    {
-                        var mapArea = floorToMapArea[floor.Key];
-                        if (!allowedFloors.Contains(mapArea))
-                        {
-                            allowedFloors.Add(mapArea);
-                        }
-                    }
-                }
-            }
+            // 5. 篩選使用者可見的樓層（該樓層的區域與使用者允許區域有交集）
+            var allowedFloors = allFloors
+                .Where(floor => {
+                    if (!floorSettings.ContainsKey(floor)) return true; // 無配置則顯示
+                    return floorSettings[floor].Any(a => allowedAreas.Contains(a));
+                })
+                .ToList();
 
             return allowedFloors.Any() ? allowedFloors : allFloors;
         }

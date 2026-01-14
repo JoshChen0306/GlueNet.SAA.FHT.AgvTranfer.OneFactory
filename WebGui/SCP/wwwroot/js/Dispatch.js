@@ -5,7 +5,7 @@ console.log("floorAreaMap from window:", window.floorAreaMap);
 // 本地 loadMapData 函數 (避免跨模組 import 問題)
 function loadMapDataLocal(area) {
     // 更新 window 層級的當前地圖區域
-    window.currentMapArea = area || 'FHT2-1F';
+    window.currentMapArea = area || 'FHT1-1F';
 
     $.ajax({
         type: "GET",
@@ -13,7 +13,7 @@ function loadMapDataLocal(area) {
         data: { area: area },
         success: function (data) {
             $("#Map").html(data);
-            const mapSrc = area || 'FHT2-1F';
+            const mapSrc = area || 'FHT1-1F';
             $('#map-img').attr('src', `/img/${mapSrc}.png`);
 
             // 初始化所有庫位的 Bootstrap Tooltip
@@ -53,8 +53,8 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 M/T/J/Q/H/K/L 區（物料管理）和 O/P/S/N/G/K/I 區（標記空板/Release）
-    var validAreas = ['M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K', 'I', 'L'];
+    // 處理 A/B/M/T/J/Q/H/K/L 區（物料管理）和 O/P/S/N/G/K/I 區（標記空板/Release）
+    var validAreas = ['A', 'B', 'M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K', 'I', 'L'];
     var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
 
     if (!stationNo || validAreas.indexOf(stationArea) === -1) {
@@ -94,7 +94,7 @@ var stationCache = {};
 var isCacheLoaded = false;
 // 初始化 window 層級的地圖區域追蹤變數（供 Map.js 和 Dispatch.js 共用）
 if (!window.currentMapArea) {
-    window.currentMapArea = 'FHT2-1F';
+    window.currentMapArea = 'FHT1-1F';
 }
 
 $(function () {
@@ -206,6 +206,19 @@ $(function () {
             // 隱藏掃描機台按鈕（4F 不需要）
             $("#machineScanRow").hide();
             // 隱藏 Rack 碼和工單欄位（4F 已有建物料流程）
+            $("#rackIdRow").hide();
+            $("#workOrderRow").hide();
+        } else if (selectedFloor === "1F") {
+            // 1F 樓層：區域預設選擇 A（供貨區），若無則選擇第一個可見區域
+            if ($("#Area option[value='A']:visible").length > 0) {
+                $("#Area").val("A").trigger("change");
+                console.log("1F 樓層：區域預設選擇 A（供貨區）");
+            } else {
+                selectFirstVisibleArea();
+            }
+            // 隱藏掃描機台按鈕（1F 不需要）
+            $("#machineScanRow").hide();
+            // 隱藏 Rack 碼和工單欄位（1F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
@@ -1095,9 +1108,9 @@ $(function () {
         $("#registerLotRackId").val("");
         $("#registerLotVcut").prop("checked", false);
 
-        // T 區會自動標记為已加工完成，不需要顯示 checkbox
-        // J/Q/R/H/I/K/L 區不需要 V Cut 標記
-        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L") {
+        // T 區會自動標謘為已加工完成，不需要顯示 checkbox
+        // A/B/J/Q/R/H/I/K/L 區不需要 V Cut 標記
+        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L" || stationArea === "A" || stationArea === "B") {
             $("#vcutCheckboxRow").hide();
         } else if (stationArea === "M") {
             $("#vcutCheckboxRow").show();
@@ -1110,8 +1123,8 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：M/T/J/Q/H/K/I 區為物料登記區，O/P/S/N/G/K/I 區為 Release 操作區
-        var releaseAreas = ['O', 'P', 'S', 'N', 'G', 'K', 'I'];
+        // 判斷區域類型：A/M/T/J/Q/H/K/I 區為物料登記區，B/O/P/S/N/G/K/I 區為 Release 操作區
+        var releaseAreas = ['B', 'O', 'P', 'S', 'N', 'G', 'K', 'I'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
@@ -1140,7 +1153,7 @@ $(function () {
                 // HaveFlag=0 (空架) 時不顯示任何操作按鈕
             }
         } else {
-            // M/T/J/Q/R 區 - 物料登記操作
+            // A/M/T/J/Q/R 區 - 物料登記操作
             if (stationInfo.haveFlag === "0" || stationInfo.haveFlag === "1") {
                 // 空架或空板 - 顯示「物料登記」
                 footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');

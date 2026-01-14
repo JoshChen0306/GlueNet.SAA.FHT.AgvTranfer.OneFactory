@@ -12,9 +12,9 @@ export function loadMapData(area) {
             // 從後端返回的 HTML 中讀取實際的當前樓層
             const $mapImg = $('#map-img');
             const currentImgSrc = $mapImg.attr('src') || '';
-            // 從圖片 src 中解析當前樓層名稱 (e.g., /img/FHT2-3F.png -> FHT2-3F)
-            const srcMatch = currentImgSrc.match(/\/img\/(FHT2-\dF)\.(png|svg)/);
-            const mapSrc = area || (srcMatch ? srcMatch[1] : 'FHT2-1F');
+            // 從圖片 src 中解析當前樓層名稱 (e.g., /img/FHT1-3F.png -> FHT1-3F)
+            const srcMatch = currentImgSrc.match(/\/img\/(FHT1-\dF)\.(png|svg)/);
+            const mapSrc = area || (srcMatch ? srcMatch[1] : 'FHT1-1F');
 
             // 更新全域變數追蹤當前樓層（供 Dispatch.js 使用）
             window.currentMapArea = mapSrc;

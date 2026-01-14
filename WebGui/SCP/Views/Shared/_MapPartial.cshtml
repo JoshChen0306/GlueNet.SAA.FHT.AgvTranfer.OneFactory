@@ -2,26 +2,21 @@
     For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
-    var allowedFloors = ViewBag.AllowedFloors as List<string> ?? new List<string> { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" };
-    var floorDisplayNames = new Dictionary<string, string>
-    {
-        { "FHT2-1F", "1F" },
-        { "FHT2-2F", "2F" },
-        { "FHT2-3F", "3F" },
-        { "FHT2-4F", "4F" }
-    };
+    var allowedFloors = ViewBag.AllowedFloors as List<string> ?? new List<string>();
+    var floorDisplayNames = ViewBag.FloorDisplayNames as Dictionary<string, string> 
+        ?? new Dictionary<string, string>();
 }
 <div class="bg-white d-flex flex-column">
     <div>
         <ul class="nav nav-tabs">
-            @foreach (var floor in new[] { "FHT2-1F", "FHT2-2F", "FHT2-3F", "FHT2-4F" })
+            @foreach (var floor in allowedFloors)
             {
-                if (allowedFloors.Contains(floor))
-                {
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" data-area="@floor">@floorDisplayNames[floor]</a>
-                    </li>
-                }
+                var displayName = floorDisplayNames.ContainsKey(floor) 
+                    ? floorDisplayNames[floor] 
+                    : floor;
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-area="@floor">@displayName</a>
+                </li>
             }
         </ul>
     </div>
