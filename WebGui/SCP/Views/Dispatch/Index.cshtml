@@ -377,6 +377,8 @@
             window.floorAreaMap = @Html.Raw(Json.Serialize(ViewBag.FloorArea));
             // 使用者的路線權限 ID 清單（用於前端權限過濾）
             window.userRouteIds = @Html.Raw(Json.Serialize(ViewBag.UserRouteIds));
+            // 使用者允許的 Release 區域清單（用於前端 Release 按鈕顯示判定）
+            window.allowedReleaseAreas = @Html.Raw(Json.Serialize(ViewBag.AllowedReleaseAreas));
             // 使用者預設樓層（自動選擇第一個可用的樓層）
             window.defaultFloor = "@ViewBag.DefaultFloor";
         </script>

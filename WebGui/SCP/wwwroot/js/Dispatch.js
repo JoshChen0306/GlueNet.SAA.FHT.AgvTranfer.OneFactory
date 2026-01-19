@@ -893,7 +893,10 @@ $(function () {
                     footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
                 } else if (stationInfo.haveFlag === "1") {
                     // 空板 - 可 Release 回送 或 物料登記（NG 回送）
-                    footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                    // 空板 - 可 Release 回送 或 物料登記（NG 回送）
+                    if (!window.allowedReleaseAreas || window.allowedReleaseAreas.includes(stationArea)) {
+                        footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                    }
                     footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
                 } else if (stationInfo.haveFlag === "0") {
                     // 空架 - 可物料登記
@@ -906,7 +909,10 @@ $(function () {
                     footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
                 } else if (stationInfo.haveFlag === "1") {
                     // 空板 - 可 Release 回送
-                    footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                    // 空板 - 可 Release 回送，需檢查權限
+                    if (!window.allowedReleaseAreas || window.allowedReleaseAreas.includes(stationArea)) {
+                        footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
+                    }
                 }
                 // HaveFlag=0 (空架) 時不顯示任何操作按鈕
             }

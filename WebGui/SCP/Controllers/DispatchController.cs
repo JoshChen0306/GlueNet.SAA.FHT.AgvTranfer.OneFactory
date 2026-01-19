@@ -58,14 +58,26 @@ namespace SCP.Controllers
                 // 取得所有路線的起點區域，用於樓層過濾
                 // 注意：只使用 SourceAreas，不包含 TargetAreas
                 // 這樣使用者只能看到他可以操作的樓層，而不是所有相關樓層
-                allowedAllAreas = userRoutes
-                    .Where(r => !string.IsNullOrEmpty(r.SourceAreas))
+                allowedAllAreas = allowedSourceAreas.ToList();
+
+
+            // ★★★ 新增：計算允許的 Release 區域 ★★★
+            List<string> allowedReleaseAreas = new List<string>();
+            if (userRoutes.Any())
+            {
+                allowedReleaseAreas = userRoutes
+                    .Where(r => !string.IsNullOrEmpty(r.SourceAreas) && r.DispatchMode == "RELEASE")
                     .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
                     .Distinct()
                     .ToList();
+            }
 
-                // 只使用「一般派送」起點區域過濾派送區域選單
-                filterAreas = areas.Where(item => allowedSourceAreas.Contains(item.Value));
+            // 將權限資訊傳遞給前端
+            ViewBag.AllowedSourceAreas = allowedSourceAreas;
+            ViewBag.AllowedReleaseAreas = allowedReleaseAreas; // 新增
+
+            // 只使用「一般派送」起點區域過濾派送區域選單
+            filterAreas = areas.Where(item => allowedSourceAreas.Contains(item.Value));
             }
             else
             {
@@ -584,6 +596,42 @@ namespace SCP.Controllers
                     return BadRequest(new { message = "請選擇站點" });
                 }
 
+                // 1. 取得站點區域
+                var stationArea = stationNo.Length >= 1 ? stationNo.Substring(0, 1).ToUpper() : "";
+
+                // ============================================
+                // 權限檢查
+                // ============================================
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (!string.IsNullOrEmpty(userId))
+                {
+
+                    // 2. 檢查是否有該區域的 Release 權限
+                    // 邏輯：檢查使用者是否擁有「起點包含該區域」且「模式為 RELEASE」的路線權限
+                    var hasPermission = _DBContext.pUserRoute
+                        .Where(ur => ur.UserId == userId)
+                        .Join(_DBContext.pRoute.Where(r => r.ControlFlag == "Y"),
+                              ur => ur.RouteId,
+                              r => r.RouteId,
+                              (ur, r) => r)
+                        .AsEnumerable() // 轉為記憶體操作以支援 Split
+                        .Any(r => !string.IsNullOrEmpty(r.SourceAreas) &&
+                                  r.DispatchMode == "RELEASE" &&
+                                  r.SourceAreas.Split(',').Select(a => a.Trim()).Contains(stationArea));
+
+                    if (!hasPermission)
+                    {
+                        // 若無設定任何 Release 權限，則假設開放所有（向前相容）
+                        // 或者根據需求，若有設定 pUserRoute 但沒有 Release 權限，則禁止
+                        // 這裡採取嚴格模式：如果使用者有設定任何路線權限，則必須明確擁有 Release 權限
+                        var hasAnyRoute = _DBContext.pUserRoute.Any(ur => ur.UserId == userId);
+                        if (hasAnyRoute)
+                        {
+                            return StatusCode(403, new { message = "您沒有此區域的回送權限" });
+                        }
+                    }
+                }
+
                 // 檢查站點是否存在
                 var port = _DBContext.oPort.FirstOrDefault(p => p.StationNo == stationNo);
                 if (port == null)
@@ -613,7 +661,7 @@ namespace SCP.Controllers
                     .ToList();
 
                 // 判斷起點區域，決定回送目的地
-                var stationArea = stationNo.Substring(0, 1).ToUpper();
+                // var stationArea = stationNo.Substring(0, 1).ToUpper(); // 已在上方定義
                 oPort emptySlot = null;
 
                 if (stationArea == "G")
