@@ -849,8 +849,8 @@ $(function () {
         // 判斷站點區域
         var stationArea = currentLotStation.substring(0, 1).toUpperCase();
 
-        // V Cut 標記顯示（M 區和 T 區有料時顯示）
-        if (stationInfo.haveFlag !== "0" && (stationArea === "M" || stationArea === "T")) {
+        // V Cut 標記顯示（T 區有料時顯示，工廠1 M區不需要）
+        if (stationInfo.haveFlag !== "0" && (stationArea === "T")) {
             $("#vcutTagRow").show();
             if (isVcutDone) {
                 $("#stationLotVcutTag").text("已加工完成").addClass("fw-bold").css("color", "#9b59b6");
@@ -869,11 +869,9 @@ $(function () {
         $("#registerLotVcut").prop("checked", false);
 
         // T 區會自動標謘為已加工完成，不需要顯示 checkbox
-        // A/B/J/Q/R/H/I/K/L 區不需要 V Cut 標記
-        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L" || stationArea === "A" || stationArea === "B") {
+        // 工廠1所有區域（A/B/K/L/M）都不需要 V Cut 標記（V Cut 是二廠 M區雷雕區的功能）
+        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L" || stationArea === "A" || stationArea === "B" || stationArea === "M") {
             $("#vcutCheckboxRow").hide();
-        } else if (stationArea === "M") {
-            $("#vcutCheckboxRow").show();
         } else {
             $("#vcutCheckboxRow").hide();
         }
@@ -965,14 +963,9 @@ $(function () {
             workOrder = workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
             $("#registerLotWorkOrder").val(workOrder);
             $("#registerLotRackId").val(stationInfo.rackId || "");
-            // M 區才顯示 V Cut checkbox
+            // 工廠1所有區域都不顯示 V Cut checkbox（V Cut 是二廠 M區雷雕區的功能）
             var stationArea = currentLotStation.substring(0, 1).toUpperCase();
-            if (stationArea === "M") {
-                $("#vcutCheckboxRow").show();
-                $("#registerLotVcut").prop("checked", isVcut);
-            } else {
-                $("#vcutCheckboxRow").hide();
-            }
+            $("#vcutCheckboxRow").hide();
         }
 
         $("#lotFormSection").removeClass("d-none");
