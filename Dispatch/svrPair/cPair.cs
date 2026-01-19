@@ -107,8 +107,10 @@ namespace svrPair
                 //由平板產生了oNeed
                 GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 : 尋找oNeed中AssignFlag = NULL的資料，以此產出oRequire關聯資料，而後註冊oPort的起終註記、oNeed中AssignFlag是Y正常或E異常
 
-                GenerateoNeedDataByMCSAsBtoA(); //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
-                GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+                // ★★★ 工廠1修正：停用 B區→A區 自動派送 ★★★
+                // B區應該透過 Release 功能手動回送空板到 A區
+                // GenerateoNeedDataByMCSAsBtoA(); //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
+                // GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
 
                 if (mPanelDoB2C == false)//因應客戶要求自行由WEB程式和平板進行處理，故 MCS 不作處理
                 {

@@ -182,6 +182,16 @@ namespace SCP.Controllers
                 endStation = _DBContext.oPort.Where(p => p.Block == "B" && p.UseFlag == "Y" && p.HaveFlag == "0" && (p.BgnToEnd == "" || p.BgnToEnd == null)).FirstOrDefault()?.StationNo.ToString() ?? "";
                 objStation = need["EndStation"];
             }
+            
+            // 修正：當 WorkOrder 為空時，從起點站的 oPort 表讀取
+            // 這是為了處理工廠1樓層（FHT1-1F, FHT1-3F）隱藏 WorkOrder 欄位的情況
+            if (string.IsNullOrEmpty(workOrder))
+            {
+                workOrder = _DBContext.oPort
+                    .Where(p => p.StationNo == objStation)
+                    .FirstOrDefault()?.WorkOrder ?? "";
+            }
+            
             if (string.IsNullOrEmpty(endStation)) return BadRequest(new { message = "暫存區無空架" });
 
             string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";

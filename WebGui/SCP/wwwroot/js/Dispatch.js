@@ -318,23 +318,20 @@ $(function () {
                 // 終點自動選擇，保持 disabled
                 $("#EndStation").prop("disabled", true);
                 break;
-            case "M":
+            case "L":
                 // ============================================
-                // 工廠1 路線3: M區 → A區（跨樓層）
+                // 工廠1 路線4: L區 → B區（跨樓層）
                 // ============================================
-                autoSelectEndStation("A", "0", "N");
-                // 終點自動選擇，保持 disabled
-                $("#EndStation").prop("disabled", true);
+                filterEndStationOptions("B", "0");
+                $("#EndStation").prop("disabled", false);
                 break;
             case "K":
-                // ============================================
-                // 工廠1 路線2: K區 → H區
-                // 註：H區為 2F（已移除），目前 K 區派送邏輯可能需確認，暫時維持與 A 區類似或僅設為空
-                // 如 K 區僅為終點，則此處不需要邏輯；如 K 區可為起點，目的為何？
-                // 根據 appsettings.json, K 是 "3F 左側上料區"
-                // 假設 K 區主要作為 A 區的終點。若 K 為起點，去哪？
-                // 暫時保留空邏輯或預設
-                // ============================================
+                // K區主要作為終點，不支援手動派送
+                // Release 功能會自動回送到 L區
+                break;
+            case "M":
+                // M區不支援手動派送
+                // 只能透過 Release 功能回送空板到 A區
                 break;
         }
 
@@ -885,8 +882,8 @@ $(function () {
         var footer = $("#stationLotFooter");
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
-        // 判斷區域類型：A/M/T/J/Q/H/K/I 區為物料登記區，B/O/P/S/N/G/K/I 區為 Release 操作區
-        var releaseAreas = ['B', 'O', 'P', 'S', 'N', 'G', 'K', 'I'];
+        // 判斷區域類型：A/L 區為物料登記區，B/K/M 區為 Release 操作區
+        var releaseAreas = ['B', 'O', 'P', 'S', 'N', 'G', 'K', 'M', 'I'];
         var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
