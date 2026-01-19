@@ -322,8 +322,9 @@ $(function () {
                 // ============================================
                 // 工廠1 路線4: L區 → B區（跨樓層）
                 // ============================================
-                filterEndStationOptions("B", "0");
-                $("#EndStation").prop("disabled", false);
+                autoSelectEndStation("B", "0", "N");
+                // 終點自動選擇，保持 disabled
+                $("#EndStation").prop("disabled", true);
                 break;
             case "K":
                 // K區主要作為終點，不支援手動派送
