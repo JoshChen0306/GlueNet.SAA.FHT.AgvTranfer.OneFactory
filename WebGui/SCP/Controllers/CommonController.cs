@@ -342,7 +342,6 @@ namespace SCP.Controllers
             double rangeX = maxX - minX;
 
             double normalizedX = (Convert.ToDouble(posX) - minX) / rangeX;
-            normalizedX += Convert.ToDouble(setting["rcsOffsetX"]);
             // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
             result = (minPercentX + (normalizedX * percentRangeX)).ToString() + "%";
             return result;
@@ -360,7 +359,6 @@ namespace SCP.Controllers
             double rangeY = maxY - minY;
 
             double normalizedY = (Convert.ToDouble(posY) - minY) / rangeY;
-            normalizedY += Convert.ToDouble(setting["rcsOffsetY"]);
             // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
             result = (minPercentY + (normalizedY * percentRangeY)).ToString() + "%";
             return result;
