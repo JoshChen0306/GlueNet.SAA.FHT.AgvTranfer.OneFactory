@@ -170,13 +170,26 @@ namespace SCP.Controllers
             List<oPort> query = _DBContext.oPort.Where(p => p.UseFlag == "Y" && p.Area == area).ToList();
             List<Position> result = new List<Position>();
 
+            // 檢查是否需要交換 XY 軸
+            var areaSetting = _configuration.GetSection($"AgvSetting:{area}");
+            bool swapXY = areaSetting["swapXY"] == "true";
+
             foreach (var item in query)
             {
+                string posX = item.Remark.Split(",")[0];
+                string posY = item.Remark.Split(",")[1];
+                
+                // 如果 swapXY 為 true，交換 X 和 Y 座標
+                if (swapXY)
+                {
+                    (posX, posY) = (posY, posX);
+                }
+
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0], area),
-                    Bottom = ConvertY(item.Remark.Split(",")[1], area),
+                    Left = ConvertX(posX, area),
+                    Bottom = ConvertY(posY, area),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
@@ -240,11 +253,24 @@ namespace SCP.Controllers
             string mapCode = GetMapCodeFromArea(area);
             
             List<oShuttle> AgvPositions = _DBContext.oShuttle.Where(x => x.MapCode == mapCode).ToList();
+            // 檢查是否需要交換 XY 軸
+            var areaSetting = _configuration.GetSection($"AgvSetting:{area}");
+            bool swapXY = areaSetting["swapXY"] == "true";
+
             foreach (var item in AgvPositions)
             {
+                string posX = item.PosX;
+                string posY = item.PosY;
+                
+                // 如果 swapXY 為 true，交換 X 和 Y 座標
+                if (swapXY)
+                {
+                    (posX, posY) = (posY, posX);
+                }
+
                 // 使用原始 area 進行座標轉換（因為 appsettings 使用 FHT1-1F 作為 key）
-                item.PosX = ConvertX(item.PosX, area);
-                item.PosY = ConvertY(item.PosY, area);
+                item.PosX = ConvertX(posX, area);
+                item.PosY = ConvertY(posY, area);
             }
             #endregion
             return AgvPositions;
@@ -316,6 +342,7 @@ namespace SCP.Controllers
             double rangeX = maxX - minX;
 
             double normalizedX = (Convert.ToDouble(posX) - minX) / rangeX;
+            normalizedX += Convert.ToDouble(setting["rcsOffsetX"]);
             // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
             result = (minPercentX + (normalizedX * percentRangeX)).ToString() + "%";
             return result;
@@ -333,6 +360,7 @@ namespace SCP.Controllers
             double rangeY = maxY - minY;
 
             double normalizedY = (Convert.ToDouble(posY) - minY) / rangeY;
+            normalizedY += Convert.ToDouble(setting["rcsOffsetY"]);
             // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
             result = (minPercentY + (normalizedY * percentRangeY)).ToString() + "%";
             return result;
