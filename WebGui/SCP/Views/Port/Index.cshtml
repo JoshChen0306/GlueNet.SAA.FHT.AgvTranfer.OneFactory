@@ -8,12 +8,16 @@
         <div>
             <ul class="nav nav-tabs">
                 @{
-                    var floors = new[] { "1F", "2F", "3F", "4F" };
-                    foreach (var f in floors)
+                    var allowedFloors = ViewBag.AllowedFloors as List<string> ?? new List<string>();
+                    var floorDisplayNames = ViewBag.FloorDisplayNames as Dictionary<string, string>
+                        ?? new Dictionary<string, string>();
+                    foreach (var area in allowedFloors)
                     {
+                        var f = area.Replace("FHT1-", "");
+                        var displayName = floorDisplayNames.ContainsKey(area) ? floorDisplayNames[area] : f;
                         var isActive = ViewBag.CurrentFloor == f;
                         <li class="nav-item">
-                            <a class="nav-link @(isActive ? "active" : "")" href="/Port?floor=@f">@f</a>
+                            <a class="nav-link @(isActive ? "active" : "")" href="/Port?floor=@f">@displayName</a>
                         </li>
                     }
                 }

@@ -18,6 +18,26 @@ namespace SCP.Controllers
         }
         public IActionResult Index(string floor = "1F")
         {
+            // 取得使用者允許的樓層（如 ["FHT1-1F", "FHT1-3F"]）
+            var allowedFloors = GetUserAllowedFloors();
+
+            // floor 參數容錯：若指定樓層不在允許範圍，退回第一個允許樓層
+            if (allowedFloors.Any() && !allowedFloors.Contains($"FHT1-{floor}"))
+            {
+                floor = allowedFloors.First().Replace("FHT1-", "");
+            }
+
+            // 讀取樓層顯示名稱（來自 appsettings.json FloorSettings）
+            var floorDisplayNames = _configuration.GetSection("FloorSettings")
+                .GetChildren()
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.GetSection("DisplayName").Value ?? x.Key
+                );
+
+            ViewBag.AllowedFloors = allowedFloors;
+            ViewBag.FloorDisplayNames = floorDisplayNames;
+
             // 樓層與區域對應
             var floorBlocks = new Dictionary<string, string[]>
             {
@@ -67,7 +87,73 @@ namespace SCP.Controllers
             ViewBag.MapImage = $"/img/FHT1-{floor}.png";
             return View();
         }
-        public IActionResult UpdateoPort([FromBody] Dictionary<string, string> port) 
+
+        /// <summary>
+        /// 取得使用者允許的樓層清單（根據 AgvSetting 和路線權限）
+        /// </summary>
+        /// <remarks>
+        /// TODO: 此邏輯與 CommonController.GetUserAllowedFloors 重複，未來第三個頁面需要時應抽成共用 FloorService。
+        /// </remarks>
+        private List<string> GetUserAllowedFloors()
+        {
+            // 1. 從 AgvSetting 讀取系統可用樓層（有座標設定的樓層）
+            var agvSettings = _configuration.GetSection("AgvSetting").GetChildren();
+            var allFloors = agvSettings.Select(s => s.Key).ToList();
+
+            if (!allFloors.Any())
+            {
+                return new List<string>();
+            }
+
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                // 未登入使用者，顯示所有樓層
+                return allFloors;
+            }
+
+            // 2. 取得使用者的路線權限
+            var userRoutes = _DBContext.pUserRoute
+                .Where(ur => ur.UserId == userId)
+                .Join(_DBContext.pRoute.Where(r => r.ControlFlag == "Y"),
+                      ur => ur.RouteId,
+                      r => r.RouteId,
+                      (ur, r) => r)
+                .ToList();
+
+            if (!userRoutes.Any())
+            {
+                // 使用者沒有設定路線權限，顯示所有樓層
+                return allFloors;
+            }
+
+            // 3. 取得使用者所有允許的起點區域
+            var allowedAreas = userRoutes
+                .Where(r => !string.IsNullOrEmpty(r.SourceAreas))
+                .SelectMany(r => r.SourceAreas.Split(',').Select(a => a.Trim()))
+                .Distinct()
+                .ToList();
+
+            // 4. 讀取 FloorSettings 配置，取得每個樓層包含的區域
+            var floorSettings = _configuration.GetSection("FloorSettings")
+                .GetChildren()
+                .ToDictionary(
+                    x => x.Key,
+                    x => x.GetSection("Areas").Get<string[]>() ?? Array.Empty<string>()
+                );
+
+            // 5. 篩選使用者可見的樓層（該樓層的區域與使用者允許區域有交集）
+            var allowedFloors = allFloors
+                .Where(f => {
+                    if (!floorSettings.ContainsKey(f)) return true; // 無配置則顯示
+                    return floorSettings[f].Any(a => allowedAreas.Contains(a));
+                })
+                .ToList();
+
+            return allowedFloors.Any() ? allowedFloors : allFloors;
+        }
+
+        public IActionResult UpdateoPort([FromBody] Dictionary<string, string> port)
         {
             //Dictionary<string, string> portDict = port.ToDictionary(item => item["name"], item => item["value"]);
             string name = port["name"];
