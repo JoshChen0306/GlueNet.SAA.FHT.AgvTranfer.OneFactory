@@ -35,8 +35,8 @@ namespace SCP.Controllers
                 .ToList();
             List<Position> result = new List<Position>();
 
-            // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT2-1F")
-            string area = $"FHT2-{floor}";
+            // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT1-1F")
+            string area = $"FHT1-{floor}";
             
             foreach (var item in query)
             {
@@ -64,7 +64,7 @@ namespace SCP.Controllers
             
             ViewBag.positions = result;
             ViewBag.CurrentFloor = floor;
-            ViewBag.MapImage = $"/img/FHT2-{floor}.png";
+            ViewBag.MapImage = $"/img/FHT1-{floor}.png";
             return View();
         }
         public IActionResult UpdateoPort([FromBody] Dictionary<string, string> port) 

@@ -1136,7 +1136,7 @@ $(function () {
     // 重新載入地圖
     function refreshMap() {
         // 使用 window 層級變數追蹤的當前地圖區域
-        var area = window.currentMapArea || 'FHT2-1F';
+        var area = window.currentMapArea || 'FHT1-1F';
         console.log("refreshMap - 重新載入地圖:", area);
         loadMapDataLocal(area);
         stationCache = {};
