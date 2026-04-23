@@ -6,12 +6,12 @@ using SCP.Models;
 
 namespace SCP.Controllers
 {
-    [Authorize(Roles ="1")]
+    [Authorize(Roles = "1")]
     public class PortController : Controller
     {
         private readonly IConfiguration _configuration;
         private readonly agvDB_1400004Context _DBContext;
-        public PortController(IConfiguration configuration,agvDB_1400004Context DBContext)
+        public PortController(IConfiguration configuration, agvDB_1400004Context DBContext)
         {
             _configuration = configuration;
             _DBContext = DBContext;
@@ -41,14 +41,12 @@ namespace SCP.Controllers
             // 樓層與區域對應
             var floorBlocks = new Dictionary<string, string[]>
             {
-                { "1F", new[] { "A", "B", "C", "D", "E", "F", "EE" } },
-                { "2F", new[] { "H", "M", "N", "O", "P", "Q", "R", "S", "T" } },
-                { "3F", new[] { "J", "I" } },
-                { "4F", new[] { "K", "L" } }
+                { "1F", new[] { "A", "B","C" } },
+                { "3F", new[] { "K", "L", "M" } },
             };
-            
+
             var blocks = floorBlocks.ContainsKey(floor) ? floorBlocks[floor] : floorBlocks["1F"];
-            
+
             #region [讀取暫存架位置及狀態]      
             List<oPort> query = _DBContext.oPort
                 .Where(p => blocks.Contains(p.Block))
@@ -57,13 +55,13 @@ namespace SCP.Controllers
 
             // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT1-1F")
             string area = $"FHT1-{floor}";
-            
+
             foreach (var item in query)
             {
                 // 跳過沒有座標設定的站點
                 if (string.IsNullOrEmpty(item.Remark) || !item.Remark.Contains(","))
                     continue;
-                    
+
                 Position data = new Position
                 {
                     Name = item.StationNo,
@@ -81,7 +79,7 @@ namespace SCP.Controllers
                 result.Add(data);
             }
             #endregion
-            
+
             ViewBag.positions = result;
             ViewBag.CurrentFloor = floor;
             ViewBag.MapImage = $"/img/FHT1-{floor}.png";
@@ -144,7 +142,8 @@ namespace SCP.Controllers
 
             // 5. 篩選使用者可見的樓層（該樓層的區域與使用者允許區域有交集）
             var allowedFloors = allFloors
-                .Where(f => {
+                .Where(f =>
+                {
                     if (!floorSettings.ContainsKey(f)) return true; // 無配置則顯示
                     return floorSettings[f].Any(a => allowedAreas.Contains(a));
                 })
@@ -160,13 +159,13 @@ namespace SCP.Controllers
             string machinename = port["machinename"];
             string interfacename = port["interfacename"];
             string haveflag = port["haveflag"];
-            string workorder = (haveflag=="3")?port["workorder"]:"";
-            string useflag = port.ContainsKey("useflag")?"Y":"N";
+            string workorder = (haveflag == "3") ? port["workorder"] : "";
+            string useflag = port.ContainsKey("useflag") ? "Y" : "N";
 
             try
             {
                 _DBContext.oPort
-                    .Where(p =>p.StationNo == name)
+                    .Where(p => p.StationNo == name)
                     .ExecuteUpdate(setters => setters
                         .SetProperty(p => p.MachineName, machinename)
                         .SetProperty(p => p.InterfaceName, interfacename)
