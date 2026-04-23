@@ -46,6 +46,9 @@ namespace SCP.Controllers
                 ?? _configuration.GetSection("FloorSettings:FHT1-1F:Areas").Get<string[]>()
                 ?? Array.Empty<string>();
 
+            // 檢查是否需要交換 XY 軸（與派發任務畫面 CommonController.GetTrac 一致）
+            bool swapXY = _configuration.GetSection($"AgvSetting:{area}")["swapXY"] == "true";
+
             #region [讀取暫存架位置及狀態]
             List<oPort> query = _DBContext.oPort
                 .Where(p => blocks.Contains(p.Block))
@@ -58,11 +61,19 @@ namespace SCP.Controllers
                 if (string.IsNullOrEmpty(item.Remark) || !item.Remark.Contains(","))
                     continue;
 
+                string posX = item.Remark.Split(",")[0];
+                string posY = item.Remark.Split(",")[1];
+
+                if (swapXY)
+                {
+                    (posX, posY) = (posY, posX);
+                }
+
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0], area),
-                    Bottom = ConvertY(item.Remark.Split(",")[1], area),
+                    Left = ConvertX(posX, area),
+                    Bottom = ConvertY(posY, area),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
