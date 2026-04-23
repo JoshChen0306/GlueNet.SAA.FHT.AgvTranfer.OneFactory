@@ -38,23 +38,19 @@ namespace SCP.Controllers
             ViewBag.AllowedFloors = allowedFloors;
             ViewBag.FloorDisplayNames = floorDisplayNames;
 
-            // 樓層與區域對應
-            var floorBlocks = new Dictionary<string, string[]>
-            {
-                { "1F", new[] { "A", "B","C" } },
-                { "3F", new[] { "K", "L", "M" } },
-            };
+            // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT1-1F")
+            string area = $"FHT1-{floor}";
 
-            var blocks = floorBlocks.ContainsKey(floor) ? floorBlocks[floor] : floorBlocks["1F"];
+            // 樓層與區域對應（從 appsettings.json FloorSettings 讀取，與權限篩選同一來源）
+            var blocks = _configuration.GetSection($"FloorSettings:{area}:Areas").Get<string[]>()
+                ?? _configuration.GetSection("FloorSettings:FHT1-1F:Areas").Get<string[]>()
+                ?? Array.Empty<string>();
 
-            #region [讀取暫存架位置及狀態]      
+            #region [讀取暫存架位置及狀態]
             List<oPort> query = _DBContext.oPort
                 .Where(p => blocks.Contains(p.Block))
                 .ToList();
             List<Position> result = new List<Position>();
-
-            // 將 floor 轉換為 area 格式 (如 "1F" -> "FHT1-1F")
-            string area = $"FHT1-{floor}";
 
             foreach (var item in query)
             {
