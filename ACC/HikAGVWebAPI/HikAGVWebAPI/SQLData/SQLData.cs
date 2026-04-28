@@ -25,6 +25,27 @@ namespace HikAGVWebAPI.App_Start
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
+        public void Insert_oMission(oMissionModel oMission)
+        {
+            string parentTDT = string.IsNullOrEmpty(oMission.ParentTaskDateTime) ? "NULL" : $"'{oMission.ParentTaskDateTime}'";
+            string sSQL = $@"insert into oMission
+                                    (TaskDateTime, SerialNo, BeginStation, EndStation, TaskSource, RackId, WorkOrder, ParentTaskDateTime)
+                             values ('{oMission.TaskDateTime}', 0, '{oMission.BeginStation}', '{oMission.EndStation}', '{oMission.TaskSource}', '{oMission.RackId}', '', {parentTDT}) ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
+        /// <summary>
+        /// 為系統任務（IDLE_RETURN / CROSS_FLOOR_DISPATCH）寫入 oRequire，
+        /// 讓 SCP 畫面可見並可取消。跳過 cPair 的 oNeed→oRequire 轉換流程。
+        /// </summary>
+        public void Insert_oRequire(oMissionModel oMission)
+        {
+            string sSQL = $@"insert into oRequire
+                                    (TaskDateTime, ObjStation, SerialNo, BeginStation, EndStation, TaskSource, RackId, WorkOrder, AssignFlag)
+                             values ('{oMission.TaskDateTime}', '{oMission.BeginStation}', 0, '{oMission.BeginStation}', '{oMission.EndStation}', '{oMission.TaskSource}', '', '', 'Y') ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
         public void Insert_ubActivation(ubActivationModel ActivationModel)
         {
             string sSQL = $@"insert into ubActivation
@@ -69,6 +90,27 @@ namespace HikAGVWebAPI.App_Start
             DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
             string sJson = JsonConvert.SerializeObject(dt);
             return JsonConvert.DeserializeObject<List<oShuttleModel>>(sJson);
+        }
+
+        /// <summary>
+        /// 查詢 ubMission 中最近 lookbackSeconds 秒內完成的 CROSS_FLOOR_DISPATCH（供 CrossFloorManager 啟動時重建冷卻狀態）
+        /// 篩選：TaskSource = CROSS_FLOOR_DISPATCH AND ShuttleId = 指定車 AND OkFlag in ('Y','C') AND ParentTaskDateTime 非空 AND EndTime 於 lookback 區間內
+        /// 回傳：EndTime 最新的一筆；無相符則回傳 null
+        /// </summary>
+        public oMissionModel Select_RecentCrossFloorDispatchCompletion(string shuttleId, int lookbackSeconds)
+        {
+            string cutoff = DateTime.Now.AddSeconds(-lookbackSeconds).ToString("yyyyMMddHHmmssffffff");
+            string sSQL = $@"select top 1 *
+                               from ubMission
+                              where TaskSource = 'CROSS_FLOOR_DISPATCH'
+                                and ShuttleId = '{shuttleId}'
+                                and OkFlag in ('Y', 'C')
+                                and ParentTaskDateTime is not null
+                                and EndTime >= '{cutoff}'
+                              order by EndTime desc";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            string sJson = JsonConvert.SerializeObject(dt);
+            return (JsonConvert.DeserializeObject<List<oMissionModel>>(sJson)).FirstOrDefault();
         }
         #endregion 搜尋類
 
