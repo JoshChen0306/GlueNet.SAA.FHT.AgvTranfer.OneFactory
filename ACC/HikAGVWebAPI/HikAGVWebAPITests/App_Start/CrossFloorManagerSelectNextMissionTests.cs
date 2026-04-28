@@ -149,6 +149,92 @@ namespace HikAGVWebAPITests.App_Start
 
         #endregion
 
+        #region 純函數補強（一廠特化覆蓋 spec.md #5 同樓層直派 + 邊界場景）
+
+        [TestMethod]
+        public void Decide_跨樓層任務且車輛在起點樓層_回傳SameFloor並帶任務()
+        {
+            // Arrange — 同樓層應優先派發，即使冷卻期命中也不被攔截
+            var cooldown = new CooldownTracker(cooldownSeconds: 30);
+            cooldown.RecordCompletion("TASK_SAMEFLOOR");
+
+            var task = new oMissionModel
+            {
+                TaskDateTime = "TASK_SAMEFLOOR",
+                BeginStation = "I1",  // 3F (StationFloorMapping: I → 3F)
+                EndStation = "I2",
+                TaskSource = "MCS",
+            };
+            var pending = new List<oMissionModel> { task };
+
+            // Act — 車輛在 3F（與任務起點同樓層）
+            var decision = CrossFloorManager.DecideNextCrossFloorAction(
+                pending, currentFloor: "3F", _pathCalculator, cooldown);
+
+            // Assert
+            Assert.AreEqual(CrossFloorDecisionKind.SameFloor, decision.Kind,
+                "同樓層任務優先派發，不受冷卻期影響（spec.md #5）");
+            Assert.AreSame(task, decision.Task);
+        }
+
+        [TestMethod]
+        public void Decide_pendingList為空_回傳None()
+        {
+            var cooldown = new CooldownTracker(cooldownSeconds: 30);
+
+            var decision = CrossFloorManager.DecideNextCrossFloorAction(
+                new List<oMissionModel>(), currentFloor: "1F", _pathCalculator, cooldown);
+
+            Assert.AreEqual(CrossFloorDecisionKind.None, decision.Kind);
+        }
+
+        [TestMethod]
+        public void Decide_pendingList為null_回傳None()
+        {
+            var cooldown = new CooldownTracker(cooldownSeconds: 30);
+
+            var decision = CrossFloorManager.DecideNextCrossFloorAction(
+                null, currentFloor: "1F", _pathCalculator, cooldown);
+
+            Assert.AreEqual(CrossFloorDecisionKind.None, decision.Kind);
+        }
+
+        [TestMethod]
+        public void Decide_僅含IDLE_RETURN與CROSS_FLOOR_DISPATCH_過濾後回傳None()
+        {
+            // 系統任務不應被當作待派 normal task
+            var cooldown = new CooldownTracker(cooldownSeconds: 30);
+            var systemTasks = new List<oMissionModel>
+            {
+                new oMissionModel { TaskDateTime = "T1", BeginStation = "I1", EndStation = "I2", TaskSource = CrossFloorManager.IDLE_RETURN },
+                new oMissionModel { TaskDateTime = "T2", BeginStation = "I1", EndStation = "I2", TaskSource = CrossFloorManager.CROSS_FLOOR_DISPATCH },
+            };
+
+            var decision = CrossFloorManager.DecideNextCrossFloorAction(
+                systemTasks, currentFloor: "1F", _pathCalculator, cooldown);
+
+            Assert.AreEqual(CrossFloorDecisionKind.None, decision.Kind,
+                "IDLE_RETURN 與 CROSS_FLOOR_DISPATCH 應被過濾掉，剩餘 0 normal tasks 回 None");
+        }
+
+        [TestMethod]
+        public void Decide_多筆pending_應取TaskDateTime最早的當trigger()
+        {
+            var cooldown = new CooldownTracker(cooldownSeconds: 30);
+            var earlier = new oMissionModel { TaskDateTime = "001", BeginStation = "I1", EndStation = "I2", TaskSource = "MCS" };  // 3F
+            var later = new oMissionModel { TaskDateTime = "999", BeginStation = "K1", EndStation = "K2", TaskSource = "MCS" };    // 4F
+            var pending = new List<oMissionModel> { later, earlier };  // 故意亂序
+
+            var decision = CrossFloorManager.DecideNextCrossFloorAction(
+                pending, currentFloor: "1F", _pathCalculator, cooldown);
+
+            Assert.AreEqual(CrossFloorDecisionKind.NeedDispatch, decision.Kind);
+            Assert.AreSame(earlier, decision.Task, "應取 TaskDateTime 最早的任務當 trigger");
+            Assert.AreEqual("3F", decision.ToFloor, "trigger 為 earlier（I1→3F）");
+        }
+
+        #endregion
+
         // ─── Helpers ──────────────────────────────────────────────
 
         /// <summary>
