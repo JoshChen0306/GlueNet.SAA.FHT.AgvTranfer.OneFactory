@@ -127,6 +127,7 @@
     <Compile Include="Models\oPortModel.cs" />
     <Compile Include="Models\oRequireModel.cs" />
     <Compile Include="Models\oShuttleModel.cs" />
+    <Compile Include="Models\oTaskTypeRouteModel.cs" />
     <Compile Include="Models\AGVCallBackModel.cs" />
     <Compile Include="Models\CancelTaskModel.cs" />
     <Compile Include="Models\BindNotifyModel.cs" />

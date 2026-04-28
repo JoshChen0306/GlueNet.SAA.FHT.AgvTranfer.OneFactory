@@ -92,6 +92,14 @@ namespace HikAGVWebAPI.App_Start
             return JsonConvert.DeserializeObject<List<oShuttleModel>>(sJson);
         }
 
+        public List<oTaskTypeRouteModel> Select_oTaskTypeRoute(string moveType)
+        {
+            string sSQL = $@"select * from oTaskTypeRoute where UseFlag = 'Y' and MoveType = '{moveType}' ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            string sJson = JsonConvert.SerializeObject(dt);
+            return JsonConvert.DeserializeObject<List<oTaskTypeRouteModel>>(sJson);
+        }
+
         /// <summary>
         /// 查詢 ubMission 中最近 lookbackSeconds 秒內完成的 CROSS_FLOOR_DISPATCH（供 CrossFloorManager 啟動時重建冷卻狀態）
         /// 篩選：TaskSource = CROSS_FLOOR_DISPATCH AND ShuttleId = 指定車 AND OkFlag in ('Y','C') AND ParentTaskDateTime 非空 AND EndTime 於 lookback 區間內

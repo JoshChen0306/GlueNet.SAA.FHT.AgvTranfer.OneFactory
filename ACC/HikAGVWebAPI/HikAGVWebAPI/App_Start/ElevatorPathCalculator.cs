@@ -92,44 +92,31 @@ namespace HikAGVWebAPI
         /// <param name="beginStation">起點站點</param>
         /// <param name="endStation">終點站點</param>
         /// <param name="taskTypeMap">TaskType 對照表字串</param>
-        /// <param name="defaultTaskType">預設 TaskType（同樓層用）</param>
+        /// <param name="routes">路由清單（從 DB 查詢，已篩選 UseFlag='Y'）</param>
+        /// <param name="defaultTaskType">全域預設 TaskType（找不到對應設定時使用）</param>
         /// <returns>對應的 TaskType</returns>
-        public string GetTaskType(string beginStation, string endStation, 
-                                  string taskTypeMap, string defaultTaskType)
+        public string GetTaskType(string beginStation, string endStation,
+                                  List<oTaskTypeRouteModel> routes, string defaultTaskType)
         {
             var beginFloor = GetFloor(beginStation);
             var endFloor = GetFloor(endStation);
-            
-            // 無法判斷樓層或同樓層：返回預設 TaskType
-            if (beginFloor == null || endFloor == null || beginFloor == endFloor)
+
+            // 無法判斷樓層：返回預設 TaskType
+            if (beginFloor == null || endFloor == null)
                 return defaultTaskType;
-            
-            // 跨樓層：查詢對照表
-            var map = ParseTaskTypeMap(taskTypeMap);
-            var routeKey = $"{beginFloor}>{endFloor}";
-            
-            if (map.TryGetValue(routeKey, out string taskType))
-                return taskType;
-            
+
+            if (routes == null || routes.Count == 0)
+                return defaultTaskType;
+
+            // 查詢符合起終樓層的路由
+            var match = routes.FirstOrDefault(r =>
+                r.FromFloor == beginFloor && r.ToFloor == endFloor);
+
+            if (match != null)
+                return match.TaskType;
+
             // 找不到對應路線，返回預設值
             return defaultTaskType;
-        }
-
-        /// <summary>
-        /// 解析 TaskType 對照表字串
-        /// </summary>
-        private Dictionary<string, string> ParseTaskTypeMap(string mapString)
-        {
-            var result = new Dictionary<string, string>();
-            if (string.IsNullOrEmpty(mapString)) return result;
-            
-            foreach (var pair in mapString.Split(','))
-            {
-                var parts = pair.Trim().Split(':');
-                if (parts.Length == 2)
-                    result[parts[0].Trim()] = parts[1].Trim();
-            }
-            return result;
         }
 
         /// <summary>
