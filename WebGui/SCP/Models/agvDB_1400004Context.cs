@@ -39,6 +39,8 @@ public partial class agvDB_1400004Context : DbContext
 
     public virtual DbSet<pUserRoute> pUserRoute { get; set; }
 
+    public virtual DbSet<oTaskTypeRoute> oTaskTypeRoute { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<oMission>(entity =>
@@ -268,6 +270,18 @@ public partial class agvDB_1400004Context : DbContext
 
             entity.Property(e => e.UserId).HasMaxLength(20);
             entity.Property(e => e.RouteId).HasMaxLength(30);
+        });
+
+        modelBuilder.Entity<oTaskTypeRoute>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.MoveType).HasMaxLength(20);
+            entity.Property(e => e.FromFloor).HasMaxLength(10);
+            entity.Property(e => e.ToFloor).HasMaxLength(10);
+            entity.Property(e => e.TaskType).HasMaxLength(50);
+            entity.Property(e => e.UseFlag).HasMaxLength(1);
+            entity.Property(e => e.Remark).HasMaxLength(100);
         });
 
         OnModelCreatingPartial(modelBuilder);
