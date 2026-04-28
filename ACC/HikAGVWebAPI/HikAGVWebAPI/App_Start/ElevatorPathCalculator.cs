@@ -72,6 +72,21 @@ namespace HikAGVWebAPI
         }
 
         /// <summary>
+        /// 反查電梯等待點所屬樓層（用於 IDLE_RETURN 任務的 BeginStation/EndStation 還原）
+        /// </summary>
+        public string GetFloorByWaitPoint(string waitPoint)
+        {
+            if (string.IsNullOrEmpty(waitPoint))
+                return null;
+
+            var freight = _freightWaitPoints.FirstOrDefault(kv => kv.Value == waitPoint);
+            if (freight.Key != null) return freight.Key;
+
+            var customer = _customerWaitPoints.FirstOrDefault(kv => kv.Value == waitPoint);
+            return customer.Key;
+        }
+
+        /// <summary>
         /// 取得站點所屬樓層（根據首字母）
         /// </summary>
         public string GetFloor(string station)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Web.Http;
+using HikAGVWebAPI.App_Start;
 
 namespace HikAGVWebAPI
 {
@@ -43,6 +44,7 @@ namespace HikAGVWebAPI
                     string sCurrentPositionCode = CallbackModel.currentPositionCode;
                     string sTaskCode = CallbackModel.taskCode;
                     string sShuttleID = CallbackModel.robotCode;
+                    string sMapCode = CallbackModel.mapCode;
                     oMissionModel oMission = mDB.Select_oMissionByTaskCode(sTaskCode);
                     mLog.TraceOut("Get oMission Data! " + oMission?.ToString(), Log.LogType.NONE);
                     reponse = new CallBackAck()
@@ -73,10 +75,42 @@ namespace HikAGVWebAPI
                             mLog.TraceOut($"AGV Outbin Finish!", Log.LogType.NONE);
                             break;
                         case CallBackMethod.end:
-                            UpdateEnd(oMission, ubActivation, sCurrentPositionCode);
+                            UpdateEnd(oMission, ubActivation, sCurrentPositionCode, sMapCode);
+                            if (oMission?.TaskSource == CrossFloorManager.IDLE_RETURN)
+                            {
+                                mLog.TraceOut($"[CrossFloor] 歸位任務 Callback end，通知 CrossFloorManager 完成", Log.LogType.NONE);
+                                Dispatch.CrossFloor?.OnIdleReturnCompleted();
+                            }
+                            else if (oMission?.TaskSource == CrossFloorManager.CROSS_FLOOR_DISPATCH)
+                            {
+                                mLog.TraceOut($"[CrossFloor] 預調度任務 Callback end，通知 CrossFloorManager 完成", Log.LogType.NONE);
+                                Dispatch.CrossFloor?.OnCrossFloorDispatchCompleted(oMission);
+                            }
                             mLog.TraceOut($"AGV End Finish!", Log.LogType.NONE);
                             break;
                         case CallBackMethod.cancel:
+                            UpdateCancel(oMission, sMapCode);
+                            if (oMission?.TaskSource == CrossFloorManager.IDLE_RETURN)
+                            {
+                                mLog.TraceOut($"[CrossFloor] 歸位任務 Callback cancel，通知 CrossFloorManager 重置", Log.LogType.NONE);
+                                Dispatch.CrossFloor?.OnIdleReturnCompleted();
+                            }
+                            else if (oMission?.TaskSource == CrossFloorManager.CROSS_FLOOR_DISPATCH)
+                            {
+                                mLog.TraceOut($"[CrossFloor] 預調度任務 Callback cancel，通知 CrossFloorManager 重置", Log.LogType.NONE);
+                                Dispatch.CrossFloor?.OnCrossFloorDispatchCompleted(oMission);
+                            }
+
+                            if ((oMission?.TaskSource == CrossFloorManager.CROSS_FLOOR_DISPATCH
+                                 || oMission?.TaskSource == CrossFloorManager.IDLE_RETURN)
+                                && !string.IsNullOrEmpty(oMission?.ParentTaskDateTime))
+                            {
+                                mDB.Update_oMissionOkFlag(oMission.ParentTaskDateTime, "C");
+                                mDB.Update_oRequireOkFlag(oMission.ParentTaskDateTime, "C");
+                                mLog.TraceOut($"[CrossFloor] 連動取消父任務 ParentTaskDateTime={oMission.ParentTaskDateTime}，oMission/oRequire OkFlag 皆設為 C",
+                                    Log.LogType.NONE);
+                            }
+
                             mLog.TraceOut($"AGV Cancel Finish!", Log.LogType.NONE);
                             break;
                         case CallBackMethod.apply:
@@ -162,7 +196,8 @@ namespace HikAGVWebAPI
         /// <param name="oMission"></param>
         /// <param name="ubActivation"></param>
         /// <param name="sCurrentPositionCode"></param>
-        private void UpdateEnd(oMissionModel oMission, ubActivationModel ubActivation, string sCurrentPositionCode)
+        /// <param name="sMapCode">RCS 回傳的實際抵達地圖代碼（A 方案：即時糾正 oShuttle.MapCode）</param>
+        private void UpdateEnd(oMissionModel oMission, ubActivationModel ubActivation, string sCurrentPositionCode, string sMapCode)
         {
             try
             {
@@ -181,10 +216,64 @@ namespace HikAGVWebAPI
                 }
 
                 mDB.Update_ubActivation(ubActivation, "EndTime");
+
+                UpdateShuttleMapCodeFromCallback(oMission, sMapCode, "UpdateEnd");
             }
             catch (Exception ex)
             {
                 mLog.TraceOut($"UpdateEnd Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
+            }
+        }
+
+        /// <summary>
+        /// AGV 任務取消（RCS 回報 cancel callback）
+        /// 清理 oMission 並歸檔至 ubMission，避免殘留 OkFlag=R 的孤兒記錄
+        /// </summary>
+        /// <param name="oMission"></param>
+        /// <param name="sMapCode">RCS 回傳的實際抵達地圖代碼（A 方案：即時糾正 oShuttle.MapCode）</param>
+        private void UpdateCancel(oMissionModel oMission, string sMapCode)
+        {
+            try
+            {
+                if (oMission != null)
+                {
+                    oMission.OkFlag = "C";
+                    oMission.EndTime = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
+                    mDB.Update_oRequire(oMission);
+                    mDB.Update_oMissionEndTime(oMission);
+                    mDB.Insert_ubMission(oMission);
+                    mDB.Delete_oMission(oMission);
+                    mDB.Update_oShuttleStation(oMission, "I");
+                    mLog.TraceOut($"Update Cancel Job Finish!", Log.LogType.NONE);
+                }
+
+                UpdateShuttleMapCodeFromCallback(oMission, sMapCode, "UpdateCancel");
+            }
+            catch (Exception ex)
+            {
+                mLog.TraceOut($"UpdateCancel Exception! [Exception] : {ex.Message}", Log.LogType.ERROR);
+            }
+        }
+
+        /// <summary>
+        /// A 方案：以 RCS callback 的 mapCode 即時糾正 oShuttle.MapCode
+        /// 縮短 UpdateAGVStatus 輪詢窗口中被幽靈 MapCode 覆蓋的時間
+        /// 空字串 / oMission 為 null 直接略過；SQL 例外僅記 WARN 不中斷 callback 流程
+        /// </summary>
+        private void UpdateShuttleMapCodeFromCallback(oMissionModel oMission, string sMapCode, string sCaller)
+        {
+            if (oMission == null) return;
+            if (string.IsNullOrEmpty(sMapCode)) return;
+            if (string.IsNullOrEmpty(oMission.ShuttleId)) return;
+
+            try
+            {
+                mDB.Update_oShuttleMapCode(oMission.ShuttleId, sMapCode);
+                mLog.TraceOut($"[{sCaller}] Update oShuttle MapCode from callback! [ShuttleId] : {oMission.ShuttleId}, [MapCode] : {sMapCode}", Log.LogType.NONE);
+            }
+            catch (Exception ex)
+            {
+                mLog.TraceOut($"[{sCaller}] Update_oShuttleMapCode Exception! [ShuttleId] : {oMission.ShuttleId}, [MapCode] : {sMapCode}, [Exception] : {ex.Message}", Log.LogType.WARN);
             }
         }
 

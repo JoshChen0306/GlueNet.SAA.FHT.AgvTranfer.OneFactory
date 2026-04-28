@@ -46,6 +46,15 @@ namespace HikAGVWebAPI.App_Start
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
+        public void Insert_ubCancelLog(string taskDateTime, string parentTaskDateTime, string taskSource, string beginStation, string endStation, string taskCode, string rcsCancelResult)
+        {
+            string parentTDT = string.IsNullOrEmpty(parentTaskDateTime) ? "NULL" : $"'{parentTaskDateTime}'";
+            string sSQL = $@"insert into ubCancelLog
+                                    (CancelTime, TaskDateTime, ParentTaskDateTime, TaskSource, BeginStation, EndStation, TaskCode, RcsCancelResult)
+                             values (GETDATE(), '{taskDateTime}', {parentTDT}, '{taskSource}', '{beginStation}', '{endStation}', '{taskCode}', '{rcsCancelResult}') ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
         public void Insert_ubActivation(ubActivationModel ActivationModel)
         {
             string sSQL = $@"insert into ubActivation
@@ -136,6 +145,18 @@ namespace HikAGVWebAPI.App_Start
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
+        /// <summary>
+        /// 依 ShuttleId 即時更新 oShuttle.MapCode（callback end/cancel 時呼叫）
+        /// 用於縮短 UpdateAGVStatus 輪詢窗口中被幽靈 MapCode 覆蓋的時間
+        /// </summary>
+        public void Update_oShuttleMapCode(string shuttleId, string mapCode)
+        {
+            string sSQL = $@"update oShuttle
+                                set MapCode = '{mapCode}'
+                              where ShuttleId = {shuttleId} ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
         public void Update_oShuttleStation(oMissionModel oMission, string Status)
         {
             string sSQL = $@"update oShuttle
@@ -191,6 +212,31 @@ namespace HikAGVWebAPI.App_Start
                               where TaskDateTime = '{oMission.TaskDateTime}'
                                 and BeginStation = '{oMission.BeginStation}'
                                 and EndStation = '{oMission.EndStation}' ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
+        /// <summary>
+        /// 依 TaskDateTime 更新 oMission.OkFlag（用於父任務連動取消）
+        /// 與 Update_oMissionEndTime 不同：只用 TaskDateTime 一個條件
+        /// </summary>
+        public void Update_oMissionOkFlag(string taskDateTime, string okFlag)
+        {
+            string sSQL = $@"update oMission
+                                set OkFlag = '{okFlag}'
+                                   ,EndTime = '{DateTime.Now:yyyyMMddHHmmssffffff}'
+                              where TaskDateTime = '{taskDateTime}' ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
+        /// <summary>
+        /// 依 TaskDateTime 更新 oRequire.OkFlag（用於父任務連動取消）
+        /// 與 Update_oRequire 不同：只用 TaskDateTime 一個條件，涵蓋 MCS 被 cPair 拆成多段的所有 oRequire
+        /// </summary>
+        public void Update_oRequireOkFlag(string taskDateTime, string okFlag)
+        {
+            string sSQL = $@"update oRequire
+                                set OkFlag = '{okFlag}'
+                              where TaskDateTime = '{taskDateTime}' ";
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
