@@ -235,6 +235,70 @@ namespace HikAGVWebAPI
         }
 
         /// <summary>
+        /// 建構歸位路徑（CrossFloorManager 用）
+        /// 不依賴 LastStation，直接根據樓層名稱計算完整電梯路徑
+        /// </summary>
+        /// <param name="fromFloor">目前所在樓層（由 MapCode 推算）</param>
+        /// <param name="toFloor">目標歸位樓層</param>
+        /// <returns>完整路徑站點列表，或 null（無法計算）</returns>
+        public List<string> BuildReturnPath(string fromFloor, string toFloor)
+        {
+            if (string.IsNullOrEmpty(fromFloor) || string.IsNullOrEmpty(toFloor))
+                return null;
+
+            if (fromFloor == toFloor)
+                return null;
+
+            var path = new List<string>();
+            bool isGoingUp = CompareFloor(fromFloor, toFloor) < 0;
+            bool needCustomer = NeedCustomerElevator(fromFloor, toFloor);
+            bool needFreight = NeedFreightElevator(fromFloor, toFloor);
+
+            if (needCustomer && needFreight)
+            {
+                if (isGoingUp)
+                {
+                    // 上行：客梯(起→3F) → 出客梯等待點(W1) → 客貨梯(3F→終)
+                    AddElevatorPath(path, fromFloor, "3F", true, isCustomer: true);
+                    path.Add(_customerWaitPoints["3F"]);
+                    AddElevatorPath(path, "3F", toFloor, true, isCustomer: false);
+                }
+                else
+                {
+                    // 下行：客貨梯(起→3F) → 出客貨梯等待點(X1) → 客梯(3F→終)
+                    AddElevatorPath(path, fromFloor, "3F", false, isCustomer: false);
+                    path.Add(_freightWaitPoints["3F"]);
+                    AddElevatorPath(path, "3F", toFloor, false, isCustomer: true);
+                }
+            }
+            else if (needFreight)
+            {
+                AddElevatorPath(path, fromFloor, toFloor, isGoingUp, isCustomer: false);
+            }
+            else if (needCustomer)
+            {
+                AddElevatorPath(path, fromFloor, toFloor, isGoingUp, isCustomer: true);
+            }
+
+            // 加上目標樓層等待點作為路徑終點
+            // 單客梯路徑（1F/2F ↔ 3F、1F ↔ 2F）必須收在客梯等待點，避免被 freight 優先規則誤派到客貨梯等待點
+            if (needCustomer && !needFreight)
+            {
+                if (_customerWaitPoints.ContainsKey(toFloor))
+                    path.Add(_customerWaitPoints[toFloor]);
+            }
+            else
+            {
+                if (_freightWaitPoints.ContainsKey(toFloor))
+                    path.Add(_freightWaitPoints[toFloor]);
+                else if (_customerWaitPoints.ContainsKey(toFloor))
+                    path.Add(_customerWaitPoints[toFloor]);
+            }
+
+            return path.Count > 0 ? path : null;
+        }
+
+        /// <summary>
         /// 添加電梯路徑
         /// </summary>
         /// <param name="path">路徑列表</param>

@@ -58,6 +58,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="App_Start\CrossFloorManagerCooldownTests.cs" />
+    <Compile Include="App_Start\CrossFloorManagerSelectNextMissionTests.cs" />
     <Compile Include="App_Start\ElevatorPathCalculatorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -68,6 +69,10 @@
     <ProjectReference Include="..\HikAGVWebAPI\HikAGVWebAPI.csproj">
       <Project>{1853D499-7CE7-4B4C-8F23-4BBDBA5BA450}</Project>
       <Name>HikAGVWebAPI</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\HikAGV\HikAGV.csproj">
+      <Project>{D78C97A8-C186-4D70-A834-B3812CADD647}</Project>
+      <Name>HikAGV</Name>
     </ProjectReference>
   </ItemGroup>
   <Choose>
