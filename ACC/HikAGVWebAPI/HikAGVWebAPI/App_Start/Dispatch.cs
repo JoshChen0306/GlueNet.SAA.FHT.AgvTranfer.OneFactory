@@ -166,10 +166,9 @@ namespace HikAGVWebAPI
             {
                 mLog.TraceOut($"========================================== Get AGV Status Start! ==========================================", Log.LogType.NONE);
 
-                var mapCodeSettings = hikAGV.AGVSettings.AGVMapCode;
-
-                //var mapCodes = new []{ "AA","BB","DD","FF"};
-                var mapCodes = mapCodeSettings.Split(',');
+                // MapCode 清單從 MapCodeFloorMapping 的 key 取得，避免與 AGVMapCode 雙設定長期脫鉤
+                var mapCodes = hikAGV.AGVSettings.MapCodeFloorMapping
+                    .Split(',').Select(x => x.Split(':')[0].Trim()).ToArray();
 
 
                 foreach (var mapCode in mapCodes)
