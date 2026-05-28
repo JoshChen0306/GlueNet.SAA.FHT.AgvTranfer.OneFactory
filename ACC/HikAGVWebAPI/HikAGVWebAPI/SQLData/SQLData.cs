@@ -141,6 +141,7 @@ namespace HikAGVWebAPI.App_Start
                                    ,PosY = '{agvStatus?.posY.PadRight(6, '0')}'
                                    ,RobotDir = '{agvStatus?.robotDir}'
                                    ,MapCode = '{agvStatus?.mapCode}'
+                                   ,UpdateTime = GETDATE()
                               where ShuttleId = {agvStatus?.robotCode} ";
             mSql.WriteSqlByAutoOpen(sSQL);
         }
@@ -153,6 +154,7 @@ namespace HikAGVWebAPI.App_Start
         {
             string sSQL = $@"update oShuttle
                                 set MapCode = '{mapCode}'
+                                   ,UpdateTime = GETDATE()
                               where ShuttleId = {shuttleId} ";
             mSql.WriteSqlByAutoOpen(sSQL);
         }
