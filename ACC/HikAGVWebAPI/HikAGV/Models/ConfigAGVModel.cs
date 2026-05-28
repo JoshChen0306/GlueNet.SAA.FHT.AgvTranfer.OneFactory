@@ -90,19 +90,6 @@ namespace HikAGVDll
 
     public class AGVSettings : ConfigurationElement
     {
-        [ConfigurationProperty("AGVMapCode", DefaultValue = "")]
-        public string AGVMapCode
-        {
-            get
-            {
-                return (string)this["AGVMapCode"];
-            }
-            private set
-            {
-                this["AGVMapCode"] = value;
-            }
-        }
-
         [ConfigurationProperty("AGVTaskType", DefaultValue = "")]
         public string AGVTaskType
         {
@@ -113,22 +100,6 @@ namespace HikAGVDll
             private set
             {
                 this["AGVTaskType"] = value;
-            }
-        }
-
-        /// <summary>
-        /// 跨樓層 TaskType 對照表 (格式: "1F>3F:F13Test,3F>1F:F31Test,...")
-        /// </summary>
-        [ConfigurationProperty("CrossFloorTaskTypeMap", DefaultValue = "1F>3F:F13Test,3F>1F:F31Test,3F>4F:F34Test,4F>3F:F43Test,2F>4F:F24Test,4F>2F:F42Test")]
-        public string CrossFloorTaskTypeMap
-        {
-            get
-            {
-                return (string)this["CrossFloorTaskTypeMap"];
-            }
-            private set
-            {
-                this["CrossFloorTaskTypeMap"] = value;
             }
         }
 
