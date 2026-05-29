@@ -10,6 +10,10 @@ related:
 
 # AGV MapCode 修復 - 資料庫更新層
 
+> ⚠️ **2026-05-29 更新註記**：客戶端海康 RCS 已將 **3F 的 MapCode 由 `DD` 改為 `CC`**。
+> 目前實際生效設定為 `MapCodeFloorMapping="AA:1F,CC:3F"`（HikAGV.config）與 `MapCodeMapping.FHT1-3F = "CC"`（WebGui appsettings.json）。
+> 本文以下內文中的 `DD`（含 log 範例、SQL 範例）為 2026-01-14 撰寫時的歷史值，僅保留作為當時除錯實錄，不再代表現行設定。
+
 ## 問題描述
 
 當 AGV 在不同樓層間移動時，海康 RCS 會回報動態變化的 MapCode（例如從 1F 的 `AA` 變為 3F 的 `DD`），但資料庫的 `Update_oShuttle` 方法並未更新 MapCode 欄位，導致：

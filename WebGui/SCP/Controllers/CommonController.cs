@@ -283,7 +283,7 @@ namespace SCP.Controllers
 
             foreach (var item in AgvPositions)
             {
-                // 反向尋找 Area Code (例如 "DD" -> "FHT1-3F")
+                // 反向尋找 Area Code (例如 "CC" -> "FHT1-3F")
                 string area = mapping.FirstOrDefault(x => x.Value == item.MapCode).Key;
 
                 // 如果找不到對應的區域，就使用 MapCode 當作預設 (雖然可能找不到設定)

@@ -10,6 +10,10 @@ related:
 
 # AGV MapCode 顯示問題修復紀錄
 
+> ⚠️ **2026-05-29 更新註記**：客戶端海康 RCS 已將 **3F 的 MapCode 由 `DD` 改為 `CC`**。
+> 目前實際生效設定為 `MapCodeMapping.FHT1-3F = "CC"`（appsettings.json）與 `MapCodeFloorMapping="AA:1F,CC:3F"`（HikAGV.config）。
+> 本文以下內文中的 `DD` 為 2026-01-14 撰寫時的歷史值，僅保留作為當時除錯實錄，不再代表現行設定。
+
 ## 問題描述
 
 AGV 車輛無法在 Web 地圖上正確顯示，原因為 Web 前端使用的區域代碼（`FHT1-1F`, `FHT1-2F`, `FHT1-3F`, `FHT1-4F`）與海康 RCS 系統的 MapCode（`AA`, `BB`, `DD`, `FF`）不匹配。
