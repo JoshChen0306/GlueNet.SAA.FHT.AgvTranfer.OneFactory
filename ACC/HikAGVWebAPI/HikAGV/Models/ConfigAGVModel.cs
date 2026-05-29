@@ -167,7 +167,7 @@ namespace HikAGVDll
         /// <summary>
         /// MapCode 對應樓層（格式：MapCode:Floor,MapCode:Floor，一廠僅 1F/3F）
         /// </summary>
-        [ConfigurationProperty("MapCodeFloorMapping", DefaultValue = "AA:1F,DD:3F")]
+        [ConfigurationProperty("MapCodeFloorMapping", DefaultValue = "AA:1F,CC:3F")]
         public string MapCodeFloorMapping
         {
             get
