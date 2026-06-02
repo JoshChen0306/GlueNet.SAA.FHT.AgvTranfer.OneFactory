@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SCP.Models;
+using SCP.Helpers;
 using System;
 using System.Globalization;
 using System.Security.Cryptography.Xml;
@@ -355,38 +356,11 @@ namespace SCP.Controllers
             return imgSrc ?? "/img/empty.svg";
         }
 
+        // 委派共用工具，邏輯集中於 MapCoordinateConverter（庫位/車/充電樁共用）
         private string ConvertX(string posX, string area)
-        {
-            string result;
-            var setting = _configuration.GetSection($"AgvSetting:{area}");
-            double minPercentX = Convert.ToDouble(setting["minPercentX"]);
-            double maxPercentX = Convert.ToDouble(setting["maxPercentX"]);
-            double minX = Convert.ToDouble(setting["minX"]);
-            double maxX = Convert.ToDouble(setting["maxX"]);
-            double percentRangeX = maxPercentX - minPercentX;
-            double rangeX = maxX - minX;
-
-            double normalizedX = (Convert.ToDouble(posX) - minX) / rangeX;
-            // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
-            result = (minPercentX + (normalizedX * percentRangeX)).ToString() + "%";
-            return result;
-        }
+            => MapCoordinateConverter.ConvertX(_configuration, area, posX);
 
         private string ConvertY(string posY, string area)
-        {
-            string result;
-            var setting = _configuration.GetSection($"AgvSetting:{area}");
-            double minPercentY = Convert.ToDouble(setting["minPercentY"]);
-            double maxPercentY = Convert.ToDouble(setting["maxPercentY"]);
-            double minY = Convert.ToDouble(setting["minY"]);
-            double maxY = Convert.ToDouble(setting["maxY"]);
-            double percentRangeY = maxPercentY - minPercentY;
-            double rangeY = maxY - minY;
-
-            double normalizedY = (Convert.ToDouble(posY) - minY) / rangeY;
-            // 將0-1範圍的X座標轉換為minPercent-maxPercent%範圍
-            result = (minPercentY + (normalizedY * percentRangeY)).ToString() + "%";
-            return result;
-        }
+            => MapCoordinateConverter.ConvertY(_configuration, area, posY);
     }
 }
