@@ -51,6 +51,9 @@ namespace SCP.Controllers
                 ViewBag.AgvPositions = agvPositions;
                 ViewBag.CurrentArea = area;
 
+                // 充電樁位置（設定檔座標驅動，與庫位/車共用換算與 swapXY）
+                ViewBag.ChargingStations = ChargingStationProvider.Get(_configuration, area);
+
                 // 傳遞樓層顯示名稱給前端
                 var floorDisplayNames = _configuration.GetSection("FloorSettings")
                     .GetChildren()
