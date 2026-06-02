@@ -58,10 +58,16 @@
   </Choose>
   <ItemGroup>
     <Compile Include="cPairTests.cs" />
+    <Compile Include="IntegrationTestBase.cs" />
+    <Compile Include="GenerateoRequireByoNeed_ResilienceTests.cs" />
+    <Compile Include="GenerateoRequireByoNeed_ParameterizationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Recipe.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\svrPair\svrPair.csproj">
