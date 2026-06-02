@@ -8,6 +8,7 @@ using SAA_MsSql;
 using SAA_PUBLIC;
 using cTools;
 using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using System.Threading;
 using svrPair.Database;
@@ -52,7 +53,7 @@ namespace svrPair
         #region [Setting == 設定 D、E 區的啟用停用]
         public void SettingBlockUseFlag(string Block, string UseFlag)
         {
-            mSql.WriteSqlByAutoOpen("update oPort set UseFlag ='" + UseFlag + "' where Block ='" + Block + "'");
+            mSql.WriteSqlByAutoOpen("update oPort set UseFlag = @uf where Block = @blk", SP("@uf", UseFlag), SP("@blk", Block));
             WriteLog(string.Format("OA.設定{0}{1}", Block == "D" ? "生產區 D " : "下料區 E ", UseFlag == "Y" ? "啟用" : "停用"));
         }
         #endregion
@@ -104,40 +105,48 @@ namespace svrPair
             WriteLog("===============");
             while (mGo)
             {
-                //由平板產生了oNeed
-                GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 : 尋找oNeed中AssignFlag = NULL的資料，以此產出oRequire關聯資料，而後註冊oPort的起終註記、oNeed中AssignFlag是Y正常或E異常
-
-                // ★★★ 工廠1修正：停用 B區→A區 自動派送 ★★★
-                // B區應該透過 Release 功能手動回送空板到 A區
-                // GenerateoNeedDataByMCSAsBtoA(); //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
-                // GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
-
-                if (mPanelDoB2C == false)//因應客戶要求自行由WEB程式和平板進行處理，故 MCS 不作處理
+                // ★ 迴圈保命（第2層防護）：任一步驟的非預期例外都不得讓背景執行緒終止而閃退，
+                //   記 log 後續行；單筆 oNeed 的精準隔離由 GenerateoRequireByoNeed 內層 try/catch 處理。
+                try
                 {
-                    GenerateoNeedDataByMCSAsBtoC();    //1-1 .主程序 == 提出需要 : 從[B]上料暫存批配料號送至生產[C] 
-                }
-                else
-                {   //搜尋來源是oNeed資料中AssignFlag = W(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = A2 >> 指將空RACK送到上料區A 或 暫存區B 或 生產區 D (是否可用) 
-                    GenerateoNeedDataByMCSAsCtoABD();
-                }
-                GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+                    //由平板產生了oNeed
+                    GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 : 尋找oNeed中AssignFlag = NULL的資料，以此產出oRequire關聯資料，而後註冊oPort的起終註記、oNeed中AssignFlag是Y正常或E異常
 
-                if (mUnloadAuto == true)
-                {
-                    GenerateoNeedDataByMCSAsEtoABD();    //1-2 .主程序 == 提出需要 : 將[E]暫存空Rack補至[A、B、D]
+                    // ★★★ 工廠1修正：停用 B區→A區 自動派送 ★★★
+                    // B區應該透過 Release 功能手動回送空板到 A區
+                    // GenerateoNeedDataByMCSAsBtoA(); //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
+                    // GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+
+                    if (mPanelDoB2C == false)//因應客戶要求自行由WEB程式和平板進行處理，故 MCS 不作處理
+                    {
+                        GenerateoNeedDataByMCSAsBtoC();    //1-1 .主程序 == 提出需要 : 從[B]上料暫存批配料號送至生產[C]
+                    }
+                    else
+                    {   //搜尋來源是oNeed資料中AssignFlag = W(改成 P) , 起 = B3 , 終 = C5 ， 產生oNeed資料其起點 = C5 是來源資料終點，例終點 = A2 >> 指將空RACK送到上料區A 或 暫存區B 或 生產區 D (是否可用)
+                        GenerateoNeedDataByMCSAsCtoABD();
+                    }
                     GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+
+                    if (mUnloadAuto == true)
+                    {
+                        GenerateoNeedDataByMCSAsEtoABD();    //1-2 .主程序 == 提出需要 : 將[E]暫存空Rack補至[A、B、D]
+                        GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
+                    }
+                    GenerateoNeedDataByMCSEsBtoF();     //1-2 .主程序 == 提出需要 : 從[E]下料暫存批配料號送至退pin[F]
+                    GenerateoRequireByoNeed();       //1-0 .主程式 == 轉成需求 :
+
+                    GenerateoMissionByoRequire();   //2-0 .主程序 == 尋找oRequire表中未指派的項目，產生oMission表
+                    RecyclingoRequireByOkFlag();    //3-0 .主程序 == 處理oRequire表中的OkFlag欄位，Y=完成，X=異常結束，C=取消
+
+                    //這一段不執行，異常的指派需由oMission的OkFlag改變處理，否則會一直輪迴新增刪除
+                    //RecyclingoRequireByAssignFlag();//4-0 .主程序 == 處理oRequire表中的 AssignFlag 欄位為 Y、X、C
+
+                    RecyclingoNeedByAssignFlag();   //5-0 .主程序 == 處理oNeed表中的 AssignFlag 欄位為 E、X、C
                 }
-                GenerateoNeedDataByMCSEsBtoF();     //1-2 .主程序 == 提出需要 : 從[E]下料暫存批配料號送至退pin[F] 
-                GenerateoRequireByoNeed();       //1-0 .主程式 == 轉成需求 :
-
-                GenerateoMissionByoRequire();   //2-0 .主程序 == 尋找oRequire表中未指派的項目，產生oMission表
-                RecyclingoRequireByOkFlag();    //3-0 .主程序 == 處理oRequire表中的OkFlag欄位，Y=完成，X=異常結束，C=取消
-
-                //這一段不執行，異常的指派需由oMission的OkFlag改變處理，否則會一直輪迴新增刪除
-                //RecyclingoRequireByAssignFlag();//4-0 .主程序 == 處理oRequire表中的 AssignFlag 欄位為 Y、X、C
-
-                RecyclingoNeedByAssignFlag();   //5-0 .主程序 == 處理oNeed表中的 AssignFlag 欄位為 E、X、C
-
+                catch (Exception ex)
+                {
+                    WriteLog("98.主迴圈例外（已接住，續行，不終止進程）>> " + ex.Message, LogType.Error);
+                }
 
                 Thread.Sleep(50);
             }
@@ -165,38 +174,136 @@ namespace svrPair
             DataTable dtoNeed = mSql.QuerySqlByAutoOpen("select * from oNeed where (AssignFlag is NULL or RTRIM(AssignFlag) ='') order by TaskDateTime").Tables[0];
             foreach (DataRow dr in dtoNeed.Rows)
             {
-                switch (dr["ObjStation"].ToString().Substring(0, 1))
-                {               //這裡會執行的oNeed為人員選的有如下 == 平板的操作行為
-                    case "A":   //上料區A >> 暫存區B，將放RACK及製程前材料運至暫存區，如A1 >> B3
-                    case "C":   //生產區C >> 生產區D、上料區A、暫存區B，將空RACK運送至沒有RACK的地方，如C1 >> A1
-                    case "D":   //生產區D >> 下料區E，將放RACK及製程後材料運至下料區，如D2 >> E1
-                    case "F":   //下料區F >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
-                    case "J":   // <--- ★★★ 新增這一行：3F 插針室 ★★★
-                    case "H":   // <--- ★★★ 新增：2F 成型後 -> 4F 烘烤前入貨區 ★★★
-                    case "M":   // <--- ★★★ 新增：2F 雷雕區 -> O/P/T ★★★
-                    case "T":   // <--- ★★★ 新增：2F V cut區 -> O/P ★★★
-                    case "Q":   // <--- ★★★ 新增：2F 出料區 -> 清洗區 ★★★
-                    case "R":   // <--- ★★★ 新增：2F 廢料區 -> 廢料回收區 ★★★
-                    case "O":   // <--- ★★★ 新增：2F OP上料區(左) -> M/Q/R (Release回送空板) ★★★
-                    case "P":   // <--- ★★★ 新增：2F OP上料區(右) -> M/Q/R (Release回送空板) ★★★
-                    case "S":   // <--- ★★★ 新增：2F 清洗區 -> M/Q/R (Release回送空板) ★★★
-                    case "N":   // <--- ★★★ 新增：2F 廢料回收區 -> M/Q/R (Release回送空板) ★★★
-                        WriteLog("05.處理平板配對");
-                        ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
-                        break;
-                    case "B":   //暫存區B >> 上料區A，將下完料的空RACK運送至沒有RACK的地方，如B1 >> A1
-                                //暫存區B >> 生產區C，將放RACK及製程前材料運至生產區的地方，如B2 >> C1
-                    case "E":   //暫存區E >> 上料區F，將放RACK及製程完材料運至退pin區的地方，如E2 >> F1
-                    case "G":   // ★★★ G區（1F電梯暫存區）→ J區（3F插針室）：Release 回送空板 ★★★
-                    case "K":   // ★★★ K區（4F烘烤前入貨區）→ H區（2F成型後）：Release 回送空板 ★★★
-                    case "I":   // ★★★ I區（3F品檢區）→ L區（4F烘烤後）：Release 回送空板 / NG回送 ★★★
-                    case "L":   // ★★★ L區（4F烘烤後）→ I區（3F品檢區）★★★
-                        WriteLog("05.處理系統配對");
-                        ProcessoNeedToRequire(dr["ObjStation"].ToString().Substring(0, 1), dr);
-                        break;
-                    default:
-                        break;
+                // ★ 單筆隔離（第1層防護）：任一筆 oNeed 處理失敗只影響該筆，不得拖垮整個迴圈/進程。
+                //   過去此處無 try/catch，毒資料拋 SqlException → 背景執行緒終止 → FleetManager 閃退。
+                try
+                {
+                    ProcessSingleoNeed(dr);
                 }
+                catch (Exception ex)
+                {
+                    HandleoNeedRowException(dr, ex);
+                }
+            }
+        }
+        #endregion
+
+        #region [1-0a .副程式 == ProcessSingleoNeed == 處理單筆 oNeed（依區域分派平板/系統配對；保留一廠分組差異）]
+        private void ProcessSingleoNeed(DataRow dr)
+        {
+            string objStation = dr["ObjStation"].ToString();
+            if (objStation.Length < 1)
+            {
+                // 站號空白屬資料異常：標 X 隔離，避免 Substring 例外與每輪重爆
+                WriteLog("06.處理異常資料 >> 資料表 : oNeed , ObjStation 空白，標記 X 隔離", LogType.Warnning);
+                QuarantineoNeedByTaskDateTime(dr["TaskDateTime"].ToString());
+                return;
+            }
+
+            switch (objStation.Substring(0, 1))
+            {               //這裡會執行的oNeed為人員選的有如下 == 平板的操作行為
+                case "A":   //上料區A >> 暫存區B，將放RACK及製程前材料運至暫存區，如A1 >> B3
+                case "C":   //生產區C >> 生產區D、上料區A、暫存區B，將空RACK運送至沒有RACK的地方，如C1 >> A1
+                case "D":   //生產區D >> 下料區E，將放RACK及製程後材料運至下料區，如D2 >> E1
+                case "F":   //下料區F >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
+                case "J":   // 3F 插針室
+                case "H":   // 2F 成型後 -> 4F 烘烤前入貨區
+                case "M":   // 2F 雷雕區 -> O/P/T
+                case "T":   // 2F V cut區 -> O/P
+                case "Q":   // 2F 出料區 -> 清洗區
+                case "R":   // 2F 廢料區 -> 廢料回收區
+                case "O":   // 2F OP上料區(左) -> M/Q/R (Release回送空板)
+                case "P":   // 2F OP上料區(右) -> M/Q/R (Release回送空板)
+                case "S":   // 2F 清洗區 -> M/Q/R (Release回送空板)
+                case "N":   // 2F 廢料回收區 -> M/Q/R (Release回送空板)
+                    WriteLog(string.Format("05.處理平板配對 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3}",
+                        objStation, dr["EndStation"], dr["WorkOrder"], dr["RackId"]));
+                    ProcessoNeedToRequire(objStation.Substring(0, 1), dr);
+                    break;
+                case "B":   //暫存區B >> 上料區A，將下完料的空RACK運送至沒有RACK的地方，如B1 >> A1
+                            //暫存區B >> 生產區C，將放RACK及製程前材料運至生產區的地方，如B2 >> C1
+                case "E":   //暫存區E >> 上料區F，將放RACK及製程完材料運至退pin區的地方，如E2 >> F1
+                case "G":   // G區（1F電梯暫存區）→ J區（3F插針室）：Release 回送空板
+                case "K":   // K區（4F烘烤前入貨區）→ H區（2F成型後）：Release 回送空板
+                case "I":   // I區（3F品檢區）→ L區（4F烘烤後）：Release 回送空板 / NG回送
+                case "L":   // L區（4F烘烤後）→ I區（3F品檢區）  ※一廠：L 歸系統配對群（與二廠不同，保留）
+                    WriteLog(string.Format("05.處理系統配對 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3}",
+                        objStation, dr["EndStation"], dr["WorkOrder"], dr["RackId"]));
+                    ProcessoNeedToRequire(objStation.Substring(0, 1), dr);
+                    break;
+                default:
+                    break;
+            }
+        }
+        #endregion
+
+        #region [1-0b .副程式 == 單筆 oNeed 例外處理（資料類隔離 / 連線類保留重試）]
+        private void HandleoNeedRowException(DataRow dr, Exception ex)
+        {
+            string obj = SafeCol(dr, "ObjStation");
+            string end = SafeCol(dr, "EndStation");
+            string wo = SafeCol(dr, "WorkOrder");
+            string rack = SafeCol(dr, "RackId");
+            string task = SafeCol(dr, "TaskDateTime");
+
+            if (IsDataException(ex))
+            {
+                // 資料類例外（語法/未閉合引號/截斷/約束）：重試也不會好 → 隔離標 X，
+                // 交由 RecyclingoNeedByAssignFlag 清除，避免每輪重爆、log 狂洗。
+                WriteLog(string.Format("06E.毒資料隔離 >> 將 oNeed 標 X , ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3} , Error:{4}",
+                    obj, end, wo, rack, ex.Message), LogType.Error);
+                QuarantineoNeedByTaskDateTime(task);
+            }
+            else
+            {
+                // 連線/暫時性例外：保留重試，不標 X，避免 DB 短暫抖動誤隔離好資料。
+                WriteLog(string.Format("06W.暫時性例外保留重試 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3} , Error:{4}",
+                    obj, end, wo, rack, ex.Message), LogType.Warnning);
+            }
+        }
+
+        private static string SafeCol(DataRow dr, string col)
+        {
+            try { return dr[col]?.ToString() ?? ""; }
+            catch { return ""; }
+        }
+
+        /// <summary>SqlParameter 工廠：null 值自動轉 DBNull，供全檔參數化 SQL 使用。</summary>
+        private static SqlParameter SP(string name, object value)
+            => new SqlParameter(name, value ?? DBNull.Value);
+
+        // 已知「資料類」SQL 錯誤碼（重試不會好）：語法/未閉合引號/截斷/約束/型別轉換/PK 重複等
+        private static readonly System.Collections.Generic.HashSet<int> DataErrorNumbers =
+            new System.Collections.Generic.HashSet<int> { 102, 103, 104, 105, 205, 206, 245, 257, 266, 515, 547, 2627, 2601, 2628, 8114, 8115, 8152 };
+
+        private static bool IsDataException(Exception ex)
+        {
+            for (Exception e = ex; e != null; e = e.InnerException)
+            {
+                var sql = e as System.Data.SqlClient.SqlException;
+                if (sql != null)
+                {
+                    foreach (System.Data.SqlClient.SqlError err in sql.Errors)
+                    {
+                        if (DataErrorNumbers.Contains(err.Number)) return true;
+                    }
+                    return false; // 是 SqlException 但非已知資料錯誤 → 視為暫時性，保留重試
+                }
+            }
+            return false; // 連線層或非 SQL 例外 → 保守視為暫時性，保留重試（避免誤隔離好資料）
+        }
+
+        private void QuarantineoNeedByTaskDateTime(string taskDateTime)
+        {
+            if (string.IsNullOrEmpty(taskDateTime)) return;
+            try
+            {
+                // 只用 TaskDateTime（程式產生純數字、無注入風險）為 key。
+                mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag ='X' where TaskDateTime = @t", SP("@t", taskDateTime));
+            }
+            catch (Exception ex)
+            {
+                WriteLog("06X.隔離標記失敗 >> TaskDateTime:" + taskDateTime + " , Error:" + ex.Message, LogType.Warnning);
             }
         }
         #endregion
@@ -292,7 +399,7 @@ namespace svrPair
                 //退貨流程R=Reject
                 else if (odr["AssignFlag"].ToString() == "R")
                 {
-                    string workOrder = mSql.QuerySqlByAutoOpen("select WorkOrder from oPort where StationNo = '" + odr["EndStation"] + "'").Tables[0].Rows[0]["WorkOrder"].ToString();
+                    string workOrder = mSql.QuerySqlByAutoOpen("select WorkOrder from oPort where StationNo = @sn", SP("@sn", odr["EndStation"].ToString())).Tables[0].Rows[0]["WorkOrder"].ToString();
                     mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'B'");
                     foreach (DataRow dr in mdtQuery.Rows)
                     {
@@ -333,7 +440,7 @@ namespace svrPair
                 WorkOrder = dr["WorkOrder"].ToString();     //string[] sID = dr["WorkOrder"].ToString().Split('^');      //if (sID.Length >= 3) { PartNo = sID[3]; }
             }
 
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oRequire where ObjStation ='" + ObjStation + "'").Tables[0];
+            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oRequire where ObjStation = @obj", SP("@obj", ObjStation)).Tables[0];
             if (dt.Rows.Count > 0)
             {
                 UpdateoNeedAssignFlag("X", ObjStation, EndStation);
@@ -348,8 +455,10 @@ namespace svrPair
             }
             else
             {
-                mSql.WriteSqlByAutoOpen("insert into oRequire(TaskDateTime, ObjStation, SerialNo, BeginStation, EndStation, TaskSource, RackId, WorkOrder) values('" + TaskDateTime +
-                                    "','" + ObjStation + "',0,'" + ObjStation + "','" + EndStation + "','MCS','" + RackId + "','" + WorkOrder + "')");
+                mSql.WriteSqlByAutoOpen(
+                    "insert into oRequire(TaskDateTime, ObjStation, SerialNo, BeginStation, EndStation, TaskSource, RackId, WorkOrder) " +
+                    "values(@td, @obj, 0, @obj, @end, 'MCS', @rack, @wo)",
+                    SP("@td", TaskDateTime), SP("@obj", ObjStation), SP("@end", EndStation), SP("@rack", RackId), SP("@wo", WorkOrder));
                 WriteLog(string.Format("09.產生oRequire >> oNeed -> oRequire , TaskDateTime : {0} , BeginStation : {1} , EndStation : {2} , WorkOrder : {3}", TaskDateTime, ObjStation, EndStation, WorkOrder));
 
                 UpdateoNeedAssignFlag("Y", ObjStation, EndStation);
@@ -370,7 +479,7 @@ namespace svrPair
         private bool CheckoPortBgnToEndIsNullAndUseFlagAsY(string StationNo1, string StationNo2)
         {
             bool rslt = false;
-            DataTable dtoPort = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and StationNo in('" + StationNo1 + "','" + StationNo2 + "') and (BgnToEnd is null or RTRIM(BgnToEnd)='')").Tables[0];
+            DataTable dtoPort = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and StationNo in(@s1, @s2) and (BgnToEnd is null or RTRIM(BgnToEnd)='')", SP("@s1", StationNo1), SP("@s2", StationNo2)).Tables[0];
             if (dtoPort.Rows.Count == 2) { rslt = true; }
             return rslt;
         }
@@ -431,7 +540,7 @@ namespace svrPair
                 //dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (WorkOrder is not null or RTRIM(WorkOrder) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
                 //                                   " Block in(" + Block + ") and PartNo ='" + PartNo + "' order by Priority desc").Tables[0];
                 dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='3' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in(" + Block + ") and WorkOrder like'%" + PartNo + "%' order by Priority desc").Tables[0];
+                                                   " Block in(" + Block + ") and WorkOrder like @pat order by Priority desc", SP("@pat", "%" + PartNo + "%")).Tables[0];
             }
 
             return dt;
@@ -473,11 +582,13 @@ namespace svrPair
         {
             bool rslt = false;
             //FHT^N01^批號^料號^製單^列印日期 :::: FHT^N01^238090671^DMT6CVJ1536D^P3804231^202309181158  //string[] sID = dr["WorkOrder"].ToString().Split('^');if (sID.Length >= 3) { PartNo = sID[3]; }
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oMission where BeginStation ='" + dr["BeginStation"].ToString() + "' and EndStation ='" + dr["EndStation"].ToString() + "'").Tables[0];
+            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oMission where BeginStation = @bgn and EndStation = @end", SP("@bgn", dr["BeginStation"].ToString()), SP("@end", dr["EndStation"].ToString())).Tables[0];
             if (dt.Rows.Count == 0)
             {
-                mSql.WriteSqlByAutoOpen("Insert into oMission(TaskDateTime, SerialNo, BeginStation, EndStation, TaskSource, ShuttleId, RackId, WorkOrder) values('" + dr["TaskDateTime"].ToString() + "',0,'" +
-                                        dr["BeginStation"].ToString() + "','" + dr["EndStation"].ToString() + "','MCS',0,'" + dr["RackId"].ToString() + "','" + dr["WorkOrder"].ToString() + "')");
+                mSql.WriteSqlByAutoOpen(
+                    "Insert into oMission(TaskDateTime, SerialNo, BeginStation, EndStation, TaskSource, ShuttleId, RackId, WorkOrder) " +
+                    "values(@td, 0, @bgn, @end, 'MCS', 0, @rack, @wo)",
+                    SP("@td", dr["TaskDateTime"].ToString()), SP("@bgn", dr["BeginStation"].ToString()), SP("@end", dr["EndStation"].ToString()), SP("@rack", dr["RackId"].ToString()), SP("@wo", dr["WorkOrder"].ToString()));
                 rslt = true;
             }
             return rslt;
@@ -487,7 +598,7 @@ namespace svrPair
         #region [2-2 .次程序 == UpdateoRequireAssignFlag() == 更新 oMission 表資料  ]
         private void UpdateoRequireAssignFlag(string TaskDateTime, string ObjStation, int SerialNo, string AssignFlag)
         {
-            mSql.WriteSqlByAutoOpen("update oRequire set AssignFlag ='" + AssignFlag + "' where TaskDateTime ='" + TaskDateTime + "' and ObjStation ='" + ObjStation + "' and SerialNo=" + SerialNo);
+            mSql.WriteSqlByAutoOpen("update oRequire set AssignFlag = @af where TaskDateTime = @td and ObjStation = @obj and SerialNo = @sn", SP("@af", AssignFlag), SP("@td", TaskDateTime), SP("@obj", ObjStation), SP("@sn", SerialNo));
             WriteLog(string.Format("22.更新oRequire >> 已指派 , TaskDateTime : {0} ,ObjStation : {1} , SerialNo : {2} :: AssignFlag ={3}", TaskDateTime, ObjStation, SerialNo.ToString(), AssignFlag));
         }
         #endregion
@@ -495,43 +606,46 @@ namespace svrPair
         #region [2-3 .次程序 == InsertoNee() == 新增oNeed ]
         private void InsertoNeed(string ObjStation, string RackId, string WorkOrder, string EndStation)   //
         {
-            mSql.WriteSqlByAutoOpen("Insert into oNeed(ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime) values('" + ObjStation + "','" + RackId + "','" + WorkOrder +
-                                    "','" + EndStation + "','MCS','" + GetTaskDateTimeIncludeRandom(true) + "')");
+            mSql.WriteSqlByAutoOpen(
+                "Insert into oNeed(ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime) " +
+                "values(@obj, @rack, @wo, @end, 'MCS', @td)",
+                SP("@obj", ObjStation), SP("@rack", RackId), SP("@wo", WorkOrder), SP("@end", EndStation), SP("@td", GetTaskDateTimeIncludeRandom(true)));
         }
         #endregion
 
         #region [2-4 .次程序 == UpdateoNeedAssignFlag() == 更新 oNeed 的 AssignFlag ]
         private void UpdateoNeedAssignFlag(string AssignFlag, string ObjStation, string EndStation)
         {
-            mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag ='" + AssignFlag + "' where ObjStation ='" + ObjStation + "' and EndStation='" + EndStation + "'");
+            mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag = @af where ObjStation = @obj and EndStation = @end", SP("@af", AssignFlag), SP("@obj", ObjStation), SP("@end", EndStation));
         }
         #endregion
 
         #region [2-5 .次程序 == UpdateoPortBgnToEnd() == 更新 oPort 的 BgnToEnd ]
         private void UpdateoPortBgnToEnd(string StationNo1, string StationNo2, string BgnToEnd = null)
         {
-            mSql.WriteSqlByAutoOpen("update oPort set BgnToEnd ='" + BgnToEnd + "' where StationNo in('" + StationNo1 + "','" + StationNo2 + "')");
+            // 註：原拼接寫法在 BgnToEnd 為 null 時會寫入空字串（非 NULL），此處以 (BgnToEnd ?? "") 維持完全相同行為。
+            mSql.WriteSqlByAutoOpen("update oPort set BgnToEnd = @bte where StationNo in(@s1, @s2)", SP("@bte", BgnToEnd ?? ""), SP("@s1", StationNo1), SP("@s2", StationNo2));
         }
         #endregion
 
         #region [2-6 .次程序 == DeleteoNeedByAssignFlag() == 刪除 oNeed 指定註記的資料 ]
         private void DeleteoNeedByAssignFlag(string ObjStation, string EndStation, string AssignFlag)
         {
-            mSql.WriteSqlByAutoOpen("Delete oNeed where ObjStation ='" + ObjStation + "' and  EndStation ='" + EndStation + "' and AssignFlag ='" + AssignFlag + "'");
+            mSql.WriteSqlByAutoOpen("Delete oNeed where ObjStation = @obj and EndStation = @end and AssignFlag = @af", SP("@obj", ObjStation), SP("@end", EndStation), SP("@af", AssignFlag));
         }
         #endregion
 
         #region [2-7 .次程序 == DeleteoRequireByOkFlag() == 刪除 oRequire 完成註記的資料 ]
         private void DeleteoRequireByOkFlag(string TaskDateTime, string ObjStation, int SerialNo, string EndStation, string OkFlag)
         {
-            mSql.WriteSqlByAutoOpen("Delete oRequire where TaskDateTime ='" + TaskDateTime + "' and ObjStation ='" + ObjStation + "' and SerialNo =" + SerialNo + " and EndStation ='" + EndStation + "' and OkFlag ='" + OkFlag + "'");
+            mSql.WriteSqlByAutoOpen("Delete oRequire where TaskDateTime = @td and ObjStation = @obj and SerialNo = @sn and EndStation = @end and OkFlag = @ok", SP("@td", TaskDateTime), SP("@obj", ObjStation), SP("@sn", SerialNo), SP("@end", EndStation), SP("@ok", OkFlag));
         }
         #endregion
 
         #region [2-8 .次程序 == DeleteoRequireByAssignFlag() == 刪除 oRequier 指定註記的資料 ]
         private void DeleteoRequireByAssignFlag(string ObjStation, string EndStation, string AssignFlag)
         {
-            mSql.WriteSqlByAutoOpen("Delete oRequire where ObjStation ='" + ObjStation + "' and  EndStation ='" + EndStation + "' and AssignFlag ='" + AssignFlag + "'");
+            mSql.WriteSqlByAutoOpen("Delete oRequire where ObjStation = @obj and EndStation = @end and AssignFlag = @af", SP("@obj", ObjStation), SP("@end", EndStation), SP("@af", AssignFlag));
         }
         #endregion
 
@@ -565,7 +679,7 @@ namespace svrPair
                         if (mPanelDoB2C == true)
                         {
                             //處理起點為其他筆oNeed的終點，且該筆資料AssignFlag為 P，將該AssignFlag改成NULL
-                            mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag = NULL where AssignFlag ='P' and EndStation='" + dr["ObjStation"].ToString() + "'");
+                            mSql.WriteSqlByAutoOpen("update oNeed set AssignFlag = NULL where AssignFlag ='P' and EndStation = @end", SP("@end", dr["ObjStation"].ToString()));
                         }
                         break;
                     default:
