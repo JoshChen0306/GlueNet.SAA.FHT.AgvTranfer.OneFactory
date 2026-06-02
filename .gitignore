@@ -345,3 +345,6 @@ ASALocalRun/
 
 # Claude Code 本地個人設定（permission 白名單，不進版控）
 .claude/
+
+# bash.exe crash dumps
+*.stackdump
