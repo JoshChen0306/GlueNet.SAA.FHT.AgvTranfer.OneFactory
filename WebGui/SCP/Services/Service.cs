@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.SqlClient;
 using SCP.Hubs;
+using Serilog;
 
 namespace SCP.Services
 {
@@ -17,7 +18,22 @@ namespace SCP.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            SqlDependency.Start(_connectionString);
+            try
+            {
+                // SqlDependency 需要資料庫啟用 Service Broker，且連線帳號具備
+                // SUBSCRIBE QUERY NOTIFICATIONS 權限。任一未滿足，Start 會丟例外，
+                // 導致整套 SignalR 即時推播（任務列表/AGV/地圖）失效、客戶端需手動 F5。
+                SqlDependency.Start(_connectionString);
+                Log.Information("SqlDependency.Start 成功，開始註冊查詢通知");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "SqlDependency.Start 失敗：請確認資料庫已啟用 Service Broker"
+                    + "（ALTER DATABASE [db] SET ENABLE_BROKER）且帳號具 SUBSCRIBE QUERY NOTIFICATIONS 權限。"
+                    + "即時更新將失效，前端需手動 F5。");
+                return Task.CompletedTask;
+            }
+
             RegisterDependency("select HaveFlag,BgnToEnd from dbo.oPort", OnTracChange);
             RegisterDependency("select PosX,PosY from dbo.oShuttle", OnAgvChange);
             RegisterDependency("select Battery,Status,LastStation,BeginStation,EndStation from dbo.oShuttle", OnAgvStatusChange);
@@ -35,19 +51,27 @@ namespace SCP.Services
 
         private void RegisterDependency(string _sql, OnChangeEventHandler eventHandler)
         {
-            using (var connection = new SqlConnection(_connectionString))
+            try
             {
-                connection.Open();
-
-                using (var command = new SqlCommand(_sql, connection))
+                using (var connection = new SqlConnection(_connectionString))
                 {
-                    var dependency = new SqlDependency(command);
-                    dependency.OnChange += eventHandler;
-                    _dependency.Add(dependency);
+                    connection.Open();
 
-                    // 執行命令以註冊 SqlDependency 物件
-                    command.ExecuteReader();
+                    using (var command = new SqlCommand(_sql, connection))
+                    {
+                        var dependency = new SqlDependency(command);
+                        dependency.OnChange += eventHandler;
+                        _dependency.Add(dependency);
+
+                        // 執行命令以註冊 SqlDependency 物件
+                        command.ExecuteReader();
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                // 單一查詢註冊失敗不應中斷其他通知；記錄後讓對應功能退化為需 F5。
+                Log.Error(ex, "註冊 SqlDependency 失敗，該即時更新將失效（SQL: {Sql}）", _sql);
             }
         }
 
