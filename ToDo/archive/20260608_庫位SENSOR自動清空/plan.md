@@ -31,7 +31,7 @@ Global.asax  Application_Start
    PlcDevice : IBitReader（單一 PLC 連線封裝，COM 全程同一 STA thread）
        ├─ PlcDevice(int stationNumber, Log)
        ├─ Open()            → new ActUtlType(64); ActLogicalStationNumber=站號; Open()（32/64 位自動選）
-       ├─ TryReadBit(addr)  → ReadDeviceBlock2(addr, 1, out short) → 0/1 → bool；非 0 記失敗回 false
+       ├─ TryReadBit(addr)  → GetDevice2(addr, out short) → 0/1 → bool；非 0 記失敗回 false
        └─ Close()/Dispose() → Close()
 ```
 

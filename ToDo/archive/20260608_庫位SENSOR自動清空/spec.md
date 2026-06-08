@@ -48,7 +48,7 @@
 
 | 操作 | 資料來源 | 讀寫方式 | 失敗時行為 |
 |------|---------|---------|----------|
-| 讀取庫位 SENSOR（平板）狀態 | 三菱 PLC M 暫存器（bit） | `PlcDevice.TryReadBit(addr)` → `ActUtlType.ReadDeviceBlock2` | 回傳讀取失敗，**計數歸 0、不清空**，記 Warning Log |
+| 讀取庫位 SENSOR（平板）狀態 | 三菱 PLC M 暫存器（bit） | `PlcDevice.TryReadBit(addr)` → `ActUtlType.GetDevice2`（單點讀，bit 回 0/1） | 回傳讀取失敗，**計數歸 0、不清空**，記 Warning Log |
 | 讀取庫位佔用狀態 | SQL Server `agvDB` 的 `oPort` 表 | `SqlPortStateReader.GetPort` → `SQLData.Select_oPort`（既有） | 回 null（視為未佔用，不清），記 Warning Log |
 | 清空庫位工單與狀態 | SQL Server `agvDB` 的 `oPort` 表 | `SqlStockClearer.ClearStock` → `SQLData.Update_oPortEmpty`（既有） | 沿用既有方法行為，例外記 Log |
 | 讀取監控設定 | `Config/FHtSetting.config` 的 `<SectionSensorClear>` | 自訂 `ConfigurationSection` + `ConfigurationManager` | Section 缺失或 `Enable=false` → 不啟動監控，記 Log |
