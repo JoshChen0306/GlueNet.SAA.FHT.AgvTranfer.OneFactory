@@ -1,6 +1,7 @@
-﻿using System;
-using ActUtlType64Lib;
+﻿using ActUtlType64Lib;
 using ActUtlTypeLib;
+using System;
+using System.Drawing;
 
 namespace HikAGVWebAPI.App_Start
 {
@@ -55,13 +56,14 @@ namespace HikAGVWebAPI.App_Start
                 {
                     return false;
                 }
+                // 單點讀取用 GetDevice2（讀單一裝置，bit device 直接回 0/1）。
+                // 不可用 ReadDeviceBlock2 —— 它讀 word 區塊、需 word 對齊，對 bit 位址（如 M10）會回錯誤碼。
+                int rc = _act.GetDevice2(address, out short value);
 
-                // 單點讀取：lSize = 1；bit device 回 0/1
-                int rc = _act.ReadDeviceBlock2(address, 1, out short value);
                 if (rc != 0)
                 {
                     _isOpen = false;   // 失敗重置，下輪重連
-                    _log?.TraceOut($"[PlcDevice] 讀取 {address} 失敗，回傳碼 {rc}", Log.LogType.WARN);
+                    _log?.TraceOut($"[PlcDevice] 讀取 {address} 失敗，回傳碼 0x{rc:X8}", Log.LogType.WARN);
                     return false;
                 }
 
@@ -105,7 +107,7 @@ namespace HikAGVWebAPI.App_Start
         {
             int Open();
             int Close();
-            int ReadDeviceBlock2(string device, int size, out short data);
+            int GetDevice2(string device, out short data);
         }
 
         private sealed class Act86Adapter : IActAdapter
@@ -114,7 +116,7 @@ namespace HikAGVWebAPI.App_Start
             public Act86Adapter(int station) => _act = new ActUtlTypeClass { ActLogicalStationNumber = station };
             public int Open() => _act.Open();
             public int Close() => _act.Close();
-            public int ReadDeviceBlock2(string device, int size, out short data) => _act.ReadDeviceBlock2(device, size, out data);
+            public int GetDevice2(string device, out short data) => _act.GetDevice2(device, out data);
         }
 
         private sealed class Act64Adapter : IActAdapter
@@ -123,7 +125,7 @@ namespace HikAGVWebAPI.App_Start
             public Act64Adapter(int station) => _act = new ActUtlType64Class { ActLogicalStationNumber = station };
             public int Open() => _act.Open();
             public int Close() => _act.Close();
-            public int ReadDeviceBlock2(string device, int size, out short data) => _act.ReadDeviceBlock2(device, size, out data);
+            public int GetDevice2(string device, out short data) => _act.GetDevice2(device, out data);
         }
     }
 }
