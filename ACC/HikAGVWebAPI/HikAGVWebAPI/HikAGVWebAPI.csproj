@@ -43,6 +43,16 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Interop.ActUtlTypeLib">
+      <HintPath>Dll\Interop.ActUtlTypeLib.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Interop.ActUtlType64Lib">
+      <HintPath>Dll\Interop.ActUtlType64Lib.dll</HintPath>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MsSql, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>bin\MsSql.dll</HintPath>
@@ -98,6 +108,8 @@
     <Compile Include="App_Start\CrossFloorManager.cs" />
     <Compile Include="App_Start\Dispatch.cs" />
     <Compile Include="App_Start\ElevatorPathCalculator.cs" />
+    <Compile Include="App_Start\PlcDevice.cs" />
+    <Compile Include="App_Start\StockSensorLinkManager.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\HikAGVController.cs" />
     <Compile Include="Formatter.cs" />
