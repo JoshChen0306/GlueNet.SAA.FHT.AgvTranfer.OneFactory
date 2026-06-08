@@ -297,4 +297,59 @@ namespace HikAGVWebAPI
         }
     }
     #endregion Elevator Config
+
+    #region SensorClear Config
+    public class SectionSensorClear : ConfigurationSection
+    {
+        [ConfigurationProperty(nameof(SensorClearSettings))]
+        public SensorClearSettings SensorClearSettings
+        {
+            get { return (SensorClearSettings)this[nameof(SensorClearSettings)]; }
+            set { this[nameof(SensorClearSettings)] = value; }
+        }
+    }
+
+    public class SensorClearSettings : ConfigurationElement
+    {
+        // 總開關：false 或整段缺失 → 不啟動庫位 SENSOR 監控
+        [ConfigurationProperty(nameof(Enable), DefaultValue = "true", IsRequired = false)]
+        public string Enable
+        {
+            get { return (string)this[nameof(Enable)]; }
+            set { this[nameof(Enable)] = value; }
+        }
+
+        // MX Component 的 Logical Station Number（非 IP）
+        [ConfigurationProperty(nameof(StationNumber), DefaultValue = 1, IsRequired = true)]
+        public int StationNumber
+        {
+            get { return (int)this[nameof(StationNumber)]; }
+            set { this[nameof(StationNumber)] = value; }
+        }
+
+        // 輪詢間隔（毫秒）
+        [ConfigurationProperty(nameof(PollIntervalMs), DefaultValue = 1000, IsRequired = false)]
+        public int PollIntervalMs
+        {
+            get { return (int)this[nameof(PollIntervalMs)]; }
+            set { this[nameof(PollIntervalMs)] = value; }
+        }
+
+        // 連續確認輪數（去抖）：bit=OFF 且庫位仍佔用，連續達此次數才清空
+        [ConfigurationProperty(nameof(ConfirmCount), DefaultValue = 3, IsRequired = false)]
+        public int ConfirmCount
+        {
+            get { return (int)this[nameof(ConfirmCount)]; }
+            set { this[nameof(ConfirmCount)] = value; }
+        }
+
+        // "PLC位址:庫位StationNo"，逗號分隔可多筆，例：M10:B1,M11:B2
+        [ConfigurationProperty(nameof(SensorMap), DefaultValue = "M10:B1", IsRequired = true)]
+        public string SensorMap
+        {
+            get { return (string)this[nameof(SensorMap)]; }
+            set { this[nameof(SensorMap)] = value; }
+        }
+    }
+    #endregion SensorClear Config
 }
