@@ -41,6 +41,7 @@ namespace HikAGVWebAPI.App_Start
             }
             else
             {
+                _act.Close();
                 _log?.TraceOut($"[PlcDevice] Open 失敗，站號 {_stationNumber}", Log.LogType.WARN);
             }
         }
