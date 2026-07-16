@@ -219,8 +219,8 @@ namespace SCP.Controllers
                 Position data = new Position
                 {
                     Name = item.StationNo,
-                    Left = ConvertX(item.Remark.Split(",")[0], item.Area),
-                    Bottom = ConvertY(item.Remark.Split(",")[1], item.Area),
+                    Left = ConvertX(item.Remark.Split(",")[0], item.Area?.Trim()),
+                    Bottom = ConvertY(item.Remark.Split(",")[1], item.Area?.Trim()),
                     Transform = "rotate(" + item.Remark.Split(",")[2] + "deg)",
                     ImgSrc = GetStationImgSrc(item.HaveFlag, item.WorkOrder),
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
@@ -287,13 +287,17 @@ namespace SCP.Controllers
 
             foreach (var item in AgvPositions)
             {
+                // MapCode 欄位為 nchar，值會補滿尾端空白；SQL 端比對忽略尾端空白，
+                // 但 C# 的 == 不忽略，反查前必須 Trim，否則 fallback 找不到 AgvSetting 造成座標 NaN
+                string mapCode = item.MapCode?.Trim();
+
                 // 反向尋找 Area Code (例如 "CC" -> "FHT1-3F")
-                string area = mapping.FirstOrDefault(x => x.Value == item.MapCode).Key;
+                string area = mapping.FirstOrDefault(x => x.Value == mapCode).Key;
 
                 // 如果找不到對應的區域，就使用 MapCode 當作預設 (雖然可能找不到設定)
                 if (string.IsNullOrEmpty(area))
                 {
-                    area = item.MapCode;
+                    area = mapCode;
                 }
 
                 // 讀取該區域的設定
