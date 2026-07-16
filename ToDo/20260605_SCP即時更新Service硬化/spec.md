@@ -1,4 +1,4 @@
-# 需求規格書 — SCP 即時更新 Service 硬化（SqlDependency + SignalR）
+﻿# 需求規格書 — SCP 即時更新 Service 硬化（SqlDependency + SignalR）
 
 ## 主題與背景
 
@@ -47,6 +47,13 @@
 ### 例外不打掛行程
 - [ ] 每個 `async void OnChange` body 以 try/catch 包覆，例外至少記 Warning log，不向外拋
 - [ ] `StopAsync` 的 `Stop()` 以 try/catch 包覆並記 log
+
+### 重註冊失敗自動重試（2026-07-16 客戶端實證新增）
+- [ ] `RegisterDependency` 失敗時不再只記 log 放生：加入自動重試（建議指數退避，如 5s/15s/60s，上限後改每 5 分鐘重試），直到成功為止
+- [ ] 重試期間與恢復時各記一筆 log（可觀測「鏈路死亡→復活」全過程）
+
+> 實證：2026-07-16 客戶端 `dm_qn_subscriptions` 僅剩 5/6，oShuttle(PosX,PosY) 訂閱死亡
+> → AGV 位置畫面凍結、其餘 5 條正常。死因即「某次重註冊失敗後無重試、永久放生」。
 
 ### 回歸
 - [ ] SCP 專案 build 0 error
