@@ -142,16 +142,33 @@ namespace svrPair.Tests
         [TestMethod]
         public void GenerateoRequireByoNeed_BeginOutsideLetterList_ProducesoRequire()
         {
-            // TODO(T14): 種 Z95（啟用）→ A98（啟用、空位）；目前 Z 不在字母清單，oNeed 會被略過不處理。
-            //            移除字母清單後應產生 oRequire、oNeed 標 Y（B5）。
-            Assert.Inconclusive("TODO: T14 補實作");
+            // Arrange: Z 不在舊字母清單；移除清單後應與其他區一樣配對（B5）
+            SeedPort(LegacyBegin, haveFlag: "3", useFlag: "Y");
+            SeedPort(LegacyEnd, haveFlag: "0", useFlag: "Y");
+            string t = SeedNeed(30, LegacyBegin, LegacyEnd, workOrder: "UTESTWO");
+
+            // Act
+            _cPair.GenerateoRequireByoNeed();
+
+            // Assert
+            Assert.AreEqual(1, CountoRequire(t), "字母清單外的起點應產生一筆 oRequire");
+            Assert.AreEqual("Y", NeedFlag(t), "oNeed 應標 Y");
+            Assert.AreEqual(LegacyBegin + ">" + LegacyEnd, BgnToEnd(LegacyBegin), "起點應註冊路徑");
         }
 
         [TestMethod]
         public void GenerateoRequireByoNeed_BeginStationNotInoPort_MarksNeedE()
         {
-            // TODO(T14): oNeed 起點 K99 不存在於 oPort → oNeed 標 E、不產生 oRequire。
-            Assert.Inconclusive("TODO: T14 補實作");
+            // Arrange: 起點 K99 不存在於 oPort（終點 K96 存在且空閒）
+            string t = SeedNeed(31, MissingBegin, "K96", workOrder: "UTESTWO");
+
+            // Act
+            _cPair.GenerateoRequireByoNeed();
+
+            // Assert
+            Assert.AreEqual("E", NeedFlag(t), "起點不存在應標 E");
+            Assert.AreEqual(0, CountoRequire(t), "不應產生 oRequire");
+            Assert.AreEqual("", BgnToEnd("K96"), "終點不應註冊路徑");
         }
 
         // ── fixtures ─────────────────────────────────────────────

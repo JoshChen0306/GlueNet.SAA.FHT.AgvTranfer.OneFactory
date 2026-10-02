@@ -133,7 +133,7 @@ namespace svrPair
         }
         #endregion
 
-        #region [1-0a .副程式 == ProcessSingleoNeed == 處理單筆 oNeed（依區域分派平板/系統配對；保留一廠分組差異）]
+        #region [1-0a .副程式 == ProcessSingleoNeed == 處理單筆 oNeed（不分區域，一律交由 ProcessoNeedToRequire 配對）]
         private void ProcessSingleoNeed(DataRow dr)
         {
             string objStation = dr["ObjStation"].ToString();
@@ -145,40 +145,11 @@ namespace svrPair
                 return;
             }
 
-            switch (objStation.Substring(0, 1))
-            {               //這裡會執行的oNeed為人員選的有如下 == 平板的操作行為
-                case "A":   //上料區A >> 暫存區B，將放RACK及製程前材料運至暫存區，如A1 >> B3
-                case "C":   //生產區C >> 生產區D、上料區A、暫存區B，將空RACK運送至沒有RACK的地方，如C1 >> A1
-                case "D":   //生產區D >> 下料區E，將放RACK及製程後材料運至下料區，如D2 >> E1
-                case "F":   //下料區F >> 上料區A、生產區D、暫存區B，將下完料的空RACK運送至沒有RACK的地方，如E1 >> A1
-                case "J":   // 3F 插針室
-                case "H":   // 2F 成型後 -> 4F 烘烤前入貨區
-                case "M":   // 2F 雷雕區 -> O/P/T
-                case "T":   // 2F V cut區 -> O/P
-                case "Q":   // 2F 出料區 -> 清洗區
-                case "R":   // 2F 廢料區 -> 廢料回收區
-                case "O":   // 2F OP上料區(左) -> M/Q/R (Release回送空板)
-                case "P":   // 2F OP上料區(右) -> M/Q/R (Release回送空板)
-                case "S":   // 2F 清洗區 -> M/Q/R (Release回送空板)
-                case "N":   // 2F 廢料回收區 -> M/Q/R (Release回送空板)
-                    WriteLog(string.Format("05.處理平板配對 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3}",
-                        objStation, dr["EndStation"], dr["WorkOrder"], dr["RackId"]));
-                    ProcessoNeedToRequire(objStation.Substring(0, 1), dr);
-                    break;
-                case "B":   //暫存區B >> 上料區A，將下完料的空RACK運送至沒有RACK的地方，如B1 >> A1
-                            //暫存區B >> 生產區C，將放RACK及製程前材料運至生產區的地方，如B2 >> C1
-                case "E":   //暫存區E >> 上料區F，將放RACK及製程完材料運至退pin區的地方，如E2 >> F1
-                case "G":   // G區（1F電梯暫存區）→ J區（3F插針室）：Release 回送空板
-                case "K":   // K區（4F烘烤前入貨區）→ H區（2F成型後）：Release 回送空板
-                case "I":   // I區（3F品檢區）→ L區（4F烘烤後）：Release 回送空板 / NG回送
-                case "L":   // L區（4F烘烤後）→ I區（3F品檢區）  ※一廠：L 歸系統配對群（與二廠不同，保留）
-                    WriteLog(string.Format("05.處理系統配對 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3}",
-                        objStation, dr["EndStation"], dr["WorkOrder"], dr["RackId"]));
-                    ProcessoNeedToRequire(objStation.Substring(0, 1), dr);
-                    break;
-                default:
-                    break;
-            }
+            // 不再以區域字母過濾：可派送的區域由 SCP 的派送路線與 AreaRules 決定，
+            // 起終點是否存在、啟用、未被註冊交由 ProcessoNeedToRequire 檢查（B5）
+            WriteLog(string.Format("05.處理配對 >> ObjStation:{0} , EndStation:{1} , WorkOrder:{2} , RackId:{3}",
+                objStation, dr["EndStation"], dr["WorkOrder"], dr["RackId"]));
+            ProcessoNeedToRequire(objStation.Substring(0, 1), dr);
         }
         #endregion
 
