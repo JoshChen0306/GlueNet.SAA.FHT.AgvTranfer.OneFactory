@@ -802,23 +802,20 @@ $(function () {
     function submitLotForm() {
         var workOrder = $("#registerLotWorkOrder").val().trim();
         var rackId = $("#registerLotRackId").val().trim();
-        var isVcutMaterial = $("#registerLotVcut").is(":checked");
 
         // 貨架條碼欄位隱藏時，固定帶 -1 哨兵值（代表無貨架，通過後端必填驗證，AGV 端認得 -1）
         if (window.showRackIdField === false) {
             rackId = "-1";
         }
 
-        // 驗證：工單必填（R 區例外，工單選填）
-        var stationArea = currentLotStation.substring(0, 1).toUpperCase();
-        console.log("submitLotForm - currentLotStation:", currentLotStation, "stationArea:", stationArea);
-        if (!workOrder && stationArea !== "R") {
+        // 驗證：工單必填
+        if (!workOrder) {
             alert("請輸入工單條碼");
             $("#registerLotWorkOrder").focus();
             return;
         }
 
-        console.log("提交物料表單:", currentLotStation, workOrder, rackId, "V Cut:", isVcutMaterial);
+        console.log("提交物料表單:", currentLotStation, workOrder, rackId);
 
         $.ajax({
             type: "POST",
@@ -827,8 +824,7 @@ $(function () {
             data: JSON.stringify({
                 stationNo: currentLotStation,
                 workOrder: workOrder,
-                rackId: rackId,
-                isVcutMaterial: isVcutMaterial ? "true" : "false"
+                rackId: rackId
             }),
             success: function (response) {
                 alert((lotOperationMode === "edit" ? "修改" : "登記") + "成功！站點：" + currentLotStation);

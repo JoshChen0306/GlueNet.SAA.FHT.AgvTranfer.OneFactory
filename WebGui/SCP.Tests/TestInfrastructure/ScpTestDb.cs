@@ -107,14 +107,41 @@ namespace SCP.Tests.TestInfrastructure
 
         // ── 建立受測 Controller ──────────────────────────────────
 
+        /// <summary>一廠 appsettings 的 AreaRules（T12 起 Release / RegisterLot 改查此設定）。</summary>
+        public static Dictionary<string, string?> FactoryOneAreaRules() => new Dictionary<string, string?>
+        {
+            ["AreaRules:RegisterAreas:0"] = "A",
+            ["AreaRules:RegisterAreas:1"] = "L",
+            ["AreaRules:RackIdRequiredAreas:0"] = "K",
+            ["AreaRules:RackIdRequiredAreas:1"] = "L",
+            ["AreaRules:ReleaseRoutes:K:0"] = "L",
+            ["AreaRules:ReleaseRoutes:M:0"] = "A",
+            ["AreaRules:ReleaseRoutes:B:0"] = "A",
+            ["AreaRules:AreaNames:A"] = "1F備貨區",
+            ["AreaRules:AreaNames:B"] = "1F下料區",
+            ["AreaRules:AreaNames:K"] = "3F上料區",
+            ["AreaRules:AreaNames:L"] = "3F下料區",
+            ["AreaRules:AreaNames:M"] = "3F暫存區",
+        };
+
         /// <summary>
         /// 建立 DispatchController。userId / groupId 為 null 時不帶對應 Claim（等同舊帳號沒有該資訊）。
+        /// settings 未含任何 AreaRules 設定時，自動帶入一廠 AreaRules。
         /// </summary>
         public DispatchController CreateDispatchController(string? userId = null, string? groupId = null,
             IDictionary<string, string?>? settings = null)
         {
+            var merged = new Dictionary<string, string?>(settings ?? new Dictionary<string, string?>());
+            if (!merged.Keys.Any(k => k.StartsWith("AreaRules:", StringComparison.OrdinalIgnoreCase)))
+            {
+                foreach (var rule in FactoryOneAreaRules())
+                {
+                    merged[rule.Key] = rule.Value;
+                }
+            }
+
             var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(settings ?? new Dictionary<string, string?>())
+                .AddInMemoryCollection(merged)
                 .Build();
 
             var claims = new List<Claim>();

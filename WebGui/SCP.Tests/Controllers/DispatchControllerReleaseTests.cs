@@ -263,19 +263,39 @@ namespace SCP.Tests.Controllers
         [TestMethod]
         public void Release_AreaWithoutReleaseRule_ReturnsBadRequestAndCreatesNoNeed()
         {
-            // Arrange: 站點區域不在 AreaRules.ReleaseRoutes
-            // Act:     Release
-            // Assert:  回 400「此區域未設定回送路線」；oNeed 無新增
-            Assert.Inconclusive("TODO: T12 補實作");
+            // Arrange: C 區不在一廠 ReleaseRoutes；M 區有空位（舊規則會落到 M→Q→R）
+            using var db = new ScpTestDb();
+            db.AddPort("C1", haveFlag: "1");
+            db.AddPort("M1", area: "FHT1-3F");
+            var controller = db.CreateDispatchController();
+
+            // Act
+            var result = controller.Release(Request("C1"));
+
+            // Assert
+            Assert.AreEqual(400, result.StatusCodeOf());
+            Assert.AreEqual("此區域未設定回送路線", result.MessageOf());
+            Assert.AreEqual(0, db.Needs().Count);
         }
 
         [TestMethod]
         public void Release_NewAreaAddedByConfigOnly_PicksSlotInConfiguredTarget()
         {
-            // Arrange: 設定加入假區域 X→[Y]，並建立 X、Y 區站點
-            // Act:     Release(stationNo = X 區站點)
-            // Assert:  終點為 Y 區空位（不需改程式）
-            Assert.Inconclusive("TODO: T12 補實作");
+            // Arrange: 設定只加 X→[Y]；M 區也有空位（舊規則會落到 M）
+            using var db = new ScpTestDb();
+            db.AddPort("X1", haveFlag: "1");
+            db.AddPort("Y1");
+            db.AddPort("M1", area: "FHT1-3F");
+            var settings = ScpTestDb.FactoryOneAreaRules();
+            settings["AreaRules:ReleaseRoutes:X:0"] = "Y";
+            var controller = db.CreateDispatchController(settings: settings);
+
+            // Act
+            var result = controller.Release(Request("X1"));
+
+            // Assert
+            Assert.AreEqual(200, result.StatusCodeOf());
+            Assert.AreEqual("Y1", db.Needs().Single().EndStation);
         }
     }
 }

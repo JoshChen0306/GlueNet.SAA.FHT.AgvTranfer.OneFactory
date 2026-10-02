@@ -336,15 +336,41 @@ namespace SCP.Tests.Controllers
         [TestMethod]
         public void RegisterLot_WorkOrderContainingLegacyTagText_IsStoredUnchanged()
         {
-            // TODO: 工單含 "^NG" 等字樣 → 原樣寫入，不再被移除（B6）
-            Assert.Inconclusive("TODO: T12 補實作");
+            // Arrange: 工單含舊專案標記字樣（B6：不再移除）
+            using var db = new ScpTestDb();
+            db.AddPort("A1", haveFlag: "0");
+            var controller = db.CreateDispatchController();
+            const string workOrder = "LOT01^NG^RETURN^VCUT^DONE";
+
+            // Act
+            var result = controller.RegisterLot(LotRequest("A1", workOrder, "Rack01"));
+
+            // Assert
+            Assert.AreEqual(200, result.StatusCodeOf());
+            Assert.AreEqual(workOrder, db.Port("A1").WorkOrder);
         }
 
         [TestMethod]
         public void RegisterLot_RackIdRequiredAreaFromConfig_EmptyRackIdReturnsBadRequest()
         {
-            // TODO: AreaRules.RackIdRequiredAreas 加入假區域 → 該區 RackId 空白回 400（B7）
-            Assert.Inconclusive("TODO: T12 補實作");
+            // Arrange: RackIdRequiredAreas 只設 X（B7：依設定判斷，不再寫死 J/H/I/K/L）
+            using var db = new ScpTestDb();
+            db.AddPort("X1", haveFlag: "0");
+            db.AddPort("K1", haveFlag: "0", area: "FHT1-3F");
+            var settings = ScpTestDb.FactoryOneAreaRules();
+            settings.Remove("AreaRules:RackIdRequiredAreas:0");
+            settings.Remove("AreaRules:RackIdRequiredAreas:1");
+            settings["AreaRules:RackIdRequiredAreas:0"] = "X";
+            var controller = db.CreateDispatchController(settings: settings);
+
+            // Act
+            var resultX = controller.RegisterLot(LotRequest("X1", WorkOrderBarcode, ""));
+            var resultK = controller.RegisterLot(LotRequest("K1", WorkOrderBarcode, ""));
+
+            // Assert
+            Assert.AreEqual(400, resultX.StatusCodeOf());
+            Assert.AreEqual("請輸入貨架條碼", resultX.MessageOf());
+            Assert.AreEqual(200, resultK.StatusCodeOf());
         }
     }
 }

@@ -125,6 +125,19 @@ namespace SCP.Tests.Helpers
         }
 
         [TestMethod]
+        public void GetAreaLabel_WithAndWithoutConfiguredName_FormatsLabel()
+        {
+            // Arrange: 只有 L 設定顯示名稱
+            var rules = FactoryOneRules();
+            rules["AreaRules:AreaNames:L"] = "3F下料區";
+            var provider = Build(rules);
+
+            // Act & Assert
+            Assert.AreEqual("L區（3F下料區）", provider.GetAreaLabel("l"));
+            Assert.AreEqual("A區", provider.GetAreaLabel("A"));
+        }
+
+        [TestMethod]
         public void Lookup_LowerCaseOrPaddedValues_AreNormalized()
         {
             // Arrange
