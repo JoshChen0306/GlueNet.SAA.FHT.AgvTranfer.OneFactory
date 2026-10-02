@@ -22,7 +22,6 @@ namespace svrPair
         private string mDbIp = "";      //網路位置
         private SqlHelper mSql;             //讀取資料庫方法的模組
         private DataTable mdtQuery;     //常用臨時資料表
-        private DataTable moPairWay;    //存入口站可配對哪些出口站
         private bool mPanelDoB2C;       //將暫存區 B 的料送到生產區 C 的動作是由平板和WEB作的為True (原本為MCS作的，客戶要求改成平板)
         private bool mUnloadAuto;
         //FHT^N01^批號^料號^製單^列印日期 :::: FHT^N01^238090671^DMT6CVJ1536D^P3804231^202309181158
@@ -74,8 +73,6 @@ namespace svrPair
             }
             catch (Exception ex) { Console.Write(ex.ToString()); }
             WriteLog("01.載入參數設定 >> Recipe.ini");
-
-            LoadBasicSettingToTables();       //0.0 .主設定 == 載入基本設定檔--站點管理            
         }
 
         private SqlHelper CreateSqlHelper()
@@ -83,19 +80,6 @@ namespace svrPair
             return new SqlHelper($"Data Source={mDbIp};Initial Catalog={mDbName};Persist Security Info=True;User ID=mcs;Password=Zz123456");
         }
 
-        #endregion
-
-        #region  [0-0 .主設定 == LoadBasicSettingToTables == 載入基本設定檔--站點管理]        
-        private void LoadBasicSettingToTables()
-        {
-            try
-            {
-                moPairWay = mSql.QuerySqlByAutoOpen("select * from oPairWay").Tables[0];
-            }
-            catch
-            { }
-            WriteLog(string.Format("02.載入常用資料 >> oPairWay，IP = {1,-10}  DB = {2,-30} ", "", mDbIp, mDbName));
-        }
         #endregion
 
         #region [MainProcess == 主要流程]
@@ -111,11 +95,6 @@ namespace svrPair
                 {
                     //由平板產生了oNeed
                     GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 : 尋找oNeed中AssignFlag = NULL的資料，以此產出oRequire關聯資料，而後註冊oPort的起終註記、oNeed中AssignFlag是Y正常或E異常
-
-                    // ★★★ 工廠1修正：停用 B區→A區 自動派送 ★★★
-                    // B區應該透過 Release 功能手動回送空板到 A區
-                    // GenerateoNeedDataByMCSAsBtoA(); //1-2 .主程序 == 提出需要 : 將[B]暫存空Rack補至上料區[A]
-                    // GenerateoRequireByoNeed();      //1-0 .主程式 == 轉成需求 :
 
                     if (mPanelDoB2C == false)//因應客戶要求自行由WEB程式和平板進行處理，故 MCS 不作處理
                     {
@@ -137,9 +116,6 @@ namespace svrPair
 
                     GenerateoMissionByoRequire();   //2-0 .主程序 == 尋找oRequire表中未指派的項目，產生oMission表
                     RecyclingoRequireByOkFlag();    //3-0 .主程序 == 處理oRequire表中的OkFlag欄位，Y=完成，X=異常結束，C=取消
-
-                    //這一段不執行，異常的指派需由oMission的OkFlag改變處理，否則會一直輪迴新增刪除
-                    //RecyclingoRequireByAssignFlag();//4-0 .主程序 == 處理oRequire表中的 AssignFlag 欄位為 Y、X、C
 
                     RecyclingoNeedByAssignFlag();   //5-0 .主程序 == 處理oNeed表中的 AssignFlag 欄位為 E、X、C
                 }
@@ -342,22 +318,6 @@ namespace svrPair
         #endregion
 
         #region [1-2 .主程序 == GenerateoNeedDataByMCStoA == 尋找oPort表中找上料區A缺少Rack的埠口(終點) 再從 暫存區B中找有Rack但沒工單(起點)] 
-        private void GenerateoNeedDataByMCSAsBtoA()    //將[B]暫存空Rack補至上料區[A]
-        {
-            //找oPort表某一區域沒架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 >> 找到A區有資料表示要從B區補
-            mdtQuery = GetoPort_NoRack_NoPair_CanWork_Sort_ByBlock("'A'");
-            foreach (DataRow dr in mdtQuery.Rows)
-            {
-                DataTable dt = GetoPort_HaveRack_NoPair_CanWork_Sort_ByBlock("'B'");
-                if (dt.Rows.Count > 0)
-                {
-                    InsertoNeed(dt.Rows[0]["StationNo"].ToString(), dt.Rows[0]["RackId"].ToString(), "", dr["StationNo"].ToString());
-                    WriteLog(string.Format("04.產生配對資料 >> B區 -> A區 ,  ObjStation : {0} , EndStation : {1} :: 將[B]暫存空Rack補至上料區[A]", dt.Rows[0]["StationNo"].ToString(), dr["StationNo"].ToString()));
-                }
-                return;
-            }
-        }
-
         private void GenerateoNeedDataByMCSAsEtoABD()    //將[F]暫存空Rack補至上料區[A、B、D]
         {
             //找oPort表某一區域沒架子資料，條件是埠口是可用的、沒有Rack、沒被註冊、依權重排序 >> 找到A區有資料表示要從B區補
@@ -515,16 +475,6 @@ namespace svrPair
         }
         #endregion
 
-        #region [1-8 .次程序 == GetoPort_HaveWorkOrder_NoPair_CanWork_Sort_ByBlock == 找oPort表某一區域有工單資料，條件是埠口是可用的、有工單、沒被註冊、依權重排序 ]
-        private DataTable GetoPort_HaveWorkOrder_NoPair_CanWork_Sort_ByBlock(string Block)    //通常是找A
-        {
-            //DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and (WorkOrder is not null or RTRIM(RackId) <>'') and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oPort where UseFlag ='Y' and HaveFlag ='3' and (BgnToEnd is null or RTRIM(BgnToEnd) ='') and" +
-                                                   " Block in(" + Block + ") order by Priority desc").Tables[0];
-            return dt;
-        }
-        #endregion
-
         #region [1-9 .次程序 == GetoPort_PartNoTheSame_NoPair_CanWork_Sort_ByBlock == 找oPort表某一區域指定料號，條件是埠口是可用的、有工單、沒被註冊、依權重排序 ]
         private DataTable GetoPort_PartNoTheSame_NoPair_CanWork_Sort_ByBlock(string Block, string PartNo)  //通常是找B(由C找B)
         {
@@ -642,13 +592,6 @@ namespace svrPair
         }
         #endregion
 
-        #region [2-8 .次程序 == DeleteoRequireByAssignFlag() == 刪除 oRequier 指定註記的資料 ]
-        private void DeleteoRequireByAssignFlag(string ObjStation, string EndStation, string AssignFlag)
-        {
-            mSql.WriteSqlByAutoOpen("Delete oRequire where ObjStation = @obj and EndStation = @end and AssignFlag = @af", SP("@obj", ObjStation), SP("@end", EndStation), SP("@af", AssignFlag));
-        }
-        #endregion
-
         #endregion
 
         #region  [Item 3.X == 任務完成回收 Y=完成，X=異常結束，C=取消 ]
@@ -691,36 +634,6 @@ namespace svrPair
 
         #endregion
 
-        #region [4-0 .主程序 == RecyclingoRequireByAssignFlag() == 處理oRequire表中的 AssignFlag 欄位為 E、X、C]
-        private void RecyclingoRequireByAssignFlag()
-        {
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oRequire where AssignFlag in('E','X','C') order by TaskDateTime").Tables[0];
-            foreach (DataRow dr in dt.Rows)
-            {
-                switch (dr["AssignFlag"].ToString())
-                {
-                    case "E":
-                    case "X":
-                    case "C":
-                        DeleteoNeedByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), "Y");
-                        WriteLog(string.Format("38.回收oNeed    >>  ObjStation : {0} ,EndStation : {1} , AssignFlag : {2}", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString()));
-
-
-                        UpdateoPortBgnToEnd(dr["ObjStation"].ToString(), dr["EndStation"].ToString());
-                        WriteLog(string.Format("39.取消註冊     >>  oPort路徑 , ObjStation : {0} , EndStation : {1} , BgnToEnd : {2} ", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["ObjStation"].ToString() + ">" + dr["EndStation"].ToString()));
-
-
-                        DeleteoRequireByAssignFlag(dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString());
-                        WriteLog(string.Format("40.處理暫存資料 >> 資料表 : oRequire , ObjStation : {0} ,EndStation : {1} , AssignFlag : {2} ", dr["ObjStation"].ToString(), dr["EndStation"].ToString(), dr["AssignFlag"].ToString()));
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-        #endregion
-
         #region [5-0 .主程序 == RecyclingoNeedByAssignFlag() == 處理oNeed表中的 AssignFlag 欄位為 E、X、C]
         private void RecyclingoNeedByAssignFlag()
         {
@@ -740,35 +653,6 @@ namespace svrPair
                     default:
                         break;
                 }
-            }
-        }
-        #endregion
-
-        #region [6-0 .主程序 == GenerateoMissionDataByIdleShuttleFromoShuttle == 讀取oShuttle表，針對狀態為I:Idle的車子，且該車也未在oMission中出現]
-        private void GenerateoMissionDataByIdleShuttleFromoShuttle()
-        {
-
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oShuttle where Enabled ='Y' and Status ='I' and (not ShuttleId in (select ShuttleId from oMission where ShuttleId is not null))").Tables[0];
-            foreach (DataRow dr in dt.Rows)
-            {
-                GetBeginStationFromoPair(int.Parse(dr["ShuttleId"].ToString()), dr["EndStation"].ToString());
-
-            }
-        }
-        #endregion
-
-        #region [6-1 .次程序 == GetBeginStationFromoPair == 尋找配對表中起點在同區域的優先，再找終點共同配對成oMission]
-        private void GetBeginStationFromoPair(int ShuttleId, string EndStation)
-        {
-            DataTable oPair = mSql.QuerySqlByAutoOpen("select * from oPair where PairFlag <> 'Y'").Tables[0];
-            //ToDo :: 從演算法中取得最靠近的起點，然後看oPair中是否有成對的資料
-            string ObjStation = "";
-
-            DataTable dt = mSql.QuerySqlByAutoOpen("select * from oShuttle where Enabled ='Y' and Status ='I' and (not ShuttleId in (select ShuttleId from oMission where ShuttleId is not null))").Tables[0];
-            foreach (DataRow dr in dt.Rows)
-            {
-
-
             }
         }
         #endregion
