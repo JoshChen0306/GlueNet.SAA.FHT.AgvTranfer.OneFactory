@@ -87,11 +87,10 @@ namespace SCP.Controllers
                     case "2":
                         filterAreas = areas.Where(item => item.Value == "A");
                         break;
-                    case "6":
-                        filterAreas = areas.Where(item => item.Value == "C" || item.Value == "D");
-                        break;
                     case "5":
-                        filterAreas = areas.Where(item => item.Value == "F");
+                    case "6":
+                        // 群組 5、6 原本對應舊專案的 F 區與 C、D 區，一廠派送選單沒有這些區域
+                        filterAreas = Enumerable.Empty<KeyValuePair<string, string>>();
                         break;
                 }
                 // 舊機制：所有區域都是允許的
@@ -224,27 +223,6 @@ namespace SCP.Controllers
             return Ok();
         }
 
-        public IActionResult UpdateoPort([FromBody] Dictionary<string, string> need)
-        {
-
-            string objStation = need["BegingStation"];
-
-            try
-            {
-                _DBContext.oPort
-                    .Where(p => p.StationNo == objStation)
-                    .ExecuteUpdate(setters => setters
-                        .SetProperty(p => p.WorkOrder, "")
-                        .SetProperty(p => p.HaveFlag, "1"));
-            }
-            catch (Exception ex)
-            {
-
-            }
-
-            return Ok();
-        }
-
         public IActionResult DeleteoNeed([FromBody] Dictionary<string, string> need)
         {
             string taskDateTime = need["taskDateTime"];
@@ -301,22 +279,6 @@ namespace SCP.Controllers
             return Ok();
         }
 
-        public IActionResult ReLogin([FromBody] Dictionary<string, string> need)
-        {
-            var userId = need["userId"];
-            var password = need["password"];
-
-            var result = _DBContext.pUser.Where(u => u.UserId == userId && u.Password == password).FirstOrDefault()?.GroupId?.ToString() ?? "";
-            if (result == "1" || result == "7")
-            {
-                return Ok();
-            }
-            else
-            {
-                return BadRequest();
-            }
-
-        }
         public IActionResult GetoNeed()
         {
             var result = _DBContext.oNeed;
@@ -575,7 +537,6 @@ namespace SCP.Controllers
 
         /// <summary>
         /// 標記空板 - 將站點從料盤(3)改為空板(1)，清除工單資訊
-        /// 適用於 O/P/S/N 區
         /// </summary>
         [HttpPost]
         public IActionResult MarkEmptyTray([FromBody] Dictionary<string, string> data)
@@ -619,8 +580,6 @@ namespace SCP.Controllers
 
         /// <summary>
         /// Release - 將空板回送到指定區域
-        /// O/P/S/N 區 → M 區（雷雕區）→ Q 區（出貨區）→ R 區
-        /// EE 區（電梯暫存區）→ J 區（3F 插針室）
         /// </summary>
         [HttpPost]
         public IActionResult Release([FromBody] Dictionary<string, string> data)
@@ -702,25 +661,7 @@ namespace SCP.Controllers
                 // var stationArea = stationNo.Substring(0, 1).ToUpper(); // 已在上方定義
                 oPort emptySlot = null;
 
-                if (stationArea == "G")
-                {
-                    // G 區（電梯暫存區）→ 回送到 J 區（3F 插針室）
-                    emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "J" &&
-                                    p.HaveFlag == "0" &&
-                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                    p.UseFlag == "Y" &&
-                                    !pendingEndStations.Contains(p.StationNo))
-                        .OrderByDescending(p => p.Priority)
-                        .ThenBy(p => p.Port)
-                        .FirstOrDefault();
-
-                    if (emptySlot == null)
-                    {
-                        return BadRequest(new { message = "3F 插針室 (J區) 沒有可放置的空位" });
-                    }
-                }
-                else if (stationArea == "K")
+                if (stationArea == "K")
                 {
                     // ============================================
                     // 工廠1 路線2: K區（3F上料區）→ L區（3F下料區）
@@ -782,25 +723,6 @@ namespace SCP.Controllers
                         return BadRequest(new { message = "A區（1F備貨區）沒有可放置的空位" });
                     }
                 }
-                else if (stationArea == "I")
-                {
-                    // I 區（3F品檢區）→ 回送到 L 區（4F烘烤後）L1-L4
-                    emptySlot = _DBContext.oPort
-                        .Where(p => p.Block == "L" &&
-                                    p.HaveFlag == "0" &&
-                                    (p.BgnToEnd == null || p.BgnToEnd == "") &&
-                                    p.UseFlag == "Y" &&
-                                    p.Port >= 1 && p.Port <= 4 &&  // 只選 L1-L4
-                                    !pendingEndStations.Contains(p.StationNo))
-                        .OrderByDescending(p => p.Priority)
-                        .ThenBy(p => p.Port)
-                        .FirstOrDefault();
-
-                    if (emptySlot == null)
-                    {
-                        return BadRequest(new { message = "4F 烘烤後 (L1-L4) 沒有可放置的空位" });
-                    }
-                }
                 else
                 {
                     // O/P/S/N 區 → 依序尋找：M 區（雷雕區）→ Q 區（出貨區）→ R 區
@@ -847,19 +769,12 @@ namespace SCP.Controllers
 
                 // 建立派送任務 (oNeed) - 帶入起點站的 RackId
                 string rackId = port.RackId ?? "";
-                
-                // I 區回送到 K 區時，寫入 ^RETURN 標記（避免回送物料再次被派送）
-                string workOrderForRelease = "";
-                if (stationArea == "I")
-                {
-                    workOrderForRelease = "^RETURN";
-                }
-                
+
                 string sql = "INSERT INTO oNeed (ObjStation, RackId, WorkOrder, EndStation, TaskSource, TaskDateTime, AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
                 _DBContext.Database.ExecuteSqlRaw(sql,
                     stationNo,                                    // ObjStation (起點)
                     rackId,                                       // RackId (從起點站讀取)
-                    workOrderForRelease,                          // WorkOrder (I區回送帶 ^RETURN)
+                    "",                                           // WorkOrder (空板回送不帶工單)
                     emptySlot.StationNo,                          // EndStation (終點)
                     "Web",                                        // TaskSource
                     DateTime.Now.ToString("yyyyMMddHHmmssffffff"), // TaskDateTime
