@@ -218,7 +218,8 @@ namespace SCP.Controllers
             }
             catch (Exception ex)
             {
-
+                // 維持原流程（仍回 Ok），僅補記錄以免寫入失敗無跡可查
+                LogMgt.Logger?.Warn($"[InsertoNeed] 寫入 oNeed 失敗：ObjStation={objStation}, EndStation={endStation}, Error={ex.Message}");
             }
 
             return Ok();
