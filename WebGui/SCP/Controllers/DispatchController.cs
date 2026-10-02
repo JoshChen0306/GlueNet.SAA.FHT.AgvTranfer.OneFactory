@@ -160,6 +160,16 @@ namespace SCP.Controllers
             // 物料登記畫面是否顯示「貨架條碼」欄位（預設 true 顯示；關閉時前端隱藏欄位、送出固定帶 -1 哨兵值通過後端必填驗證）
             ViewBag.ShowRackIdField = _configuration.GetValue("MyConfig:ShowRackIdField", true);
 
+            // 地圖可點選區域與回送區（前端 window.areaRules）
+            // 鍵名明確寫成 camelCase：本專案 JSON 序列化不轉換大小寫，前端以 camelCase 讀取
+            var areaRules = new AreaRuleProvider(_configuration);
+            ViewBag.AreaRules = new
+            {
+                registerAreas = areaRules.RegisterAreas,
+                releaseAreas = areaRules.ReleaseAreas,
+                clickableAreas = areaRules.ClickableAreas
+            };
+
             return View();
         }
 

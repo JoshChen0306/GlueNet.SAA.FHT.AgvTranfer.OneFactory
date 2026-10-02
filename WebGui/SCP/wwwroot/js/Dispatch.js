@@ -31,17 +31,24 @@ function loadMapDataLocal(area) {
     });
 }
 
-// 綁定 M/T/Q 區站點的物料管理點擊事件
-function bindStationLotEvents() {
-    console.log("=== 綁定 M/T/Q 區站點點擊事件 ===");
+// 區域規則（由 Dispatch/Index 從 appsettings AreaRules 傳入）
+function getAreaRules() {
+    return window.areaRules || { registerAreas: [], releaseAreas: [], clickableAreas: [] };
+}
 
-    // 標記 M、T、Q 區的站點（支援物料登記）
+// 取站號的區域代號（第一個字母）
+function getStationArea(stationNo) {
+    return stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
+}
+
+// 標記地圖上可點選的站點（AreaRules 的登記區與回送區）
+function bindStationLotEvents() {
+    var clickableAreas = getAreaRules().clickableAreas;
     $('.station-btn').each(function () {
         var stationNo = $(this).attr('id');
-        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T') || stationNo.startsWith('Q') || stationNo.startsWith('R'))) {
+        if (stationNo && clickableAreas.indexOf(getStationArea(stationNo)) !== -1) {
             $(this).addClass('lot-manageable');
             $(this).css('cursor', 'pointer');
-            console.log("標記可管理站點:", stationNo);
         }
     });
 }
@@ -53,11 +60,10 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 A/B/M/T/J/Q/H/K/L 區（物料管理）和 O/P/S/N/G/K/I 區（標記空板/Release）
-    var validAreas = ['A', 'B', 'M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K', 'I', 'L'];
-    var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
+    // 只處理 AreaRules 的登記區與回送區
+    var stationArea = getStationArea(stationNo);
 
-    if (!stationNo || validAreas.indexOf(stationArea) === -1) {
+    if (!stationNo || getAreaRules().clickableAreas.indexOf(stationArea) === -1) {
         return; // 不是支援的區域，不處理
     }
 
@@ -373,7 +379,7 @@ $(function () {
                 filterEndStationOptions("M", "0");
                 break;
             case "B":
-                filterEndStationOptions("C", null);
+                // B 區空板回送走 Release（B→A），不提供手動派送終點
                 break;
             case "L":
                 // 工廠1: L → B
@@ -625,8 +631,7 @@ $(function () {
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
         // 判斷區域類型：A/L 區為物料登記區，B/K/M 區為 Release 操作區
-        var releaseAreas = ['B', 'O', 'P', 'S', 'N', 'G', 'K', 'M', 'I'];
-        var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
+        var isReleaseArea = getAreaRules().releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
             // 回送區 - 顯示「標記空板」和「Release」按鈕
@@ -1036,40 +1041,6 @@ function filterBeginStationOptions(selectedValue) {
             break;
 
 
-
-
-
-        case "L":
-            // L 區（4F 烘烤後）作為起點：只顯示 L1-L4 有料且非回送物料
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
-
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // L 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("L") || station.haveFlag !== "3") return false;
-
-                // 只顯示 L1-L4
-                var portNum = parseInt(tracname.replace("L", ""));
-                if (portNum < 1 || portNum > 4) return false;
-
-                // ★ 排除回送物料 ★
-                var workOrder = station.workOrder || "";
-                if (workOrder.includes("^RETURN") || workOrder.includes("^NG")) {
-                    return false;  // 回送物料不可再次派送
-                }
-
-                // 更新顯示文字：StationNo + WorkOrder
-                var displayWorkOrder = workOrder;
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder);
-                return true;
-            }).show();
-            break;
 
 
 

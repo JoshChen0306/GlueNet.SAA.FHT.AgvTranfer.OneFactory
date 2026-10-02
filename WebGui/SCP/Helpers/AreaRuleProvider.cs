@@ -48,8 +48,16 @@ namespace SCP.Helpers
                 _areaNames[key] = name.Value.Trim();
             }
 
+            RegisterAreas = _registerAreas.ToList();
+            ReleaseAreas = _releaseRoutes.Keys.ToList();
             ClickableAreas = _registerAreas.Union(_releaseRoutes.Keys).ToList();
         }
+
+        /// <summary>物料登記區。</summary>
+        public IReadOnlyList<string> RegisterAreas { get; }
+
+        /// <summary>回送區（ReleaseRoutes 的鍵）。</summary>
+        public IReadOnlyList<string> ReleaseAreas { get; }
 
         /// <summary>地圖上可點選的區域 = 物料登記區 ∪ 回送區。</summary>
         public IReadOnlyList<string> ClickableAreas { get; }
