@@ -194,6 +194,34 @@ namespace SCP.Tests.Controllers
             Assert.AreEqual(0, db.Needs().Count);
         }
 
+        [TestMethod]
+        public void InsertoNeed_RequestWithoutLegacyFields_InsertsNeed()
+        {
+            // Arrange: T9（B4）後端不再讀取 Area / btnName / Status，T10 前端將停止傳送
+            using var db = new ScpTestDb();
+            db.AddPort("A1", haveFlag: "3", workOrder: "LOT0005");
+            db.AddPort("K1", area: "FHT1-3F");
+            var controller = db.CreateDispatchController();
+            var request = new Dictionary<string, string>
+            {
+                ["BegingStation"] = "A1",
+                ["EndStation"] = "K1",
+                ["RackId"] = "",
+                ["WorkOrder"] = ""
+            };
+
+            // Act
+            var result = controller.InsertoNeed(request);
+
+            // Assert
+            Assert.AreEqual(200, result.StatusCodeOf());
+            var need = db.Needs().Single();
+            Assert.AreEqual("A1", need.ObjStation);
+            Assert.AreEqual("K1", need.EndStation);
+            Assert.AreEqual("LOT0005", need.WorkOrder);
+            Assert.AreEqual("", need.AssignFlag);
+        }
+
         // ── P1 案例 ──────────────────────────────────────────────
 
         [TestMethod]

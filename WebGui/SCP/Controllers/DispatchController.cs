@@ -183,22 +183,12 @@ namespace SCP.Controllers
         public IActionResult InsertoNeed([FromBody] Dictionary<string, string> need)
         {
 
-            string area = need["Area"];
             string objStation = need["BegingStation"];
             string endStation = need["EndStation"];
             string rackId = need["RackId"];
             string workOrder = need["WorkOrder"];
-            string btnName = need["btnName"];
-            string status = need["Status"];
-            string assignFlag = (area == "C" && btnName == "ConfirmButton") ? "W" : (area == "C" && btnName == "ChangeButton") ? "R" : "";
+            string assignFlag = "";
 
-            if (btnName == "RejectdButton")
-            {
-                workOrder = (status == "1") ? "" : _DBContext.oPort.Where(p => p.StationNo == need["EndStation"]).FirstOrDefault()?.WorkOrder?.ToString() ?? "";
-                endStation = _DBContext.oPort.Where(p => p.Block == "B" && p.UseFlag == "Y" && p.HaveFlag == "0" && (p.BgnToEnd == "" || p.BgnToEnd == null)).FirstOrDefault()?.StationNo.ToString() ?? "";
-                objStation = need["EndStation"];
-            }
-            
             // 修正：當 WorkOrder 為空時，從起點站的 oPort 表讀取
             // 這是為了處理工廠1樓層（FHT1-1F, FHT1-3F）隱藏 WorkOrder 欄位的情況
             if (string.IsNullOrEmpty(workOrder))
