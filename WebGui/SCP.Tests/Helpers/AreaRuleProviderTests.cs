@@ -1,53 +1,97 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SCP.Helpers;
 
 namespace SCP.Tests.Helpers
 {
     /// <summary>
-    /// T11 AreaRuleProvider 測試骨架（ToDo/20261001_清除二廠與舊專案殘留區域代號）
-    /// 對應 spec.md AC-3。Red 階段依實際型別（SCP.Helpers.AreaRuleProvider）補齊 Arrange/Act；
-    /// 設定以 ConfigurationBuilder.AddInMemoryCollection 建立，比照 ChargingStationProviderTests。
+    /// T11 AreaRuleProvider 測試（ToDo/20261001_清除二廠與舊專案殘留區域代號）
+    /// 對應 spec.md AC-3。設定以 ConfigurationBuilder.AddInMemoryCollection 建立，比照 ChargingStationProviderTests。
     /// 命名規則：MethodName_Scenario_ExpectedResult
     /// </summary>
     [TestClass]
     [TestCategory("LegacyCleanup")]
     public class AreaRuleProviderTests
     {
+        /// <summary>一廠 appsettings 的 AreaRules。</summary>
+        private static Dictionary<string, string?> FactoryOneRules() => new Dictionary<string, string?>
+        {
+            ["AreaRules:RegisterAreas:0"] = "A",
+            ["AreaRules:RegisterAreas:1"] = "L",
+            ["AreaRules:RackIdRequiredAreas:0"] = "K",
+            ["AreaRules:RackIdRequiredAreas:1"] = "L",
+            ["AreaRules:ReleaseRoutes:K:0"] = "L",
+            ["AreaRules:ReleaseRoutes:M:0"] = "A",
+            ["AreaRules:ReleaseRoutes:B:0"] = "A",
+        };
+
+        private static AreaRuleProvider Build(Dictionary<string, string?> dict)
+            => new AreaRuleProvider(new ConfigurationBuilder().AddInMemoryCollection(dict).Build());
+
         // ── P0 案例 ──────────────────────────────────────────────
 
         [TestMethod]
         public void GetReleaseTargets_ConfiguredArea_ReturnsConfiguredTargets()
         {
-            // Arrange: AreaRules:ReleaseRoutes:K:0 = "L"
-            // Act:     GetReleaseTargets("K")
-            // Assert:  ["L"]
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(FactoryOneRules());
+
+            // Act
+            var targets = provider.GetReleaseTargets("K");
+
+            // Assert
+            CollectionAssert.AreEqual(new[] { "L" }, targets.ToArray());
+            Assert.IsTrue(provider.IsReleaseArea("K"));
         }
 
         [TestMethod]
         public void GetReleaseTargets_MultipleTargets_KeepsConfiguredOrder()
         {
-            // Arrange: AreaRules:ReleaseRoutes:X = ["M", "Q", "R"]
-            // Act:     GetReleaseTargets("X")
-            // Assert:  順序為 M、Q、R
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var rules = FactoryOneRules();
+            rules["AreaRules:ReleaseRoutes:X:0"] = "M";
+            rules["AreaRules:ReleaseRoutes:X:1"] = "Q";
+            rules["AreaRules:ReleaseRoutes:X:2"] = "R";
+            var provider = Build(rules);
+
+            // Act
+            var targets = provider.GetReleaseTargets("X");
+
+            // Assert
+            CollectionAssert.AreEqual(new[] { "M", "Q", "R" }, targets.ToArray());
         }
 
         [TestMethod]
         public void GetReleaseTargets_UnconfiguredArea_ReturnsEmptyAndIsNotReleaseArea()
         {
-            // Arrange: 一廠設定（K、M、B）
-            // Act:     GetReleaseTargets("Z")、IsReleaseArea("Z")
-            // Assert:  空清單；false
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(FactoryOneRules());
+
+            // Act
+            var targets = provider.GetReleaseTargets("Z");
+
+            // Assert
+            Assert.AreEqual(0, targets.Count);
+            Assert.IsFalse(provider.IsReleaseArea("Z"));
+            Assert.IsFalse(provider.IsReleaseArea("A"));
         }
 
         [TestMethod]
         public void IsRegisterAreaAndIsRackIdRequired_FactoryOneConfig_MatchCurrentBehavior()
         {
-            // Arrange: RegisterAreas = [A, L]；RackIdRequiredAreas = [K, L]
-            // Act:     逐區查詢
-            // Assert:  A、L 為登記區；K、L 貨架條碼必填；其餘皆否
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(FactoryOneRules());
+
+            // Act & Assert
+            Assert.IsTrue(provider.IsRegisterArea("A"));
+            Assert.IsTrue(provider.IsRegisterArea("L"));
+            Assert.IsFalse(provider.IsRegisterArea("K"));
+            Assert.IsFalse(provider.IsRegisterArea("C"));
+
+            Assert.IsTrue(provider.IsRackIdRequired("K"));
+            Assert.IsTrue(provider.IsRackIdRequired("L"));
+            Assert.IsFalse(provider.IsRackIdRequired("A"));
+            Assert.IsFalse(provider.IsRackIdRequired("M"));
         }
 
         // ── P1 案例 ──────────────────────────────────────────────
@@ -55,22 +99,47 @@ namespace SCP.Tests.Helpers
         [TestMethod]
         public void ClickableAreas_FactoryOneConfig_IsUnionOfRegisterAndReleaseAreas()
         {
-            // TODO: 一廠設定 → A、L、K、M、B；不含 C
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(FactoryOneRules());
+
+            // Act
+            var clickable = provider.ClickableAreas;
+
+            // Assert
+            CollectionAssert.AreEquivalent(new[] { "A", "L", "K", "M", "B" }, clickable.ToArray());
+            CollectionAssert.DoesNotContain(clickable.ToArray(), "C");
         }
 
         [TestMethod]
         public void Constructor_MissingAreaRulesSection_ReturnsEmptyRulesWithoutThrowing()
         {
-            // TODO: 設定無 AreaRules 區段 → 所有查詢回傳空或 false，不拋例外
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(new Dictionary<string, string?>());
+
+            // Act & Assert
+            Assert.AreEqual(0, provider.GetReleaseTargets("K").Count);
+            Assert.IsFalse(provider.IsReleaseArea("K"));
+            Assert.IsFalse(provider.IsRegisterArea("A"));
+            Assert.IsFalse(provider.IsRackIdRequired("L"));
+            Assert.AreEqual(0, provider.ClickableAreas.Count);
         }
 
         [TestMethod]
         public void Lookup_LowerCaseOrPaddedValues_AreNormalized()
         {
-            // TODO: 設定值為 " k " 或查詢 "k" → 與 "K" 視為相同
-            Assert.Inconclusive("TODO: T11 Red 階段補實作");
+            // Arrange
+            var provider = Build(new Dictionary<string, string?>
+            {
+                ["AreaRules:RegisterAreas:0"] = " a ",
+                ["AreaRules:RackIdRequiredAreas:0"] = "l",
+                ["AreaRules:ReleaseRoutes:k:0"] = " l ",
+            });
+
+            // Act & Assert
+            Assert.IsTrue(provider.IsRegisterArea("A"));
+            Assert.IsTrue(provider.IsRackIdRequired(" L"));
+            Assert.IsTrue(provider.IsReleaseArea("K"));
+            CollectionAssert.AreEqual(new[] { "L" }, provider.GetReleaseTargets("k").ToArray());
         }
     }
 }
