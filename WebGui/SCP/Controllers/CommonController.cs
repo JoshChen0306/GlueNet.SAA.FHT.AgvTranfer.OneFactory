@@ -149,25 +149,6 @@ namespace SCP.Controllers
             return data;
         }
 
-        [HttpGet("GetHitchhikeStation")]
-        public Dictionary<string, string>? GetHitchhikeStation()
-        {
-            var mission = _DBContext.oMission.FirstOrDefault(x => x.EndStation.StartsWith("G") && x.OkFlag == "Y");
-            Dictionary<string, string>? station = new Dictionary<string, string>();
-            if (mission != null)
-            {
-                var beginStation = _DBContext.oPort.FirstOrDefault(x => x.Block == "G" && x.HaveFlag == "1");
-                var endStation = _DBContext.oPort.FirstOrDefault(x => x.Block == "J" && x.HaveFlag == "0");
-                if (beginStation != null && endStation != null)
-                {
-                    station.Add("beginStation", beginStation.StationNo);
-                    station.Add("endStation", endStation.StationNo);
-                }
-                else station = null;
-            }
-            return station;
-        }
-
         private List<Position> GetTrac(string area)
         {
             #region [讀取暫存架位置及狀態]      
