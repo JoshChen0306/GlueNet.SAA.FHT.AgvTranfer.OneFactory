@@ -49,14 +49,6 @@ namespace svrPair
         }
         #endregion
 
-        #region [Setting == 設定 D、E 區的啟用停用]
-        public void SettingBlockUseFlag(string Block, string UseFlag)
-        {
-            mSql.WriteSqlByAutoOpen("update oPort set UseFlag = @uf where Block = @blk", SP("@uf", UseFlag), SP("@blk", Block));
-            WriteLog(string.Format("OA.設定{0}{1}", Block == "D" ? "生產區 D " : "下料區 E ", UseFlag == "Y" ? "啟用" : "停用"));
-        }
-        #endregion
-
         #region [Initial == 載入設定]
         public void Initial()
         {

@@ -33,14 +33,8 @@
             this.btnAuto = new System.Windows.Forms.Button();
             this.lblOffLine = new System.Windows.Forms.Label();
             this.lblOnLine = new System.Windows.Forms.Label();
-            this.btnBlockDVisibleT = new System.Windows.Forms.Button();
-            this.btnBlockDVisibleF = new System.Windows.Forms.Button();
-            this.btnBlockEVisibleF = new System.Windows.Forms.Button();
-            this.btnBlockEVisibleT = new System.Windows.Forms.Button();
-            this.tlp2 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel9.SuspendLayout();
             this.panel9.SuspendLayout();
-            this.tlp2.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanel9
@@ -117,80 +111,12 @@
             this.lblOnLine.Text = "啟 動\r\n服 務";
             this.lblOnLine.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.lblOnLine.Click += new System.EventHandler(this.lblOnLine_Click);
-            // 
-            // btnBlockDVisibleT
-            // 
-            this.btnBlockDVisibleT.BackColor = System.Drawing.Color.ForestGreen;
-            this.btnBlockDVisibleT.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBlockDVisibleT.Location = new System.Drawing.Point(3, 3);
-            this.btnBlockDVisibleT.Name = "btnBlockDVisibleT";
-            this.btnBlockDVisibleT.Size = new System.Drawing.Size(110, 37);
-            this.btnBlockDVisibleT.TabIndex = 2;
-            this.btnBlockDVisibleT.Text = "生產D區啟用";
-            this.btnBlockDVisibleT.UseVisualStyleBackColor = false;
-            this.btnBlockDVisibleT.Click += new System.EventHandler(this.btnBlockDVisibleT_Click);
-            // 
-            // btnBlockDVisibleF
-            // 
-            this.btnBlockDVisibleF.BackColor = System.Drawing.Color.Pink;
-            this.btnBlockDVisibleF.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBlockDVisibleF.Location = new System.Drawing.Point(119, 3);
-            this.btnBlockDVisibleF.Name = "btnBlockDVisibleF";
-            this.btnBlockDVisibleF.Size = new System.Drawing.Size(111, 37);
-            this.btnBlockDVisibleF.TabIndex = 4;
-            this.btnBlockDVisibleF.Text = "生產D區停用";
-            this.btnBlockDVisibleF.UseVisualStyleBackColor = false;
-            this.btnBlockDVisibleF.Click += new System.EventHandler(this.btnBlockDVisibleF_Click);
-            // 
-            // btnBlockEVisibleF
-            // 
-            this.btnBlockEVisibleF.BackColor = System.Drawing.Color.Pink;
-            this.btnBlockEVisibleF.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBlockEVisibleF.Location = new System.Drawing.Point(119, 46);
-            this.btnBlockEVisibleF.Name = "btnBlockEVisibleF";
-            this.btnBlockEVisibleF.Size = new System.Drawing.Size(111, 38);
-            this.btnBlockEVisibleF.TabIndex = 6;
-            this.btnBlockEVisibleF.Text = "下料E區停用";
-            this.btnBlockEVisibleF.UseVisualStyleBackColor = false;
-            this.btnBlockEVisibleF.Click += new System.EventHandler(this.btnBlockEVisibleF_Click);
-            // 
-            // btnBlockEVisibleT
-            // 
-            this.btnBlockEVisibleT.BackColor = System.Drawing.Color.ForestGreen;
-            this.btnBlockEVisibleT.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBlockEVisibleT.Location = new System.Drawing.Point(3, 46);
-            this.btnBlockEVisibleT.Name = "btnBlockEVisibleT";
-            this.btnBlockEVisibleT.Size = new System.Drawing.Size(110, 38);
-            this.btnBlockEVisibleT.TabIndex = 5;
-            this.btnBlockEVisibleT.Text = "下料E區啟用";
-            this.btnBlockEVisibleT.UseVisualStyleBackColor = false;
-            this.btnBlockEVisibleT.Click += new System.EventHandler(this.btnBlockEVisibleT_Click);
-            // 
-            // tlp2
-            // 
-            this.tlp2.ColumnCount = 2;
-            this.tlp2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp2.Controls.Add(this.btnBlockEVisibleF, 1, 1);
-            this.tlp2.Controls.Add(this.btnBlockDVisibleT, 0, 0);
-            this.tlp2.Controls.Add(this.btnBlockEVisibleT, 0, 1);
-            this.tlp2.Controls.Add(this.btnBlockDVisibleF, 1, 0);
-            this.tlp2.Font = new System.Drawing.Font("微軟正黑體", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(136)));
-            this.tlp2.Location = new System.Drawing.Point(7, 71);
-            this.tlp2.Name = "tlp2";
-            this.tlp2.RowCount = 2;
-            this.tlp2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp2.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tlp2.Size = new System.Drawing.Size(233, 87);
-            this.tlp2.TabIndex = 9;
-            this.tlp2.Visible = false;
-            // 
+            //
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(246, 72);
-            this.Controls.Add(this.tlp2);
             this.Controls.Add(this.tableLayoutPanel9);
             this.Name = "frmMain";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.frmMain_FormClosed);
@@ -198,7 +124,6 @@
             this.tableLayoutPanel9.ResumeLayout(false);
             this.tableLayoutPanel9.PerformLayout();
             this.panel9.ResumeLayout(false);
-            this.tlp2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -210,11 +135,6 @@
         private System.Windows.Forms.Button btnAuto;
         private System.Windows.Forms.Label lblOffLine;
         private System.Windows.Forms.Label lblOnLine;
-        private System.Windows.Forms.Button btnBlockDVisibleT;
-        private System.Windows.Forms.Button btnBlockDVisibleF;
-        private System.Windows.Forms.Button btnBlockEVisibleF;
-        private System.Windows.Forms.Button btnBlockEVisibleT;
-        private System.Windows.Forms.TableLayoutPanel tlp2;
     }
 }
 

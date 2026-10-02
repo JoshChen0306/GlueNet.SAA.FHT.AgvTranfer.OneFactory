@@ -25,7 +25,6 @@ namespace cTest
             {
                 btnAuto.Text = "STOP";//wipService開關
                 btnAuto.BackColor = Color.DarkGreen;//wipService開關背景
-                tlp2.Visible = false;
                 saaService.BgnPair();
                 this.Height = 111;  //this.Width = 262;
             }
@@ -33,36 +32,10 @@ namespace cTest
             {
                 btnAuto.Text = "AUTO";
                 btnAuto.BackColor = Color.White;
-                tlp2.Visible = true;
-                saaService.EndPair();                
-                this.Height = 199;  //this.Width = 262;
+                saaService.EndPair();
             }
             lblOnLine.BackColor = (btnAuto.Text == "STOP") ? Color.DarkGreen : Color.DarkGray;
             lblOffLine.BackColor = (btnAuto.Text == "AUTO") ? Color.DarkRed : Color.DarkGray;
-        }
-
-        private void btnBlockDVisibleT_Click(object sender, EventArgs e)
-        {
-            saaService.SettingBlockUseFlag("D", "Y");
-            MessageBox.Show("生產區 D 啟用");
-        }
-
-        private void btnBlockDVisibleF_Click(object sender, EventArgs e)
-        {
-            saaService.SettingBlockUseFlag("D", "N");
-            MessageBox.Show("生產區 D 停用");
-        }
-
-        private void btnBlockEVisibleT_Click(object sender, EventArgs e)
-        {
-            saaService.SettingBlockUseFlag("E", "Y");
-            MessageBox.Show("下料區 E 啟用");
-        }
-
-        private void btnBlockEVisibleF_Click(object sender, EventArgs e)
-        {
-            saaService.SettingBlockUseFlag("E", "N");
-            MessageBox.Show("下料區 E 停用");
         }
 
         private void frmMain_Load(object sender, EventArgs e)
