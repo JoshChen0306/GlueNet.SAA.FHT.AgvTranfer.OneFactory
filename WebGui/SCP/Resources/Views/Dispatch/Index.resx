@@ -135,9 +135,6 @@
   <data name="BeginStation" xml:space="preserve">
     <value>派送起點</value>
   </data>
-  <data name="Change" xml:space="preserve">
-    <value>換料</value>
-  </data>
   <data name="Close" xml:space="preserve">
     <value>關閉</value>
   </data>
@@ -149,9 +146,6 @@
   </data>
   <data name="Map" xml:space="preserve">
     <value>即時地圖</value>
-  </data>
-  <data name="Reject" xml:space="preserve">
-    <value>退貨</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">
     <value>掃描條碼</value>
@@ -173,9 +167,6 @@
   </data>
   <data name="Tasks" xml:space="preserve">
     <value>任務列表</value>
-  </data>
-  <data name="UnloadFinish" xml:space="preserve">
-    <value>下料完成</value>
   </data>
   <data name="UseCode" xml:space="preserve">
     <value>使用條碼</value>

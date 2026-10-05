@@ -61,6 +61,7 @@
     <Compile Include="IntegrationTestBase.cs" />
     <Compile Include="GenerateoRequireByoNeed_ResilienceTests.cs" />
     <Compile Include="GenerateoRequireByoNeed_ParameterizationTests.cs" />
+    <Compile Include="GenerateoRequireByoNeed_AreaGateTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

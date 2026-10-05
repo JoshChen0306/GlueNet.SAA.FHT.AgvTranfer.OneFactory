@@ -65,32 +65,11 @@
                         </button>
                     </div>
                 </div>
-                @* 掃描機台 / 手動輸入機台（2F 專用） *@
-                <div class="row position-relative mb-3" id="machineScanRow" style="display: none;">
-                    <label class="col-2 col-form-label">機台號碼</label>
-                    <div class="col-10 d-flex align-items-center">
-                        <button type="button" class="btn btn-info rounded-pill me-2" id="machine-scan-btn">
-                            <i class="fa-solid fa-qrcode me-1"></i>掃描機台
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary rounded-pill" id="machine-manual-btn">
-                            <i class="fa-solid fa-keyboard me-1"></i>手動輸入
-                        </button>
-                    </div>
-                </div>
                 <div class="row position-relative">
                     <label class="col-2 col-form-label"></label>
                     <div class="col-8 d-flex align-items-center justify-content-end">
-                        @if (ViewBag.Role == "5")
-                        {
-                                <a class="btn btn-success rounded-pill me-4" id="UnloadButton" role="button">@Localizer["UnloadFinish"]</a>
-                        }
-                        else if (ViewBag.Role == "6" || ViewBag.Role == "1")
-                        {
-                                <a class="btn btn-primary rounded-pill me-3 ConfirmButton" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
-                                <a class="btn btn-secondary rounded-pill me-3 ConfirmButton" id="ChangeButton" role="button">@Localizer["Change"]</a>
-                                <a class="btn btn-success rounded-pill me-4 ConfirmButton" id="RejectdButton" role="button">@Localizer["Reject"]</a>
-                        }
-                        else
+                        @* 群組 5 原本只有舊專案 F 區的「下料完成」，一廠不顯示按鈕 *@
+                        @if (ViewBag.Role != "5")
                         {
                                 <a class="btn btn-primary rounded-pill me-3 ConfirmButton" id="ConfirmButton" role="button">@Localizer["Submit"]</a>
                         }
@@ -175,79 +154,6 @@
             </div>
         </div>
     </div>
-    @*下料完成*@
-    <div class="modal fade" id="unloadModalToggle" aria-hidden="true" aria-labelledby="unloadModalToggleLabel" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="unloadModalToggleLabel"><strong>確認站點</strong></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    站點是否下料完成
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-target="#dispatchModalToggle2" data-bs-toggle="modal">@Localizer["Submit"]</button>
-                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @*退貨選擇*@
-    <div class="modal fade" id="RejectModalToggle" aria-hidden="true" aria-labelledby="RejectModalToggleLabel" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="RejectModalToggleLabel"><strong>退貨選擇</strong></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <label class="col-2 col-form-label">狀態選擇</label>
-                    <div class="col-10">
-                        <select class="form-select w-75 " name="Status" id="Status" required>
-                            <option value="1">空盤</option>
-                            <option value="3">料盤</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="SubmitButton btn btn-primary rounded-pill" data-bs-dismiss="modal">@Localizer["Submit"]</button>
-                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    @* 帳密驗證 *@
-    <div class="modal fade" id="ReLoginModalToggle" aria-hidden="true" aria-labelledby="ReLoginModalToggleLabel" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="ReLoginModalToggleLabel"><strong>帳號驗證</strong></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="col-10">
-                        <div class="row mb-3">
-                            <label class="col-2 col-form-label">帳號:</label>
-                            <div class="col-10 d-flex align-items-center">
-                                <input class="form-control me-3 w-75" id="userId" name="userId" placeholder="帳號" />
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <label class="col-2 col-form-label">密碼:</label>
-                            <div class="col-10 d-flex align-items-center">
-                                <input class="form-control me-3 w-75" type="password" id="password" name="password" placeholder="密碼" />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary rounded-pill" id="reLoginButton" data-bs-dismiss="modal">@Localizer["Submit"]</button>
-                    <button type="button" class="btn btn-danger rounded-pill" data-bs-dismiss="modal">取消</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div class="modal fade" id="dispatchModalToggle2" aria-hidden="true" aria-labelledby="dispatchModalToggleLabel2" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -305,10 +211,6 @@
                             <div class="col-4"><strong>貨架：</strong></div>
                             <div class="col-8"><span id="stationLotCurrentRackId">無</span></div>
                         </div>
-                        <div class="row" id="vcutTagRow" style="display: none;">
-                            <div class="col-4"><strong>🏷️ V Cut 專用：</strong></div>
-                            <div class="col-8"><span id="stationLotVcutTag">否</span></div>
-                        </div>
                     </div>
                     
                     @* 物料登記/修改表單 (動態顯示) *@
@@ -331,15 +233,6 @@
                                     <i class="fa-solid fa-qrcode"></i>
                                 </button>
                             </div>
-                        </div>
-                        <div class="mb-3" id="vcutCheckboxRow">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="registerLotVcut">
-                                <label class="form-check-label" for="registerLotVcut">
-                                    🏷️ V Cut 專用物料
-                                </label>
-                            </div>
-                            <small class="text-muted">勾選後，此物料僅能派送至 V Cut 區</small>
                         </div>
                     </div>
                 </div>
@@ -384,6 +277,8 @@
             window.defaultFloor = "@ViewBag.DefaultFloor";
             // 物料登記畫面是否顯示「貨架條碼」欄位（false 時前端隱藏欄位，送出固定帶 -1）
             window.showRackIdField = @(((bool?)ViewBag.ShowRackIdField ?? true) ? "true" : "false");
+            // 區域規則（appsettings AreaRules）：registerAreas / releaseAreas / clickableAreas
+            window.areaRules = @Html.Raw(Json.Serialize(ViewBag.AreaRules));
         </script>
         <script src="~/lib/html5-qrcode/html5-qrcode.min.js"></script>
         <script type="module" src="~/js/Map.js"></script>

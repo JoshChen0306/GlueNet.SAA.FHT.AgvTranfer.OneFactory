@@ -135,9 +135,6 @@
   <data name="BeginStation" xml:space="preserve">
     <value>From</value>
   </data>
-  <data name="Change" xml:space="preserve">
-    <value>Change</value>
-  </data>
   <data name="Close" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -149,9 +146,6 @@
   </data>
   <data name="Map" xml:space="preserve">
     <value>Map</value>
-  </data>
-  <data name="Reject" xml:space="preserve">
-    <value>Reject</value>
   </data>
   <data name="ScanBarcode" xml:space="preserve">
     <value>Scan Barcode</value>
@@ -173,9 +167,6 @@
   </data>
   <data name="Tasks" xml:space="preserve">
     <value>Tasks</value>
-  </data>
-  <data name="UnloadFinish" xml:space="preserve">
-    <value>Unload Finish</value>
   </data>
   <data name="UseCode" xml:space="preserve">
     <value>Use Code</value>

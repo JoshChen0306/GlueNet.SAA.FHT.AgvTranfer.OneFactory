@@ -31,17 +31,24 @@ function loadMapDataLocal(area) {
     });
 }
 
-// 綁定 M/T/Q 區站點的物料管理點擊事件
-function bindStationLotEvents() {
-    console.log("=== 綁定 M/T/Q 區站點點擊事件 ===");
+// 區域規則（由 Dispatch/Index 從 appsettings AreaRules 傳入）
+function getAreaRules() {
+    return window.areaRules || { registerAreas: [], releaseAreas: [], clickableAreas: [] };
+}
 
-    // 標記 M、T、Q 區的站點（支援物料登記）
+// 取站號的區域代號（第一個字母）
+function getStationArea(stationNo) {
+    return stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
+}
+
+// 標記地圖上可點選的站點（AreaRules 的登記區與回送區）
+function bindStationLotEvents() {
+    var clickableAreas = getAreaRules().clickableAreas;
     $('.station-btn').each(function () {
         var stationNo = $(this).attr('id');
-        if (stationNo && (stationNo.startsWith('M') || stationNo.startsWith('T') || stationNo.startsWith('Q') || stationNo.startsWith('R'))) {
+        if (stationNo && clickableAreas.indexOf(getStationArea(stationNo)) !== -1) {
             $(this).addClass('lot-manageable');
             $(this).css('cursor', 'pointer');
-            console.log("標記可管理站點:", stationNo);
         }
     });
 }
@@ -53,11 +60,10 @@ window.bindStationLotEvents = bindStationLotEvents;
 $(document).on('click', '.station-btn', function (e) {
     var stationNo = $(this).attr('id');
 
-    // 處理 A/B/M/T/J/Q/H/K/L 區（物料管理）和 O/P/S/N/G/K/I 區（標記空板/Release）
-    var validAreas = ['A', 'B', 'M', 'T', 'O', 'P', 'S', 'N', 'J', 'G', 'Q', 'R', 'H', 'K', 'I', 'L'];
-    var stationArea = stationNo ? stationNo.substring(0, 1).toUpperCase() : '';
+    // 只處理 AreaRules 的登記區與回送區
+    var stationArea = getStationArea(stationNo);
 
-    if (!stationNo || validAreas.indexOf(stationArea) === -1) {
+    if (!stationNo || getAreaRules().clickableAreas.indexOf(stationArea) === -1) {
         return; // 不是支援的區域，不處理
     }
 
@@ -101,7 +107,6 @@ $(function () {
     var form = $('#DispatchForm');
     var beginSations = [];
     var rowData = {};
-    var btnName = "";
     UpdateDispatch();
     $(".Site").prop("disabled", true);
 
@@ -163,8 +168,6 @@ $(function () {
             } else {
                 selectFirstVisibleArea();
             }
-            // 隱藏掃描機台按鈕（3F 不需要）
-            $("#machineScanRow").hide();
             // 隱藏 Rack 碼和工單欄位（3F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
@@ -176,15 +179,12 @@ $(function () {
             } else {
                 selectFirstVisibleArea();
             }
-            // 隱藏掃描機台按鈕（1F 不需要）
-            $("#machineScanRow").hide();
             // 隱藏 Rack 碼和工單欄位（1F 已有建物料流程）
             $("#rackIdRow").hide();
             $("#workOrderRow").hide();
         } else {
             // 其他樓層：選擇第一個可見區域
             selectFirstVisibleArea();
-            $("#machineScanRow").hide();
             // 顯示 Rack 碼和工單欄位
             $("#rackIdRow").show();
             $("#workOrderRow").show();
@@ -210,13 +210,6 @@ $(function () {
         // 重置第二個選項的選擇
         $('#BeginStation').val('');
         $('#EndStation').val('');
-        if (area == "C") {
-            $('#ChangeButton').show();
-            $('#RejectdButton').show();
-        } else {
-            $('#ChangeButton').hide();
-            $('#RejectdButton').hide();
-        }
 
         // 工廠1：FHT1-1F 和 FHT1-3F 隱藏 Rack碼 和 掃描工單（已在物料登記時設定）
         if (currentFloor === "FHT1-3F" || currentFloor === "FHT1-1F") {
@@ -386,23 +379,11 @@ $(function () {
                 filterEndStationOptions("M", "0");
                 break;
             case "B":
-                filterEndStationOptions("C", null);
-                break;
-            case "D":
-                filterEndStationOptions("E", "0");
-                break;
-            case "H":
-                filterEndStationOptions("K", "0");
+                // B 區空板回送走 Release（B→A），不提供手動派送終點
                 break;
             case "L":
                 // 工廠1: L → B
                 filterEndStationOptions("B", "0");
-                break;
-            case "Q":
-                filterEndStationOptions("S", "0");
-                break;
-            case "R":
-                filterEndStationOptions("N", "0");
                 break;
             default:
                 $('#EndStation option').show();
@@ -415,18 +396,6 @@ $(function () {
         $(this).select();
     });
 
-    // 當 WorkOrder 輸入框失去焦點時觸發事件
-    $('#WorkOrder').on('blur', function () {
-        var inputValue = $(this).val();
-        var area = $("#Area").val();
-        var InterfaceName = $(`[data-name='${inputValue}']`);
-
-        if (InterfaceName.length > 0 && area === "D") {
-            var workOrderData = InterfaceName.attr('data-workorder');
-            $(this).val(workOrderData);
-        }
-    });
-
     //點擊確認檢查各項欄位輸出是否有問題
     $(".ConfirmButton").on("click", function (event) {
         var inputs = form.find('select[required]');
@@ -434,8 +403,6 @@ $(function () {
         var area = $("#Area").val();
         var beginStation = $("#BeginStation").val();
         var endStation = $("#EndStation").val();
-        var modal = "";
-        btnName = event.target.id;
 
         inputs.each(function () {
             if (!this.checkValidity()) {
@@ -459,12 +426,7 @@ $(function () {
 
         // 驗證：終點站必選
         if (!endStation || endStation === "" || endStation === "選擇站點") {
-            // 根據區域顯示不同的提示訊息
-            var endAreaName = "目標區域";
-            if (area === "Q") {
-                endAreaName = "清洗區";
-            }
-            alert('沒有可用的派送終點，請確認' + endAreaName + '有空位');
+            alert('沒有可用的派送終點，請確認目標區域有空位');
             allValid = false;
         }
 
@@ -475,7 +437,7 @@ $(function () {
         if (allValid && beginStationData && beginStationData.haveFlag === "0") {
             alert('派送起點為空貨架，請重新選擇站點');
             allValid = false;
-        } else if (allValid && endStationData && endStationData.haveFlag !== "0" && area !== "C") {
+        } else if (allValid && endStationData && endStationData.haveFlag !== "0") {
             alert('派送終點已有貨架，請重新選擇站點');
             allValid = false;
         }
@@ -485,70 +447,7 @@ $(function () {
         }
 
         // 手動顯示 modal
-        if (btnName == "ConfirmButton") {
-            modal = $("#dispatchModalToggle");
-        } else {
-            modal = $("#ReLoginModalToggle");
-            $("#userId").val("");
-            $("#password").val("");
-        }
-        var myModal = new bootstrap.Modal(modal, {
-            keyboard: false
-        });
-        myModal.show();
-    });
-
-    $("#reLoginButton").on("click", function () {
-        var userId = $("#userId").val();
-        var password = $("#password").val();
-        $.ajax({
-            type: "POST",
-            url: "/Dispatch/ReLogin",
-            contentType: "application/json",
-            data: JSON.stringify({ userId, password }),
-            success: function (response) {
-                var modal = ""
-                if (btnName == "RejectdButton") {
-                    modal = $("#RejectModalToggle")
-                } else {
-                    modal = $("#dispatchModalToggle")
-                }
-
-                var myModal = bootstrap.Modal.getOrCreateInstance(modal, {
-                    keyboard: false
-                });
-                myModal.show();
-            },
-            error: function (error) {
-                alert("帳號密碼錯誤或權限不足")
-                $("#ReLoginModalToggle").modal("hide");
-            }
-        });
-
-    })
-
-    //下料完成按鈕事件
-    $("#UnloadButton").on("click", function () {
-        var inputs = form.find('select[required]');
-        var allValid = true;
-        var area = $("#Area").val();
-        var beginStation = $("#BeginStation").val();
-        var endStation = $("#EndStation").val();
-
-        if (area !== "F") {
-            alert("下料區才可做下料完成!!")
-            allValid = false;
-        } else if (!beginStation) {
-            alert("請輸入下料起點")
-            allValid = false;
-        }
-
-        if (!allValid) {
-            return;
-        }
-
-        // 手動顯示 modal
-        var myModal = new bootstrap.Modal($('#unloadModalToggle'), {
+        var myModal = new bootstrap.Modal($("#dispatchModalToggle"), {
             keyboard: false
         });
         myModal.show();
@@ -556,8 +455,6 @@ $(function () {
 
     //點擊派車發送給後端派車資訊
     $(".SubmitButton").on("click", function () {
-        var area = $("#Area").val();
-        var status = $("#Status").val();
         // 暫時啟用被禁用的元素
         $("#EndStation").prop("disabled", false);
         $("#WorkOrder").prop("disabled", false);
@@ -568,17 +465,14 @@ $(function () {
         $.each(formData, function () {
             jsonData[this.name] = this.value;
         });
-        jsonData["btnName"] = btnName;
-        jsonData["Status"] = status;
         // 恢復被禁用的元素
         $("#EndStation").prop("disabled", true);
         $("#WorkOrder").prop("disabled", true);
 
-        var url = area === "F" ? "/Dispatch/UpdateoPort" : "/Dispatch/InsertoNeed";
         // 使用 AJAX 發送表單資料到後端
         $.ajax({
             type: "POST",
-            url: url, // 替換為你的後端 URL
+            url: "/Dispatch/InsertoNeed",
             data: JSON.stringify(jsonData),
             contentType: "application/json",
             success: function (response) {
@@ -677,129 +571,6 @@ $(function () {
         useScannedCode()
     })
 
-    // ========== 掃描機台功能（2F 專用） ==========
-
-    // 掃描模式：workOrder 或 machine
-    var scanMode = "workOrder";
-
-    // 掃描機台按鈕
-    $("#machine-scan-btn").on("click", function () {
-        console.log("點擊掃描機台按鈕");
-        scanMode = "machine";
-        startMachineScanner();
-    });
-
-    // 手動輸入機台號碼按鈕（測試用）
-    $("#machine-manual-btn").on("click", function () {
-        console.log("點擊手動輸入機台號碼按鈕");
-        var machineInput = prompt("請輸入機台號碼（如 O1、P1）：");
-        if (machineInput && machineInput.trim() !== "") {
-            processManualMachineInput(machineInput.trim());
-        }
-    });
-
-    // 處理手動輸入的機台號碼
-    function processManualMachineInput(inputMachineName) {
-        console.log("手動輸入機台號碼:", inputMachineName);
-
-        // 轉大寫處理
-        inputMachineName = inputMachineName.toUpperCase();
-
-        // 比對 MachineName 找到對應站點
-        var matchedStation = null;
-        for (var stationNo in stationCache) {
-            var station = stationCache[stationNo];
-            // 直接比對站點名稱
-            if (stationNo.toUpperCase() === inputMachineName) {
-                matchedStation = stationNo;
-                break;
-            }
-            // 比對 MachineName
-            if (station.machineName && station.machineName.toUpperCase().includes(inputMachineName)) {
-                matchedStation = stationNo;
-                break;
-            }
-        }
-
-        // 驗證 1：站點是否存在
-        if (!matchedStation) {
-            alert("找不到對應機台：" + inputMachineName + "\n請輸入有效的站點名稱（如 O1、P1）");
-            return;
-        }
-
-        // 驗證 2：是否為有效的終點區域（O/P 區）
-        var areaPrefix = matchedStation.substring(0, 1);
-        if (areaPrefix !== "O" && areaPrefix !== "P") {
-            alert("無效的終點區域：" + matchedStation + "\n只能派送到 O 區或 P 區");
-            return;
-        }
-
-        // 驗證 3：站點是否為空架 (HaveFlag = 0)
-        var stationData = stationCache[matchedStation];
-        if (stationData && stationData.haveFlag !== "0") {
-            alert("終點站點已有貨物：" + matchedStation + "\n請選擇空架");
-            return;
-        }
-
-        console.log("找到有效站點:", matchedStation);
-
-        // 設定終點（保持 disabled 狀態，使用者無法手動變更）
-        $("#EndStation").val(matchedStation);
-        $("#EndStation").prop("disabled", true);  // 保持 disabled
-
-        // 取得終點區域
-        var destinationArea = matchedStation.substring(0, 1).toUpperCase();
-
-        // 依據終點區域過濾起點選項
-        filterBeginStationByDestination(destinationArea);
-
-        // 啟用起點選擇
-        $("#BeginStation").prop("disabled", false);
-
-        // 提示使用者
-        alert("已設定派送終點：" + matchedStation);
-    }
-
-    // 掃描機台掃描器
-    function startMachineScanner() {
-        // 顯示掃描 Modal
-        var scanModal = new bootstrap.Modal(document.getElementById('barcodeModal'));
-        scanModal.show();
-
-        setTimeout(() => {
-            initMachineScanner();
-        }, 500);
-    }
-
-    // 初始化機台掃描器
-    function initMachineScanner() {
-        const scannerDiv = document.getElementById('qr-reader');
-        if (!scannerDiv) return;
-
-        const config = {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-            showTorchButtonIfSupported: true
-        };
-
-        const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config, false);
-
-        html5QrcodeScanner.render(function onScanSuccess(decodedText) {
-            console.log('機台掃描成功:', decodedText);
-
-            // 停止掃描器
-            html5QrcodeScanner.clear();
-
-            // 關閉掃描 Modal
-            bootstrap.Modal.getInstance(document.getElementById('barcodeModal')).hide();
-
-            // 使用共用函數處理掃描結果（與手動輸入使用相同驗證邏輯）
-            processManualMachineInput(decodedText);
-
-            scanMode = "workOrder";
-        });
-    }
-
     // ========== 站點物料管理功能 ==========
 
     // 目前操作的站點
@@ -834,11 +605,6 @@ $(function () {
 
         // 工單和貨架顯示
         var workOrderDisplay = stationInfo.workOrder || "無";
-        // 判斷物料標記狀況
-        var isVcutDone = stationInfo.workOrder && stationInfo.workOrder.includes("^VCUT^DONE");
-        var isVcutMaterial = stationInfo.workOrder && stationInfo.workOrder.includes("^VCUT") && !isVcutDone;
-        // 顯示時移除標記
-        workOrderDisplay = workOrderDisplay.replace("^VCUT^DONE", "").replace("^VCUT", "");
         if (workOrderDisplay.length > 30) {
             workOrderDisplay = workOrderDisplay.substring(0, 30) + "...";
         }
@@ -848,32 +614,9 @@ $(function () {
         // 判斷站點區域
         var stationArea = currentLotStation.substring(0, 1).toUpperCase();
 
-        // V Cut 標記顯示（T 區有料時顯示，工廠1 M區不需要）
-        if (stationInfo.haveFlag !== "0" && (stationArea === "T")) {
-            $("#vcutTagRow").show();
-            if (isVcutDone) {
-                $("#stationLotVcutTag").text("已加工完成").addClass("fw-bold").css("color", "#9b59b6");
-            } else if (isVcutMaterial) {
-                $("#stationLotVcutTag").text("待加工").addClass("text-warning fw-bold").css("color", "");
-            } else {
-                $("#stationLotVcutTag").text("否").removeClass("text-warning fw-bold").css("color", "");
-            }
-        } else {
-            $("#vcutTagRow").hide();
-        }
-
         // 清空輸入欄位
         $("#registerLotWorkOrder").val("");
         $("#registerLotRackId").val("");
-        $("#registerLotVcut").prop("checked", false);
-
-        // T 區會自動標謘為已加工完成，不需要顯示 checkbox
-        // 工廠1所有區域（A/B/K/L/M）都不需要 V Cut 標記（V Cut 是二廠 M區雷雕區的功能）
-        if (stationArea === "T" || stationArea === "J" || stationArea === "Q" || stationArea === "R" || stationArea === "H" || stationArea === "I" || stationArea === "K" || stationArea === "L" || stationArea === "A" || stationArea === "B" || stationArea === "M") {
-            $("#vcutCheckboxRow").hide();
-        } else {
-            $("#vcutCheckboxRow").hide();
-        }
         $("#lotFormSection").addClass("d-none");
 
         // 依設定決定是否隱藏「貨架條碼」欄位（隱藏時送出固定帶 -1）
@@ -888,58 +631,27 @@ $(function () {
         footer.html('<button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">關閉</button>');
 
         // 判斷區域類型：A/L 區為物料登記區，B/K/M 區為 Release 操作區
-        var releaseAreas = ['B', 'O', 'P', 'S', 'N', 'G', 'K', 'M', 'I'];
-        var isReleaseArea = releaseAreas.indexOf(stationArea) !== -1;
+        var isReleaseArea = getAreaRules().releaseAreas.indexOf(stationArea) !== -1;
 
         if (isReleaseArea) {
-            // I 區特別處理：支援物料登記（用於 NG 回送）
-            if (stationArea === "I") {
-                if (stationInfo.haveFlag === "3") {
-                    // 料盤 - 可標記為空板
-                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
-                } else if (stationInfo.haveFlag === "1") {
-                    // 空板 - 可 Release 回送 或 物料登記（NG 回送）
-                    // 空板 - 可 Release 回送 或 物料登記（NG 回送）
-                    if (!window.allowedReleaseAreas || window.allowedReleaseAreas.includes(stationArea)) {
-                        footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
-                    }
-                    footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
-                } else if (stationInfo.haveFlag === "0") {
-                    // 空架 - 可物料登記
-                    footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
+            // 回送區 - 顯示「標記空板」和「Release」按鈕
+            if (stationInfo.haveFlag === "3") {
+                // 料盤 - 可標記為空板
+                footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
+            } else if (stationInfo.haveFlag === "1") {
+                // 空板 - 可 Release 回送，需檢查權限
+                if (!window.allowedReleaseAreas || window.allowedReleaseAreas.includes(stationArea)) {
+                    footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
                 }
-            } else {
-                // O/P/S/N/G/K 區 - 顯示「標記空板」和「Release」按鈕
-                if (stationInfo.haveFlag === "3") {
-                    // 料盤 - 可標記為空板
-                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
-                } else if (stationInfo.haveFlag === "1") {
-                    // 空板 - 可 Release 回送
-                    // 空板 - 可 Release 回送，需檢查權限
-                    if (!window.allowedReleaseAreas || window.allowedReleaseAreas.includes(stationArea)) {
-                        footer.prepend('<button type="button" class="btn btn-success rounded-pill me-2" id="btnRelease">🚚 Release 回送</button>');
-                    }
-                }
-                // HaveFlag=0 (空架) 時不顯示任何操作按鈕
             }
+            // HaveFlag=0 (空架) 時不顯示任何操作按鈕
         } else {
-            // A/M/T/J/Q/R 區 - 物料登記操作
+            // 物料登記區
             if (stationInfo.haveFlag === "0" || stationInfo.haveFlag === "1") {
                 // 空架或空板 - 顯示「物料登記」
                 footer.prepend('<button type="button" class="btn btn-primary rounded-pill me-2" id="btnRegisterLot">📋 物料登記</button>');
-            } else if (stationArea === "T" && stationInfo.haveFlag === "3") {
-                // T 區特別處理：根據 WorkOrder 是否包含 DONE 移除標記
-                var workOrder = stationInfo.workOrder || "";
-                if (workOrder.indexOf("DONE") === -1) {
-                    // 未完成加工：顯示「標記空板」（讓人員取走物料去加工）
-                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnMarkEmptyTray">📦 標記空板</button>');
-                } else {
-                    // 已完成加工：顯示「物料修改」和「清除物料」
-                    footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
-                    footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
-                }
             } else {
-                // M/J/Q/R 區 - 有物料時顯示「物料修改」和「清除物料」
+                // 有物料時顯示「物料修改」和「清除物料」
                 footer.prepend('<button type="button" class="btn btn-danger rounded-pill me-2" id="btnClearLot">🗑️ 清除物料</button>');
                 footer.prepend('<button type="button" class="btn btn-warning rounded-pill me-2" id="btnEditLot">✏️ 物料修改</button>');
             }
@@ -968,16 +680,8 @@ $(function () {
         // 帶入現有值
         var stationInfo = stationCache[currentLotStation];
         if (stationInfo) {
-            var workOrder = stationInfo.workOrder || "";
-            var isVcutDone = workOrder.includes("^VCUT^DONE");
-            var isVcut = workOrder.includes("^VCUT") && !isVcutDone;
-            // 移除標記以便編輯
-            workOrder = workOrder.replace("^VCUT^DONE", "").replace("^VCUT", "");
-            $("#registerLotWorkOrder").val(workOrder);
+            $("#registerLotWorkOrder").val(stationInfo.workOrder || "");
             $("#registerLotRackId").val(stationInfo.rackId || "");
-            // 工廠1所有區域都不顯示 V Cut checkbox（V Cut 是二廠 M區雷雕區的功能）
-            var stationArea = currentLotStation.substring(0, 1).toUpperCase();
-            $("#vcutCheckboxRow").hide();
         }
 
         $("#lotFormSection").removeClass("d-none");
@@ -1103,23 +807,20 @@ $(function () {
     function submitLotForm() {
         var workOrder = $("#registerLotWorkOrder").val().trim();
         var rackId = $("#registerLotRackId").val().trim();
-        var isVcutMaterial = $("#registerLotVcut").is(":checked");
 
         // 貨架條碼欄位隱藏時，固定帶 -1 哨兵值（代表無貨架，通過後端必填驗證，AGV 端認得 -1）
         if (window.showRackIdField === false) {
             rackId = "-1";
         }
 
-        // 驗證：工單必填（R 區例外，工單選填）
-        var stationArea = currentLotStation.substring(0, 1).toUpperCase();
-        console.log("submitLotForm - currentLotStation:", currentLotStation, "stationArea:", stationArea);
-        if (!workOrder && stationArea !== "R") {
+        // 驗證：工單必填
+        if (!workOrder) {
             alert("請輸入工單條碼");
             $("#registerLotWorkOrder").focus();
             return;
         }
 
-        console.log("提交物料表單:", currentLotStation, workOrder, rackId, "V Cut:", isVcutMaterial);
+        console.log("提交物料表單:", currentLotStation, workOrder, rackId);
 
         $.ajax({
             type: "POST",
@@ -1128,8 +829,7 @@ $(function () {
             data: JSON.stringify({
                 stationNo: currentLotStation,
                 workOrder: workOrder,
-                rackId: rackId,
-                isVcutMaterial: isVcutMaterial ? "true" : "false"
+                rackId: rackId
             }),
             success: function (response) {
                 alert((lotOperationMode === "edit" ? "修改" : "登記") + "成功！站點：" + currentLotStation);
@@ -1245,26 +945,6 @@ $(function () {
 });
 
 /**
- * 更新站點資料快取
- */
-function updateStationCache(stations) {
-    stationCache = {};
-    stations.forEach(function (s) {
-        stationCache[s.stationNo] = {
-            haveFlag: s.haveFlag,
-            reserve: s.reserve,
-            workOrder: s.workOrder,
-            rackId: s.rackId,
-            putTime: s.putTime,
-            block: s.block,
-            machineName: s.machineName
-        };
-    });
-    isCacheLoaded = true;
-    console.log('站點資料已更新:', Object.keys(stationCache).length, '個站點');
-}
-
-/**
  * 篩選起點選項
  */
 function filterBeginStationOptions(selectedValue) {
@@ -1364,40 +1044,6 @@ function filterBeginStationOptions(selectedValue) {
 
 
 
-        case "L":
-            // L 區（4F 烘烤後）作為起點：只顯示 L1-L4 有料且非回送物料
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
-
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                // L 區且有料 (HaveFlag = 3)
-                if (!tracname.startsWith("L") || station.haveFlag !== "3") return false;
-
-                // 只顯示 L1-L4
-                var portNum = parseInt(tracname.replace("L", ""));
-                if (portNum < 1 || portNum > 4) return false;
-
-                // ★ 排除回送物料 ★
-                var workOrder = station.workOrder || "";
-                if (workOrder.includes("^RETURN") || workOrder.includes("^NG")) {
-                    return false;  // 回送物料不可再次派送
-                }
-
-                // 更新顯示文字：StationNo + WorkOrder
-                var displayWorkOrder = workOrder;
-                if (displayWorkOrder.length > 35) {
-                    displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
-                }
-                $(this).text(tracname + " - " + displayWorkOrder);
-                return true;
-            }).show();
-            break;
-
-
-
         case "A":
             // ============================================
             // 工廠1 路線1: A區作為起點，顯示有料的站點 (HaveFlag = 3)
@@ -1462,12 +1108,6 @@ function filterBeginStationOptions(selectedValue) {
             break;
     }
 }
-
-/**
- * 依據終點區域過濾起點選項（用於掃描機台後的帳料選擇）
- * @param {string} destinationArea - 終點區域代號（O、P、T）
- */
-
 
 /**
  * 自動選擇終點站（統一處理邏輯）
@@ -1578,44 +1218,6 @@ function filterEndStationOptions(prefix, requiredHaveFlag) {
 
         return station.haveFlag === requiredHaveFlag;
     }).show();
-}
-
-/**
- * 自動選擇終點站（限定編號範圍）
- * @param {string} prefix - 終點區域前綴
- * @param {string} requiredHaveFlag - HaveFlag 條件
- * @param {string} requiredReserve - Reserve 梺件 (Y/N)
- * @param {number} minPort - 最小站點編號
- * @param {number} maxPort - 最大站點編號
- */
-function autoSelectEndStationInRange(prefix, requiredHaveFlag, requiredReserve, minPort, maxPort) {
-    var found = false;
-    $('#EndStation option').each(function () {
-        if (found) return false;
-
-        var tracname = $(this).val();
-        if (!tracname || !tracname.startsWith(prefix)) return true;
-
-        var station = stationCache[tracname];
-        if (!station) return true;
-
-        // 檢查站點編號範圍
-        var portNum = parseInt(tracname.replace(prefix, ""));
-        if (portNum < minPort || portNum > maxPort) return true;
-
-        var haveFlagMatch = !requiredHaveFlag || station.haveFlag === requiredHaveFlag;
-        var reserveMatch = !requiredReserve || station.reserve === requiredReserve;
-
-        if (haveFlagMatch && reserveMatch) {
-            $('#EndStation').val(tracname);
-            found = true;
-            return false;
-        }
-    });
-
-    if (!found) {
-        console.warn(`找不到符合條件的 ${prefix}${minPort}-${prefix}${maxPort} 區站點`);
-    }
 }
 
 //即時更新右側任務列表
