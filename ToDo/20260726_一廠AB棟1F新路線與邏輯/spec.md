@@ -16,10 +16,11 @@
    - R1：中光電 D → 迅得 2/3/4（檢查目的空位 → 搬運 → 更新物料資訊）
    - R2：迅得 2/3/4 → 中光電 C（多來源合併、**最舊物料優先 FIFO**）
    - R3：迅得 1 → 中光電 B
+   - 觸發方式（2026-10-06 客戶流程圖）：R1、R4 由中光電貨架 Sensor ON 自動派送；**R2、R3 由人員派發**
    - R4：中光電 A → 迅得 5/6/7（原文件 E 欄「檢查2/3/4」為筆誤，2026-07-26 已確認為 5/6/7）
 2. **地圖**：1F 底圖納入 AB 棟連廊與新貨架區、appsettings 樓層/區域/MapCode 設定、地圖顯示
 3. **貨架**：新區域代碼規劃、oPort 站點資料建置、儲位設定頁支援
-4. **sensor 自動搬運**：沿用 B1 現行鏈路（ACC StockSensorLink 讀 PLC → 更新 oPort → SCP 輪詢），AutoDispatchService 重構為規則驅動並新增 R1~R4
+4. **sensor 自動搬運**：沿用 B1 現行鏈路（ACC StockSensorLink 讀 PLC → 更新 oPort → SCP 輪詢），AutoDispatchService 重構為規則驅動並新增 R1、R4（R2、R3 為人員派發）
 5. **sensor 防呆**：派車前驗證 sensor 狀態（HaveFlag）與登記一致，不一致不派車
 6. **貨架物料狀態顯示與 PLC 輸出**：前端顏色區分物料狀態；ACC 補 PLC 寫入能力，把貨架狀態輸出給 PLC（三色燈用）
 7. **空搬偵測**：AGV 搬運到目的地後檢查目的地 sensor 訊號，非 ON 即判定空搬（人為介入），**寫 Warning Log**
@@ -77,7 +78,7 @@
 ### AC-3 🧪 自動派送規則引擎（T6，Given-When-Then）
 
 - [ ] Given appsettings 設定 R1 規則且 D 區有 HaveFlag=3 物料、2/3/4 區有空位，When 引擎執行一輪，Then 建立一筆 oNeed（TaskSource=Auto）且起訖站正確
-- [ ] Given R2 多來源區（2/3/4）各有物料，When 引擎執行，Then 依 PutTime 跨區取最舊者優先派送
+- [ ] Given 多來源區規則各區有物料，When 引擎執行，Then 依 PutTime 跨區取最舊者優先派送（引擎能力；R2 已改人員派發，其最舊優先落實方式待客戶確認，見工作計畫詢問 #9）
 - [ ] Given 目的區全數無空位，When 引擎執行，Then 不建任務、不拋例外
 - [ ] Given 來源站已存在 pending 任務（oNeed/oRequire/oMission），When 引擎執行，Then 該站被排除不重複派送
 - [ ] Given 目的站已被其他任務指派為終點，When 引擎執行，Then 該站不被選為終點

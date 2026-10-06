@@ -40,14 +40,14 @@
   "Routes": [
     { "Name": "路線6 M→K", "Enabled": true, "SourceBlocks": ["M"], "TargetBlocks": ["K"], "SourceOrder": "PutTime" },
     { "Name": "R1 中光電D→迅得2/3/4", "Enabled": true, "SourceBlocks": ["<D>"], "TargetBlocks": ["<X2>","<X3>","<X4>"], "SourceOrder": "PutTime" },
-    { "Name": "R2 迅得2/3/4→中光電C", "Enabled": true, "SourceBlocks": ["<X2>","<X3>","<X4>"], "TargetBlocks": ["<C>"], "SourceOrder": "PutTime" },
-    { "Name": "R3 迅得1→中光電B", "Enabled": true, "SourceBlocks": ["<X1>"], "TargetBlocks": ["<B>"], "SourceOrder": "PutTime" },
     { "Name": "R4 中光電A→迅得5/6/7", "Enabled": true, "SourceBlocks": ["<A>"], "TargetBlocks": ["<X5>","<X6>","<X7>"], "SourceOrder": "PutTime" }
   ]
 }
 ```
 
 （`<>` 為佔位，實際 Block 代碼以 T1 區域代碼規劃結果為準）
+
+> 2026-10-06 客戶流程圖：R2（迅得2/3/4→中光電C）、R3（迅得1→中光電B）為**人員派發**，不列入自動派送規則，改由派送頁人工派車（工作計畫 T7／T9）。R1、R4 自動派送建任務前須呼叫中光電儲位 API `status`（工作計畫 T25、`中光電儲位API介接流程.md`）。
 
 ## 方案分析（六面向）
 
