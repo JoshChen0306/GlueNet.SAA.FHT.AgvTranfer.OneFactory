@@ -20,7 +20,7 @@
 |------|-------|---------|-------|-------|------|
 | P0 | US-1 新貨架站點建置 | T1、T2、T3 | 5 | 4 | [-] |
 | P1 | US-2 儲位設定頁維護新貨架 | T11 | 2 | 0 | [ ] |
-| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 8 | 5 | [-] |
+| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 9 | 5 | [-] |
 | P1 | US-4 既有 M→K 自動派車不受影響 | T6 | 2 | 2 | [x] |
 | P1 | US-5 人員派發 R2、R3 | T5、T7、T9、T10 | 5 | 0 | [ ] |
 | P1 | US-6 搬運完成物料資料跟著走 | T8 | 4 | 0 | [ ] |
@@ -32,7 +32,7 @@
 | P2 | US-12 系統內全流程 | T20 | 4 | 0 | [ ] |
 | P3 | US-13 地圖正確顯示 AB 棟 | T4、T12 | 3 | 0 | [ ] |
 | P3 | US-14 現場對測、聯測與上線 | T22、T23、T24 | 3 | 0 | [ ] |
-| | **合計** | | **55** | **11** | |
+| | **合計** | | **56** | **11** | |
 
 ---
 
@@ -69,13 +69,14 @@
 
 | 狀態 | # | 情境 | 預期結果 | 驗證方式 | 驗證日期 | 證據／備註 |
 |------|---|------|---------|---------|---------|-----------|
-| [-] | 3-1 | D1 Sensor ON（HaveFlag=3）、E 區有空位，status 回 code=0 與 itemCode | 建一筆 oNeed：TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oNeed | 2026-10-12 | 引擎部分完成：Execute_R1SourceSensorOnHaveFlag1_CreatesOneAutoNeed、Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData；status 取 itemCode 待 T25 |
-| [-] | 3-2 | O1 有貨、F 區有空位 | 同上（R4） | 同上 | 2026-10-12 | 引擎部分完成：Execute_TwoRoutesSameRound_EachDispatchesIndependently（含 R4）；status 待 T25 |
+| [-] | 3-1 | D1 Sensor ON（HaveFlag=1），status 回 code=0 與 itemCode；E 區有空位 | 補資料：D1 改 HaveFlag=3、WorkOrder=itemCode；派車：建一筆 oNeed，TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oPort／oNeed | 2026-10-12 | 派車部分完成：Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData；設定 R1 只認 3（AutoDispatchRoutes_R1OnlyHaveFlag3_R4OnlyHaveFlag1）；補資料待 T25 |
+| [ ] | 3-1b | D1 已補成 HaveFlag=3，但 E 區全滿 | 不再呼叫 status；E 區有空位時直接派車 | 單元測試（mock HTTP 呼叫次數） | | 2026-10-12 定案「先補資料再派車」 |
+| [-] | 3-2 | O1 Sensor ON（HaveFlag=1，空盤）、F 區有空位 | 不呼叫 status，直接建 oNeed（無工單） | 單元測試 | 2026-10-12 | 引擎部分完成：Execute_TwoRoutesSameRound_EachDispatchesIndependently（含 R4）；設定 R4 只認 1；「不呼叫 status」待 T25 驗證 |
 | [x] | 3-3 | E1～E3 有多個空位 | 依 Priority 由高到低、Port 由小到大取一個 | 單元測試 | 2026-10-12 | AutoDispatchRouteEngineTests.Execute_MultipleTargetSlots_PicksByPriorityThenPort |
 | [x] | 3-4 | 目的區全滿，或空位都已被其他任務指派 | 不建任務、不拋例外，下一輪再試 | 單元測試 | 2026-10-12 | Execute_NoEmptyTargetSlot_…、Execute_TargetAlreadyAssignedAsEnd_…、Execute_TwoRoutesSharingTarget_SlotNotAssignedTwice |
 | [x] | 3-5 | 起點已有進行中任務（oNeed/oRequire/oMission） | 不重複派車 | 單元測試 | 2026-10-12 | Execute_SourceHasPendingTask_ExcludesFromDispatch；M→K 快照 MToK_SourcePendingInNeedRequireOrMission_Excluded |
 | [x] | 3-6 | HaveFlag 與登記狀態不一致（sensor 防呆） | 不派車，記 Warning Log | 單元測試＋查 Log | 2026-10-12 | Execute_SensorGuard…（來源 3 無工單、目的 0 有殘留）＋節流 10 分鐘 1 次；Log 寫入 C:\Logs\AMS（現場查 Log 待 T20） |
-| [ ] | 3-7 | status 回 code≠0 或 itemCode 為空 | 不派車，記 Warning Log | 單元測試（mock HTTP） | | 2026-10-08 確認 itemCode = WorkOrder |
+| [ ] | 3-7 | （僅 R1）status 回 code≠0 或 itemCode 為空 | D1 維持 HaveFlag=1、不派車，記 Warning Log（10 分鐘節流），下一輪再查 | 單元測試（mock HTTP） | | 2026-10-08 確認 itemCode = WorkOrder；2026-10-12 定案只套用 R1，R4 空盤不查 status |
 | [x] | 3-8 | 規則設成 Enabled=false | 整條路線不派 | 單元測試 | 2026-10-12 | Execute_RouteDisabled_SkipsEntireRoute |
 
 ### US-4 既有 M→K 自動派車不受影響（T6 回歸）

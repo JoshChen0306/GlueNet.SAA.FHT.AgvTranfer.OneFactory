@@ -107,6 +107,25 @@ namespace SCP.Tests.Config
             Assert.IsFalse(mToK.SensorGuard, "M→K 不開防呆，維持重構前行為");
         }
 
+        /// <summary>
+        /// 2026-10-12 定案：R1 物料須先由 status 補成 HaveFlag=3＋工單才派；R4 空盤不查 status，HaveFlag=1 即派。
+        /// </summary>
+        [TestMethod]
+        public void AutoDispatchRoutes_R1OnlyHaveFlag3_R4OnlyHaveFlag1()
+        {
+            var routes = LoadScpAppSettings().GetSection("AutoDispatch:Routes").Get<List<SCP.Services.AutoDispatchRoute>>()!;
+
+            var r1 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "D" }));
+            CollectionAssert.AreEqual(new[] { "E" }, r1.TargetBlocks);
+            CollectionAssert.AreEqual(new[] { "3" }, r1.SourceHaveFlags, "R1 須等 status 補完工單（HaveFlag=3）才派");
+            Assert.IsTrue(r1.SensorGuard);
+
+            var r4 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "O" }));
+            CollectionAssert.AreEqual(new[] { "F" }, r4.TargetBlocks);
+            CollectionAssert.AreEqual(new[] { "1" }, r4.SourceHaveFlags, "R4 空盤無工單，HaveFlag=1 即派");
+            Assert.IsTrue(r4.SensorGuard);
+        }
+
         [TestMethod]
         public void DispatchRoutes_R2R3Configured_AndAllAreasDefined()
         {

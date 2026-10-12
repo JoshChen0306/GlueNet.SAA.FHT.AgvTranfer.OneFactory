@@ -45,25 +45,28 @@
 
 | 情境 | 觸發 | 呼叫 | 對應我方時間點 | 客戶流程圖 |
 |------|------|------|--------------|-----------|
-| 取貨（R1、R4） | 中光電貨架 Sensor ON | ① 2-1 `status` → 建任務 → ② 2-3 `release` | ① 建任務前；② `outbin` | ✅ 一致 |
+| 取貨（R1、R4） | 中光電貨架 Sensor ON | ① 2-1 `status`（僅 R1）→ 建任務 → ② 2-3 `release` | ① Sensor ON 後補資料（建任務前）；② `outbin` | ✅ 一致；R4 空盤不查 status（2026-10-12） |
 | 放貨（R2、R3） | 人員派發任務 | ③ 2-2 `Mapping` | ③ `end`（卸貨後） | ✅ 一致 |
 | 物料資訊清除 | 中光電貨架 Sensor OFF | ④ 2-3 `release` | ACC StockSensorLink 偵測清空時 | 🆕 客戶流程圖新增 |
 
 ### 5-1 從中光電取貨（R1、R4）— 客戶流程「取得物料資訊-建立任務（中光電貨架 > SAA 貨架）」
 
 ```
- SCP 自動派送 (AutoDispatch)            ACC (RCS 回呼)                 中光電 WCS
+ SCP（補資料 → AutoDispatch）           ACC (RCS 回呼)                 中光電 WCS
  ───────────────────────────            ──────────────                 ──────────
- Sensor ON：中光電 D 有貨
- 且迅得 2/3/4 有空位
+ Sensor ON：ACC 寫 D1 HaveFlag=1（T13）
         │
-        │ ① 建任務前先查物料
+        │ ① 補資料：每輪發現 D1 HaveFlag=1 立刻查（不等迅得端有空位）
         ├──────────── GET /locations/{D的binCode}/status ─────────────►
         │ ◄─────────────────────── code=0, itemCode ───────────────────
         │
    code≠0 或 itemCode 空？
-     ├─ 是 → 不派車，記 Warning（下一輪再試）
-     └─ 否 → 建 oNeed，WorkOrder = itemCode
+     ├─ 是 → D1 維持 1，記 Warning（節流），下一輪再查
+     └─ 否 → D1 改 HaveFlag=3、WorkOrder=itemCode、PutTime=現在
+        │     （補成 3 後不再查 status）
+        │
+   AutoDispatch（R1 只認 HaveFlag=3）：迅得 2/3/4 有空位
+        └─ 建 oNeed，WorkOrder = D1 的 WorkOrder
         │
         ▼
    cPair → oRequire → oMission → RCS 執行
@@ -123,7 +126,7 @@
 
 | 呼叫點 | 理由 |
 |--------|------|
-| ① 建任務前 `status` | 物料資訊須先取得，才能隨 oNeed → oMission 傳到終點，`end` 時既有的 `Update_oPort` 直接寫入；查不到不派車，避免搬回來路不明的貨架 |
+| ① 建任務前 `status` | 物料資訊須先取得，才能隨 oNeed → oMission 傳到終點，`end` 時既有的 `Update_oPort` 直接寫入；查不到不派車，避免搬回來路不明的貨架。2026-10-12 定案「先補資料再派車」：Sensor ON 後立即查並寫回 D1（HaveFlag=3＋工單），地圖一放上就看得到工單；補資料失敗不影響派車邏輯，成功後不再重查；派車引擎只看 oPort、不呼叫外部 API。**R4（中光電 A 空盤回送）不查 status**，HaveFlag=1 即派 |
 | ② `outbin` 時 `release` | 貨架實際離開中光電儲位的時刻，與我方清空起點 oPort 同一時間點；客戶流程「AGV 取得貨物 → POST release」 |
 | ③ `end` 時 `Mapping` | 貨架確實放下才綁定；任務中途取消不會在中光電留下錯誤綁定；客戶流程「AGV 搬運卸貨 → POST Mapping」 |
 | ④ Sensor OFF 時 `release` | 客戶流程指定；涵蓋非我方搬走的情境（中光電 AGV 取走我方放上的貨） |
