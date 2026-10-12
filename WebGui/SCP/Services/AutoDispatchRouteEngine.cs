@@ -11,11 +11,18 @@ namespace SCP.Services
     {
         private readonly agvDB_1400004Context _dbContext;
         private readonly ILogger _logger;
+        private readonly AutoDispatchWarningThrottle _warningThrottle;
+        private readonly Func<DateTime> _clock;
 
-        public AutoDispatchRouteEngine(agvDB_1400004Context dbContext, ILogger logger)
+        /// <param name="warningThrottle">防呆 Warning 節流；未給時每個引擎各自一份（只在單輪內去重）。</param>
+        /// <param name="clock">目前時間來源（測試用）；未給時用 DateTime.Now。</param>
+        public AutoDispatchRouteEngine(agvDB_1400004Context dbContext, ILogger logger,
+            AutoDispatchWarningThrottle? warningThrottle = null, Func<DateTime>? clock = null)
         {
             _dbContext = dbContext;
             _logger = logger;
+            _warningThrottle = warningThrottle ?? new AutoDispatchWarningThrottle(TimeSpan.FromMinutes(10));
+            _clock = clock ?? (() => DateTime.Now);
         }
 
         /// <summary>依序執行每條路線，回傳本輪建立的任務數。</summary>
@@ -177,7 +184,8 @@ namespace SCP.Services
         {
             if (port.HaveFlag == "3" && string.IsNullOrEmpty(port.WorkOrder))
             {
-                _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 來源 {port.StationNo} HaveFlag=3 但沒有 WorkOrder，狀態不一致不派車");
+                if (_warningThrottle.ShouldLog($"{route.Name}|{port.StationNo}|source", _clock()))
+                    _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 來源 {port.StationNo} HaveFlag=3 但沒有 WorkOrder，狀態不一致不派車");
                 return false;
             }
             return true;
@@ -188,7 +196,8 @@ namespace SCP.Services
         {
             if (!string.IsNullOrEmpty(port.RackId) || !string.IsNullOrEmpty(port.WorkOrder))
             {
-                _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 目的 {port.StationNo} HaveFlag=0 但仍有 RackId={port.RackId}/WorkOrder={port.WorkOrder}，狀態不一致不指派");
+                if (_warningThrottle.ShouldLog($"{route.Name}|{port.StationNo}|target", _clock()))
+                    _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 目的 {port.StationNo} HaveFlag=0 但仍有 RackId={port.RackId}/WorkOrder={port.WorkOrder}，狀態不一致不指派");
                 return false;
             }
             return true;

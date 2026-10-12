@@ -20,8 +20,8 @@
 |------|-------|---------|-------|-------|------|
 | P0 | US-1 新貨架站點建置 | T1、T2、T3 | 5 | 4 | [-] |
 | P1 | US-2 儲位設定頁維護新貨架 | T11 | 2 | 0 | [ ] |
-| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 8 | 0 | [ ] |
-| P1 | US-4 既有 M→K 自動派車不受影響 | T6 | 2 | 0 | [ ] |
+| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 8 | 5 | [-] |
+| P1 | US-4 既有 M→K 自動派車不受影響 | T6 | 2 | 2 | [x] |
 | P1 | US-5 人員派發 R2、R3 | T5、T7、T9、T10 | 5 | 0 | [ ] |
 | P1 | US-6 搬運完成物料資料跟著走 | T8 | 4 | 0 | [ ] |
 | P1 | US-7 中光電儲位 API 同步 | T25、T13 | 6 | 0 | [ ] |
@@ -32,7 +32,7 @@
 | P2 | US-12 系統內全流程 | T20 | 4 | 0 | [ ] |
 | P3 | US-13 地圖正確顯示 AB 棟 | T4、T12 | 3 | 0 | [ ] |
 | P3 | US-14 現場對測、聯測與上線 | T22、T23、T24 | 3 | 0 | [ ] |
-| | **合計** | | **55** | **4** | |
+| | **合計** | | **55** | **11** | |
 
 ---
 
@@ -69,14 +69,14 @@
 
 | 狀態 | # | 情境 | 預期結果 | 驗證方式 | 驗證日期 | 證據／備註 |
 |------|---|------|---------|---------|---------|-----------|
-| [ ] | 3-1 | D1 Sensor ON（HaveFlag=3）、E 區有空位，status 回 code=0 與 itemCode | 建一筆 oNeed：TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oNeed | | |
-| [ ] | 3-2 | O1 有貨、F 區有空位 | 同上（R4） | 同上 | | |
-| [ ] | 3-3 | E1～E3 有多個空位 | 依 Priority 由高到低、Port 由小到大取一個 | 單元測試 | | |
-| [ ] | 3-4 | 目的區全滿，或空位都已被其他任務指派 | 不建任務、不拋例外，下一輪再試 | 單元測試 | | |
-| [ ] | 3-5 | 起點已有進行中任務（oNeed/oRequire/oMission） | 不重複派車 | 單元測試 | | |
-| [ ] | 3-6 | HaveFlag 與登記狀態不一致（sensor 防呆） | 不派車，記 Warning Log | 單元測試＋查 Log | | |
+| [-] | 3-1 | D1 Sensor ON（HaveFlag=3）、E 區有空位，status 回 code=0 與 itemCode | 建一筆 oNeed：TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oNeed | 2026-10-12 | 引擎部分完成：Execute_R1SourceSensorOnHaveFlag1_CreatesOneAutoNeed、Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData；status 取 itemCode 待 T25 |
+| [-] | 3-2 | O1 有貨、F 區有空位 | 同上（R4） | 同上 | 2026-10-12 | 引擎部分完成：Execute_TwoRoutesSameRound_EachDispatchesIndependently（含 R4）；status 待 T25 |
+| [x] | 3-3 | E1～E3 有多個空位 | 依 Priority 由高到低、Port 由小到大取一個 | 單元測試 | 2026-10-12 | AutoDispatchRouteEngineTests.Execute_MultipleTargetSlots_PicksByPriorityThenPort |
+| [x] | 3-4 | 目的區全滿，或空位都已被其他任務指派 | 不建任務、不拋例外，下一輪再試 | 單元測試 | 2026-10-12 | Execute_NoEmptyTargetSlot_…、Execute_TargetAlreadyAssignedAsEnd_…、Execute_TwoRoutesSharingTarget_SlotNotAssignedTwice |
+| [x] | 3-5 | 起點已有進行中任務（oNeed/oRequire/oMission） | 不重複派車 | 單元測試 | 2026-10-12 | Execute_SourceHasPendingTask_ExcludesFromDispatch；M→K 快照 MToK_SourcePendingInNeedRequireOrMission_Excluded |
+| [x] | 3-6 | HaveFlag 與登記狀態不一致（sensor 防呆） | 不派車，記 Warning Log | 單元測試＋查 Log | 2026-10-12 | Execute_SensorGuard…（來源 3 無工單、目的 0 有殘留）＋節流 10 分鐘 1 次；Log 寫入 C:\Logs\AMS（現場查 Log 待 T20） |
 | [ ] | 3-7 | status 回 code≠0 或 itemCode 為空 | 不派車，記 Warning Log | 單元測試（mock HTTP） | | 2026-10-08 確認 itemCode = WorkOrder |
-| [ ] | 3-8 | 規則設成 Enabled=false | 整條路線不派 | 單元測試 | | |
+| [x] | 3-8 | 規則設成 Enabled=false | 整條路線不派 | 單元測試 | 2026-10-12 | Execute_RouteDisabled_SkipsEntireRoute |
 
 ### US-4 既有 M→K 自動派車不受影響（T6 回歸）
 
@@ -84,8 +84,8 @@
 
 | 狀態 | # | 驗收情境 | 驗證方式 | 驗證日期 | 證據／備註 |
 |------|---|---------|---------|---------|-----------|
-| [ ] | 4-1 | 與重構前相同的資料，派車結果一致 | 重構前先補行為測試，重構後重跑全綠 | | |
-| [ ] | 4-2 | 既有測試全部通過 | 跑整套 SCP.Tests | | |
+| [x] | 4-1 | 與重構前相同的資料，派車結果一致 | 重構前先補行為測試，重構後重跑全綠 | 2026-10-12 | AutoDispatchLegacyMToKTests 8 個：重構前 8/8、重構後 8/8（commit 567d6aa 純搬移） |
+| [x] | 4-2 | 既有測試全部通過 | 跑整套 SCP.Tests | 2026-10-12 | 96 個：88 通過、0 失敗、8 略過（T8/T19 骨架） |
 
 ### US-5 人員派發 R2、R3（T5、T7、T9、T10）
 
@@ -219,4 +219,5 @@
 | 2026-10-12 | 1-3、1-5 | 通過 | T3 設定檢查測試 5/5；SCP.Tests 全套 79 個：59 通過、0 失敗、20 略過（T6/T8/T19 未實作骨架） |
 | 2026-10-12 | 1-1、1-2 | 通過 | 使用者同意連測試庫 DESKTOP-SVATTIQ/agvDB_1400004_1，SQL 連跑兩次：27→37 筆、第二次新增 0 筆 |
 | 2026-10-12 | 驗證點 #1（P0→P1） | 通過 | P0 測試 5/5、全套 0 失敗；oPort 新 Block 與 appsettings、ACC StationFloorMapping 一致 |
+| 2026-10-12 | 3-3～3-6、3-8、4-1、4-2 | 通過 | T6 規則引擎；SCP.Tests 96 個 88 通過 0 失敗 |
 | 2026-10-12 | 1-4 | 部分 | 設定與程式比對完成，ACC Log 待測試環境確認 |

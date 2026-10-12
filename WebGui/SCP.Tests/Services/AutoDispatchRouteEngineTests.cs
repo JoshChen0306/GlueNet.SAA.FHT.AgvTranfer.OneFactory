@@ -194,6 +194,40 @@ namespace SCP.Tests.Services
         }
 
         [TestMethod]
+        public async Task Execute_SameGuardWarningWithinInterval_LoggedOnce()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "3", workOrder: "");
+            db.AddPort("E1", haveFlag: "0");
+            var logger = new ListLogger();
+            var throttle = new AutoDispatchWarningThrottle(TimeSpan.FromMinutes(10));
+            var now = new DateTime(2026, 10, 12, 8, 0, 0);
+
+            await new AutoDispatchRouteEngine(db.Context, logger, throttle, () => now).ExecuteAsync(new[] { R1() }, CancellationToken.None);
+            now = now.AddMinutes(5);
+            await new AutoDispatchRouteEngine(db.Context, logger, throttle, () => now).ExecuteAsync(new[] { R1() }, CancellationToken.None);
+
+            Assert.AreEqual(1, logger.Entries.Count(e => e.Level == LogLevel.Warning && e.Message.Contains("D1")));
+        }
+
+        [TestMethod]
+        public async Task Execute_SameGuardWarningAfterInterval_LoggedAgain()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "3", workOrder: "");
+            db.AddPort("E1", haveFlag: "0");
+            var logger = new ListLogger();
+            var throttle = new AutoDispatchWarningThrottle(TimeSpan.FromMinutes(10));
+            var now = new DateTime(2026, 10, 12, 8, 0, 0);
+
+            await new AutoDispatchRouteEngine(db.Context, logger, throttle, () => now).ExecuteAsync(new[] { R1() }, CancellationToken.None);
+            now = now.AddMinutes(10);
+            await new AutoDispatchRouteEngine(db.Context, logger, throttle, () => now).ExecuteAsync(new[] { R1() }, CancellationToken.None);
+
+            Assert.AreEqual(2, logger.Entries.Count(e => e.Level == LogLevel.Warning && e.Message.Contains("D1")));
+        }
+
+        [TestMethod]
         public async Task Execute_SensorGuardOff_LegacyDataStillDispatched()
         {
             // M→K 未開防呆：HaveFlag=3 無工單仍照舊派送（重構前行為）

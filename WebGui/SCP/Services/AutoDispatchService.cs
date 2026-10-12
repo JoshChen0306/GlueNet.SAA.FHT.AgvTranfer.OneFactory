@@ -21,6 +21,14 @@ namespace SCP.Services
         // 路線規則
         private readonly List<AutoDispatchRoute> _routes;
 
+        // 防呆 Warning 節流（跨輪保存，同站同原因預設 10 分鐘記一次）
+        private readonly AutoDispatchWarningThrottle _warningThrottle;
+
+        // 派送紀錄與防呆 Warning 寫入 Serilog（C:\Logs\AMS，與 Service.cs 相同）；
+        // ILogger<T> 未接 Serilog，只會到 Console/EventLog，現場查不到
+        private static readonly Microsoft.Extensions.Logging.ILogger FileLogger =
+            new Serilog.Extensions.Logging.SerilogLoggerFactory().CreateLogger("AutoDispatch");
+
         public AutoDispatchService(
             IServiceScopeFactory scopeFactory,
             ILogger<AutoDispatchService> logger,
@@ -36,8 +44,13 @@ namespace SCP.Services
             var intervalSeconds = autoDispatchSettings.GetValue<int>("IntervalSeconds", 30);
             _checkInterval = TimeSpan.FromSeconds(intervalSeconds);
             _routes = ReadRoutes(autoDispatchSettings);
+            var warningIntervalMinutes = autoDispatchSettings.GetValue<int>("WarningIntervalMinutes", 10);
+            _warningThrottle = new AutoDispatchWarningThrottle(TimeSpan.FromMinutes(warningIntervalMinutes));
 
-            _logger.LogInformation($"AutoDispatchService initialized. Enabled: {_enabled}, Interval: {intervalSeconds}s, Routes: {string.Join(", ", _routes.Select(r => r.Name))}");
+            var enabledRoutes = _routes.Where(r => r.Enabled).Select(r => r.Name).ToList();
+            var message = $"AutoDispatchService initialized. Enabled: {_enabled}, Interval: {intervalSeconds}s, 啟用中的路線: {(enabledRoutes.Any() ? string.Join(", ", enabledRoutes) : "無")}";
+            _logger.LogInformation(message);
+            FileLogger.LogInformation(message);
         }
 
         private static List<AutoDispatchRoute> ReadRoutes(IConfigurationSection autoDispatchSettings)
@@ -69,6 +82,7 @@ namespace SCP.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "AutoDispatch check failed");
+                    FileLogger.LogError(ex, "AutoDispatch check failed");
                 }
 
                 await Task.Delay(_checkInterval, stoppingToken);
@@ -82,7 +96,7 @@ namespace SCP.Services
         {
             using var scope = _scopeFactory.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<agvDB_1400004Context>();
-            var engine = new AutoDispatchRouteEngine(dbContext, _logger);
+            var engine = new AutoDispatchRouteEngine(dbContext, FileLogger, _warningThrottle);
             return await engine.ExecuteAsync(_routes, stoppingToken);
         }
     }
