@@ -21,9 +21,25 @@ namespace SCP.Services
         /// <summary>依序執行每條路線，回傳本輪建立的任務數。</summary>
         public async Task<int> ExecuteAsync(IEnumerable<AutoDispatchRoute> routes, CancellationToken stoppingToken)
         {
-            int total = 0;
-            foreach (var route in routes)
+            var routeList = routes.ToList();
+            if (routeList.Count == 0)
             {
+                _logger.LogWarning("AutoDispatch: 未設定任何 Routes，本輪不派送");
+                return 0;
+            }
+
+            int total = 0;
+            foreach (var route in routeList)
+            {
+                if (!route.Enabled)
+                {
+                    continue;
+                }
+                if (route.SourceBlocks.Count == 0 || route.TargetBlocks.Count == 0)
+                {
+                    _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 未設定 SourceBlocks 或 TargetBlocks，略過");
+                    continue;
+                }
                 total += await ExecuteRouteAsync(route, stoppingToken);
             }
             return total;
@@ -31,11 +47,13 @@ namespace SCP.Services
 
         /// <summary>
         /// 檢查並執行單一路線
-        /// 條件：來源區有 status=3 的物料 且 目的區有 status=0 的空位
+        /// 條件：來源區有 SourceHaveFlags（預設 3）的物料 且 目的區有 status=0 的空位
         /// 優先順序：依 PutTime 時間優先 (FIFO)
         /// </summary>
         private async Task<int> ExecuteRouteAsync(AutoDispatchRoute route, CancellationToken stoppingToken)
         {
+            var sourceHaveFlags = route.SourceHaveFlags.Count > 0 ? route.SourceHaveFlags : new List<string> { "3" };
+
             // 取得已有待處理任務的起點站（避免重複派送）
             var pendingBeginStations = await _dbContext.oNeed
                 .Where(n => n.AssignFlag == null || n.AssignFlag == "" || n.AssignFlag == "Y")
@@ -81,15 +99,20 @@ namespace SCP.Services
                 .Distinct()
                 .ToHashSet();
 
-            // 找來源區 status=3 的物料（依時間優先 FIFO）
+            // 找來源區有貨的站點（依時間優先 FIFO）
             // 排除已有任務的起點站
             var sourceMaterials = await _dbContext.oPort
                 .Where(p => route.SourceBlocks.Contains(p.Block) &&
-                            p.HaveFlag == "3" &&
+                            sourceHaveFlags.Contains(p.HaveFlag) &&
                             p.UseFlag == "Y" &&
                             !allPendingBeginStations.Contains(p.StationNo))
                 .OrderBy(p => p.PutTime)  // 時間優先 (FIFO)
                 .ToListAsync(stoppingToken);
+
+            if (route.SensorGuard)
+            {
+                sourceMaterials = sourceMaterials.Where(p => IsSourceConsistent(route, p)).ToList();
+            }
 
             if (!sourceMaterials.Any())
             {
@@ -108,6 +131,11 @@ namespace SCP.Services
                 .OrderByDescending(p => p.Priority)
                 .ThenBy(p => p.Port)
                 .ToListAsync(stoppingToken);
+
+            if (route.SensorGuard)
+            {
+                targetSlots = targetSlots.Where(p => IsTargetConsistent(route, p)).ToList();
+            }
 
             if (!targetSlots.Any())
             {
@@ -142,6 +170,28 @@ namespace SCP.Services
                 _logger.LogInformation($"AutoDispatch completed: {dispatchCount} task(s) created.");
             }
             return dispatchCount;
+        }
+
+        /// <summary>sensor 防呆（來源）：HaveFlag=3 表示有工單，WorkOrder 卻是空的 → 不一致。</summary>
+        private bool IsSourceConsistent(AutoDispatchRoute route, oPort port)
+        {
+            if (port.HaveFlag == "3" && string.IsNullOrEmpty(port.WorkOrder))
+            {
+                _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 來源 {port.StationNo} HaveFlag=3 但沒有 WorkOrder，狀態不一致不派車");
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>sensor 防呆（目的）：HaveFlag=0 表示空位，RackId/WorkOrder 卻有殘留 → 不一致。</summary>
+        private bool IsTargetConsistent(AutoDispatchRoute route, oPort port)
+        {
+            if (!string.IsNullOrEmpty(port.RackId) || !string.IsNullOrEmpty(port.WorkOrder))
+            {
+                _logger.LogWarning($"AutoDispatch: 路線 {route.Name} 目的 {port.StationNo} HaveFlag=0 但仍有 RackId={port.RackId}/WorkOrder={port.WorkOrder}，狀態不一致不指派");
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -87,6 +87,27 @@ namespace SCP.Tests.Config
         }
 
         [TestMethod]
+        public void AutoDispatchRoutes_AllBlocksDefinedAndMToKKeptEnabled()
+        {
+            var config = LoadScpAppSettings();
+            var allBlocks = FloorAreas(config).SelectMany(f => f.Value).ToHashSet();
+            var routes = config.GetSection("AutoDispatch:Routes").Get<List<SCP.Services.AutoDispatchRoute>>()!;
+
+            foreach (var route in routes)
+            {
+                foreach (var block in route.SourceBlocks.Concat(route.TargetBlocks))
+                {
+                    Assert.IsTrue(allBlocks.Contains(block), $"路線 {route.Name} 的區域 {block} 未列在 FloorSettings");
+                }
+            }
+            var mToK = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "M" }));
+            Assert.IsTrue(mToK.Enabled);
+            CollectionAssert.AreEqual(new[] { "K" }, mToK.TargetBlocks);
+            Assert.AreEqual(0, mToK.SourceHaveFlags.Count, "M→K 須維持預設只認 HaveFlag=3");
+            Assert.IsFalse(mToK.SensorGuard, "M→K 不開防呆，維持重構前行為");
+        }
+
+        [TestMethod]
         public void AreaNames_AbBuildingBlocks_AllHaveDisplayName()
         {
             var names = LoadScpAppSettings().GetSection("AreaRules:AreaNames").Get<Dictionary<string, string>>()!;

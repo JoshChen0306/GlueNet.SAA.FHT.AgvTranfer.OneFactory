@@ -58,7 +58,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 });
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<Service>();
-builder.Services.AddHostedService<AutoDispatchService>();  // 工廠1 路線6 M→K 自動派送
+builder.Services.AddHostedService<AutoDispatchService>();  // 工廠1 自動派送（路線規則見 appsettings AutoDispatch:Routes）
 
 var app = builder.Build();
 

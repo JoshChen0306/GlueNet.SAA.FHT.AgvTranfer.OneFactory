@@ -1,122 +1,312 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SCP.Services;
+using SCP.Tests.TestInfrastructure;
 
 namespace SCP.Tests.Services
 {
     /// <summary>
-    /// T6 AutoDispatch 規則驅動引擎測試骨架（ToDo/20260726_一廠AB棟1F新路線與邏輯）
-    /// 對應 spec.md AC-3。Red 階段依實際引擎型別（AutoDispatchRouteEngine）補齊 Arrange/Act。
+    /// T6 AutoDispatch 規則驅動引擎測試（ToDo/20260726_一廠AB棟1F新路線與邏輯）
+    /// 對應 spec.md AC-3。M→K 重構回歸另見 AutoDispatchLegacyMToKTests。
+    /// 區域代碼：D=中光電D、E=迅得2/3/4、O=中光電A、F=迅得5/6/7（區域代碼對照表.md）。
     /// 命名規則：MethodName_Scenario_ExpectedResult
     /// </summary>
     [TestClass]
     [TestCategory("AB1F")]
     public class AutoDispatchRouteEngineTests
     {
+        /// <summary>R1 中光電D→迅得2/3/4：Sensor ON 寫 HaveFlag=1 即可派送，啟用 sensor 防呆。</summary>
+        private static AutoDispatchRoute R1() => new AutoDispatchRoute
+        {
+            Name = "R1",
+            SourceBlocks = new List<string> { "D" },
+            TargetBlocks = new List<string> { "E" },
+            SourceHaveFlags = new List<string> { "1", "3" },
+            SensorGuard = true,
+        };
+
+        private static AutoDispatchRoute R4() => new AutoDispatchRoute
+        {
+            Name = "R4",
+            SourceBlocks = new List<string> { "O" },
+            TargetBlocks = new List<string> { "F" },
+            SourceHaveFlags = new List<string> { "1", "3" },
+            SensorGuard = true,
+        };
+
+        private static async Task<int> Run(ScpTestDb db, ListLogger logger, params AutoDispatchRoute[] routes)
+            => await new AutoDispatchRouteEngine(db.Context, logger).ExecuteAsync(routes, CancellationToken.None);
+
         // ── P0 案例 ──────────────────────────────────────────────
 
         [TestMethod]
-        public void Execute_SingleSourceSingleTarget_CreatesOneNeed()
+        public async Task Execute_R1SourceSensorOnHaveFlag1_CreatesOneAutoNeed()
         {
-            // Arrange: R3 規則（迅得1 → 中光電B）；來源站 HaveFlag=3、目的站 HaveFlag=0 無 pending
-            // Act:     引擎執行一輪
-            // Assert:  建立 1 筆 oNeed，ObjStation/EndStation 正確，TaskSource="Auto"
-            Assert.Inconclusive("TODO: Red 階段補實作（依 AutoDispatchRouteEngine 介面）");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual(1, created);
+            var need = db.Needs().Single();
+            Assert.AreEqual("D1", need.ObjStation);
+            Assert.AreEqual("E1", need.EndStation);
+            Assert.AreEqual("Auto", need.TaskSource);
         }
 
         [TestMethod]
-        public void Execute_MultipleTargetBlocks_PicksByPriorityThenPort()
+        public async Task Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData()
         {
-            // Arrange: R1 規則（中光電D → 迅得2/3/4）；三目的區皆有空位，Priority/Port 各異
-            // Act:     引擎執行一輪
-            // Assert:  終點 = Priority 最高者；同 Priority 取 Port 最小者
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "3", rackId: "R-9", workOrder: "WO-9");
+            db.AddPort("E1", haveFlag: "0");
+
+            await Run(db, new ListLogger(), R1());
+
+            var need = db.Needs().Single();
+            Assert.AreEqual("D1", need.ObjStation);
+            Assert.AreEqual("E1", need.EndStation);
+            Assert.AreEqual("R-9", need.RackId);
+            Assert.AreEqual("WO-9", need.WorkOrder);
+            Assert.AreEqual("Auto", need.TaskSource);
         }
 
         [TestMethod]
-        public void Execute_MultipleSourceBlocksFifo_PicksOldestPutTimeAcrossBlocks()
+        public async Task Execute_DefaultSourceHaveFlags_OnlyHaveFlag3Dispatched()
         {
-            // Arrange: R2 規則（迅得2/3/4 → 中光電C）；三來源區各有物料，PutTime 不同
-            // Act:     引擎執行一輪
-            // Assert:  來源 = 跨區合併後 PutTime 最舊者（FIFO）
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            // SourceHaveFlags 未設定 → 預設只認 3（與 M→K 重構前一致）
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            var route = R1();
+            route.SourceHaveFlags = new List<string>();
+
+            await Run(db, new ListLogger(), route);
+
+            Assert.AreEqual(0, db.Needs().Count);
         }
 
         [TestMethod]
-        public void Execute_NoEmptyTargetSlot_DoesNotCreateNeedAndDoesNotThrow()
+        public async Task Execute_MultipleTargetSlots_PicksByPriorityThenPort()
         {
-            // Arrange: 目的區全數 HaveFlag!=0 或 BgnToEnd 非空
-            // Act:     引擎執行一輪
-            // Assert:  不建任務、不拋例外
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0", priority: 10);
+            db.AddPort("E3", haveFlag: "0", priority: 90);
+            db.AddPort("E2", haveFlag: "0", priority: 90);
+
+            await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual("E2", db.Needs().Single().EndStation);
         }
 
         [TestMethod]
-        public void Execute_SourceHasPendingTask_ExcludesFromDispatch()
+        public async Task Execute_MultipleSourceBlocksFifo_PicksOldestPutTimeAcrossBlocks()
         {
-            // Arrange: 來源站已存在於 oNeed/oRequire/oMission pending 集合
-            // Act:     引擎執行一輪
-            // Assert:  該站排除，不重複派送
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            // 引擎通用能力（R2 已改人員派發，以測試設定驗證）
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "3", workOrder: "WO-D", putTime: "20260101120000");
+            db.AddPort("O1", haveFlag: "3", workOrder: "WO-O", putTime: "20260101080000");
+            db.AddPort("E1", haveFlag: "0");
+            var route = new AutoDispatchRoute
+            {
+                Name = "多來源",
+                SourceBlocks = new List<string> { "D", "O" },
+                TargetBlocks = new List<string> { "E" },
+            };
+
+            await Run(db, new ListLogger(), route);
+
+            Assert.AreEqual("O1", db.Needs().Single().ObjStation);
         }
 
         [TestMethod]
-        public void Execute_TargetAlreadyAssignedAsEnd_ExcludesFromSelection()
+        public async Task Execute_NoEmptyTargetSlot_DoesNotCreateNeedAndDoesNotThrow()
         {
-            // Arrange: 目的站已被其他 pending 任務指派為終點
-            // Act:     引擎執行一輪
-            // Assert:  該站不被選為終點
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "3", workOrder: "WO-1");
+            db.AddPort("E2", haveFlag: "0", bgnToEnd: "D9");
+
+            int created = await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual(0, created);
+            Assert.AreEqual(0, db.Needs().Count);
         }
 
         [TestMethod]
-        public void Execute_SensorStateMismatch_SkipsDispatchAndLogsWarning()
+        public async Task Execute_SourceHasPendingTask_ExcludesFromDispatch()
         {
-            // Arrange: 來源站 HaveFlag 與登記狀態不一致（sensor 防呆條件）
-            // Act:     引擎執行一輪
-            // Assert:  不派車，記 Warning Log
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            db.AddPort("E2", haveFlag: "0");
+            db.AddMission("D1", "E9", okFlag: "R");
+
+            await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual(0, db.Needs().Count);
         }
 
         [TestMethod]
-        public void Execute_LegacyMToKRoute_BehavesSameAsBeforeRefactor()
+        public async Task Execute_TargetAlreadyAssignedAsEnd_ExcludesFromSelection()
         {
-            // Arrange: 既有 M→K 情境（重構回歸保護；重構前先以此測試鎖定現有行為）
-            // Act:     引擎以 M→K 規則執行一輪
-            // Assert:  與 CheckAndDispatchMToK 重構前行為完全一致（配對數、FIFO、pending 排除）
-            Assert.Inconclusive("TODO: 重構前先補此測試鎖定現有行為（Red 前置）");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0", priority: 90);
+            db.AddPort("E2", haveFlag: "0", priority: 10);
+            db.AddNeed("B1", "E1", assignFlag: "");
+
+            await Run(db, new ListLogger(), R1());
+
+            var created = db.Needs().Single(n => n.ObjStation == "D1");
+            Assert.AreEqual("E2", created.EndStation);
+        }
+
+        [TestMethod]
+        public async Task Execute_SensorGuardSourceHaveFlag3WithoutWorkOrder_SkipsAndLogsWarning()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "3", workOrder: "");
+            db.AddPort("E1", haveFlag: "0");
+            var logger = new ListLogger();
+
+            await Run(db, logger, R1());
+
+            Assert.AreEqual(0, db.Needs().Count);
+            Assert.IsTrue(logger.Has(LogLevel.Warning, "D1"));
+        }
+
+        [TestMethod]
+        public async Task Execute_SensorGuardTargetHaveFlag0WithLeftoverData_SkipsSlotAndLogsWarning()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0", priority: 90, workOrder: "WO-OLD");
+            db.AddPort("E2", haveFlag: "0", priority: 10);
+            var logger = new ListLogger();
+
+            await Run(db, logger, R1());
+
+            Assert.AreEqual("E2", db.Needs().Single().EndStation);
+            Assert.IsTrue(logger.Has(LogLevel.Warning, "E1"));
+        }
+
+        [TestMethod]
+        public async Task Execute_SensorGuardOff_LegacyDataStillDispatched()
+        {
+            // M→K 未開防呆：HaveFlag=3 無工單仍照舊派送（重構前行為）
+            using var db = new ScpTestDb();
+            db.AddPort("M1", haveFlag: "3", workOrder: "", area: "FHT1-3F");
+            db.AddPort("K1", haveFlag: "0", area: "FHT1-3F");
+
+            await Run(db, new ListLogger(), AutoDispatchRoute.LegacyMToK());
+
+            Assert.AreEqual(1, db.Needs().Count);
+        }
+
+        [TestMethod]
+        public async Task Execute_TwoRoutesSameRound_EachDispatchesIndependently()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            db.AddPort("O1", haveFlag: "1");
+            db.AddPort("F1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R1(), R4());
+
+            Assert.AreEqual(2, created);
+            CollectionAssert.AreEquivalent(new[] { "D1>E1", "O1>F1" },
+                db.Needs().Select(n => n.ObjStation + ">" + n.EndStation).ToList());
+        }
+
+        [TestMethod]
+        public async Task Execute_TwoRoutesSharingTarget_SlotNotAssignedTwice()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("O1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            var r4ToE = R4();
+            r4ToE.TargetBlocks = new List<string> { "E" };
+
+            await Run(db, new ListLogger(), R1(), r4ToE);
+
+            Assert.AreEqual(1, db.Needs().Count);
         }
 
         // ── P1 案例 ──────────────────────────────────────────────
 
         [TestMethod]
-        public void Execute_RouteDisabled_SkipsEntireRoute()
+        public async Task Execute_RouteDisabled_SkipsEntireRoute()
         {
-            // Arrange: 規則 Enabled=false
-            // Act / Assert: 整條路線跳過，不查詢不派送
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            var route = R1();
+            route.Enabled = false;
+
+            await Run(db, new ListLogger(), route);
+
+            Assert.AreEqual(0, db.Needs().Count);
         }
 
         [TestMethod]
-        public void Execute_EmptyRoutesConfig_DoesNothingAndLogs()
+        public async Task Execute_EmptyRoutesConfig_DoesNothingAndLogs()
         {
-            // Arrange: AutoDispatch:Routes 為空陣列或缺區段
-            // Act / Assert: 不執行、不拋例外、記 Log
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            var logger = new ListLogger();
+
+            int created = await Run(db, logger);
+
+            Assert.AreEqual(0, created);
+            Assert.IsTrue(logger.Has(LogLevel.Warning, "Routes"));
         }
 
         [TestMethod]
-        public void Execute_MoreMaterialsThanSlots_DispatchesMinCount()
+        public async Task Execute_RouteMissingBlocks_SkipsAndLogsWarning()
         {
-            // Arrange: 來源 3 筆物料、目的 2 個空位
-            // Act / Assert: 配對 min(3,2)=2 筆
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0");
+            var route = R1();
+            route.TargetBlocks = new List<string>();
+            var logger = new ListLogger();
+
+            await Run(db, logger, route);
+
+            Assert.AreEqual(0, db.Needs().Count);
+            Assert.IsTrue(logger.Has(LogLevel.Warning, "R1"));
         }
 
         [TestMethod]
-        public void Execute_UseFlagDisabledStations_AreExcluded()
+        public async Task Execute_MoreMaterialsThanSlots_DispatchesMinCount()
         {
-            // Arrange: 來源/目的站 UseFlag="N"
-            // Act / Assert: 皆排除
-            Assert.Inconclusive("TODO: Red 階段補實作");
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1", putTime: "20260101010000");
+            db.AddPort("D2", haveFlag: "1", putTime: "20260101020000");
+            db.AddPort("D3", haveFlag: "1", putTime: "20260101030000");
+            db.AddPort("E1", haveFlag: "0");
+            db.AddPort("E2", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual(2, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_UseFlagDisabledStations_AreExcluded()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("D1", haveFlag: "1", useFlag: "N");
+            db.AddPort("D2", haveFlag: "1");
+            db.AddPort("E1", haveFlag: "0", useFlag: "N");
+
+            await Run(db, new ListLogger(), R1());
+
+            Assert.AreEqual(0, db.Needs().Count);
         }
     }
 }
