@@ -33,7 +33,14 @@ function loadMapDataLocal(area) {
 
 // 區域規則（由 Dispatch/Index 從 appsettings AreaRules 傳入）
 function getAreaRules() {
-    return window.areaRules || { registerAreas: [], releaseAreas: [], clickableAreas: [] };
+    return window.areaRules || { registerAreas: [], releaseAreas: [], clickableAreas: [], dispatchRoutes: {} };
+}
+
+// 人工帶料派送的允許目的區（AreaRules:DispatchRoutes，如 R2 E→Z、R3 B→P）；未列管回傳 null
+function getDispatchTargets(area) {
+    var routes = getAreaRules().dispatchRoutes || {};
+    var targets = routes[area];
+    return targets && targets.length > 0 ? targets : null;
 }
 
 // 取站號的區域代號（第一個字母）
@@ -302,6 +309,13 @@ $(function () {
         // 從快取取得選中站點的資料
         var selectedStation = stationCache[selectedValue];
 
+        // 人工帶料派送（R2 E→Z、R3 B→P）：終點自動選允許目的區第一個空位，後端會再檢查
+        var dispatchTargets = getDispatchTargets(area);
+        if (dispatchTargets) {
+            autoSelectDispatchTarget(dispatchTargets);
+            $("#EndStation").prop("disabled", true);
+        }
+
         switch (area) {
             case "A":
                 // ============================================
@@ -341,19 +355,6 @@ $(function () {
             $("#workOrderRow").hide();
         }
 
-        if (area == "B") {
-            // B 區 (1F 下料區)：終點為 A (1F 備貨區) - 釋放空盤
-            $('#EndStation').val(''); // 或自動帶出？通常由系統決定或作業員選
-            // B 區邏輯在 filterEndStation 已經處理 (B -> A)
-            // 這裡設定 UI 狀態
-            $("#EndStation").prop("disabled", false); // 可選終點? 或固定?
-            $("#WorkOrder").prop("disabled", true);   // 不需要工單
-        } else {
-            // 其他區域 (A, L, M, K) 終點多為自動，工單也不需要輸入
-            // 除非有特殊需求
-            // A, L, M 在上方 switch 已處理 disabled
-        }
-
         // 從快取讀取 RackId
         if (selectedStation && selectedStation.rackId) {
             $('#RackId').val(selectedStation.rackId);
@@ -372,14 +373,19 @@ $(function () {
 
         var firstChar = selectedValue.substring(0, 1);
 
+        var dispatchTargets = getDispatchTargets(firstChar);
+        if (dispatchTargets) {
+            dispatchTargets.forEach(function (target) {
+                filterEndStationOptions(target, "0");
+            });
+            return;
+        }
+
         switch (firstChar) {
             case "A":
                 // 工廠1: A → K（優先）/ M（備用）
                 filterEndStationOptions("K", "0");
                 filterEndStationOptions("M", "0");
-                break;
-            case "B":
-                // B 區空板回送走 Release（B→A），不提供手動派送終點
                 break;
             case "L":
                 // 工廠1: L → B
@@ -948,49 +954,26 @@ $(function () {
  * 篩選起點選項
  */
 function filterBeginStationOptions(selectedValue) {
-    var workoderMap = new Map();
+    // 人工帶料派送起點（R2 E、R3 B）：列出該區有料的站點（HaveFlag = 3），由人員自選、不排序（2026-10-08 定案）
+    if (getDispatchTargets(selectedValue)) {
+        $('#BeginStation option').filter(function () {
+            var tracname = $(this).val();
+            if (!tracname || !tracname.startsWith(selectedValue)) return false;
+
+            var station = stationCache[tracname];
+            if (!station || station.haveFlag !== "3") return false;
+
+            var displayWorkOrder = station.workOrder || "";
+            if (displayWorkOrder.length > 35) {
+                displayWorkOrder = displayWorkOrder.substring(0, 35) + "...";
+            }
+            $(this).text(tracname + " - " + displayWorkOrder);
+            return true;
+        }).show();
+        return;
+    }
 
     switch (selectedValue.substring(0, 1)) {
-        case "B":
-            // C 區：只顯示 B 區且 HaveFlag = 3 的站點
-            $('#BeginStation option').filter(function () {
-                var tracname = $(this).val();
-                if (!tracname) return false;
-
-                var station = stationCache[tracname];
-                if (!station) return false;
-
-                if (tracname.charAt(0) !== "B" || station.haveFlag != 3) return false;
-
-                var haveflag = station.haveFlag;
-                var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
-                var lot = (station.workOrder && station.workOrder.split("^")[2]) || "undefined";
-                var puttime = station.putTime;
-
-                if (tracname.startsWith("B") && haveflag === "3") {
-                    if (!workoderMap.has(workorder) || puttime < workoderMap.get(workorder).puttime) {
-                        workoderMap.set(workorder, { tracname, lot, puttime });
-                    }
-                    return true;
-                }
-                return false;
-            }).each(function () {
-                var tracname = $(this).val();
-                var station = stationCache[tracname];
-                if (!station) return;
-
-                var workorder = (station.workOrder && station.workOrder.split("^")[3]) || "undefined";
-                if (workoderMap.has(workorder) && workoderMap.get(workorder).tracname === tracname) {
-                    var lot = workoderMap.get(workorder).lot;
-                    $(this).text(`${tracname}-${workorder}-${lot}`);
-                    $(this).show();
-                } else {
-                    $(this).hide();
-                }
-            });
-            break;
-
-
         case "M":
             // M 區（3F 暫存區）作為起點：顯示有料的站點 (HaveFlag = 3)
             $('#BeginStation option').filter(function () {
@@ -1201,6 +1184,22 @@ function autoSelectEndStationWithFallback(primaryPrefix, fallbackPrefix, require
     }
 
     return found;
+}
+
+/**
+ * 人工帶料派送：依允許目的區順序自動選第一個空位（HaveFlag = 0 且未被預約）
+ * @param {string[]} targets - 允許目的區（AreaRules:DispatchRoutes）
+ */
+function autoSelectDispatchTarget(targets) {
+    for (var i = 0; i < targets.length; i++) {
+        if (autoSelectEndStation(targets[i], "0", "N")) {
+            console.log(`終點自動選擇: ${$('#EndStation').val()} (${targets[i]}區)`);
+            return true;
+        }
+    }
+    $('#EndStation').val('');
+    alert(`${targets.join('、')}區沒有可放置的空位`);
+    return false;
 }
 
 /**
