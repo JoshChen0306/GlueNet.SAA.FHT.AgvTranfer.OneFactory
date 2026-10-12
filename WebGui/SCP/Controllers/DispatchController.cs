@@ -167,7 +167,8 @@ namespace SCP.Controllers
             {
                 registerAreas = areaRules.RegisterAreas,
                 releaseAreas = areaRules.ReleaseAreas,
-                clickableAreas = areaRules.ClickableAreas
+                clickableAreas = areaRules.ClickableAreas,
+                dispatchRoutes = areaRules.DispatchRoutes
             };
 
             return View();
@@ -209,6 +210,20 @@ namespace SCP.Controllers
                     .FirstOrDefault()?.WorkOrder ?? "";
             }
             
+            // AreaRules.DispatchRoutes 列管的起點區（R2 E→Z、R3 B→P）：後端檢查起點有貨、終點為允許目的區的空位
+            // 其他區域（A→K、L→B）維持原流程，不做以下檢查
+            var areaRules = new AreaRuleProvider(_configuration);
+            var sourceArea = string.IsNullOrEmpty(objStation) ? "" : objStation.Substring(0, 1).ToUpper();
+            if (areaRules.IsDispatchRouteArea(sourceArea))
+            {
+                var rejectMessage = ValidateDispatchRoute(areaRules, sourceArea, objStation, endStation);
+                if (rejectMessage != null)
+                {
+                    LogMgt.Logger?.Warn($"[InsertoNeed] 拒絕派送：ObjStation={objStation}, EndStation={endStation}, 原因={rejectMessage}");
+                    return BadRequest(new { message = rejectMessage });
+                }
+            }
+
             if (string.IsNullOrEmpty(endStation)) return BadRequest(new { message = "暫存區無空架" });
 
             string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
@@ -223,6 +238,55 @@ namespace SCP.Controllers
             }
 
             return Ok();
+        }
+
+        /// <summary>
+        /// DispatchRoutes 人工派送檢查；通過回傳 null，否則回傳給操作人員看的原因。
+        /// </summary>
+        private string? ValidateDispatchRoute(AreaRuleProvider areaRules, string sourceArea, string objStation, string endStation)
+        {
+            var targetAreas = areaRules.GetDispatchTargets(sourceArea);
+            var targetLabel = string.Join("、", targetAreas.Select(areaRules.GetAreaLabel));
+
+            if (string.IsNullOrEmpty(endStation))
+            {
+                return $"{targetLabel}沒有可放置的空位";
+            }
+
+            var source = _DBContext.oPort.FirstOrDefault(p => p.StationNo == objStation);
+            if (source == null)
+            {
+                return $"起點 {objStation} 不存在";
+            }
+            if (source.HaveFlag != "3")
+            {
+                return $"起點 {objStation} 沒有物料，請重新選擇";
+            }
+            if (StationAvailability.IsPendingAsBegin(_DBContext, objStation))
+            {
+                return $"起點 {objStation} 已有進行中的派送任務";
+            }
+
+            var endArea = endStation.Substring(0, 1).ToUpper();
+            if (!targetAreas.Contains(endArea))
+            {
+                return $"終點 {endStation} 不在可派送區域（{targetLabel}）";
+            }
+
+            var target = _DBContext.oPort.FirstOrDefault(p => p.StationNo == endStation);
+            if (target == null)
+            {
+                return $"終點 {endStation} 不存在";
+            }
+            if (!StationAvailability.IsEmptySlot(target))
+            {
+                return $"終點 {endStation} 已有貨架或不可使用，請重新選擇";
+            }
+            if (StationAvailability.IsPendingAsEnd(_DBContext, endStation))
+            {
+                return $"終點 {endStation} 已被其他任務指派，請重新選擇";
+            }
+            return null;
         }
 
         public IActionResult DeleteoNeed([FromBody] Dictionary<string, string> need)

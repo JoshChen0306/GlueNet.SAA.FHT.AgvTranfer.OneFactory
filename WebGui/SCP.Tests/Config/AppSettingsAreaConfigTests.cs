@@ -108,6 +108,25 @@ namespace SCP.Tests.Config
         }
 
         [TestMethod]
+        public void DispatchRoutes_R2R3Configured_AndAllAreasDefined()
+        {
+            var config = LoadScpAppSettings();
+            var allBlocks = FloorAreas(config).SelectMany(f => f.Value).ToHashSet();
+            var rules = new SCP.Helpers.AreaRuleProvider(config);
+
+            CollectionAssert.AreEqual(new[] { "Z" }, rules.GetDispatchTargets("E").ToArray(), "R2 迅得2/3/4 → 中光電C");
+            CollectionAssert.AreEqual(new[] { "P" }, rules.GetDispatchTargets("B").ToArray(), "R3 迅得1 → 中光電B");
+            foreach (var route in rules.DispatchRoutes)
+            {
+                Assert.IsTrue(allBlocks.Contains(route.Key), $"DispatchRoutes 起點 {route.Key} 未列在 FloorSettings");
+                foreach (var target in route.Value)
+                {
+                    Assert.IsTrue(allBlocks.Contains(target), $"DispatchRoutes 目的 {target} 未列在 FloorSettings");
+                }
+            }
+        }
+
+        [TestMethod]
         public void AreaNames_AbBuildingBlocks_AllHaveDisplayName()
         {
             var names = LoadScpAppSettings().GetSection("AreaRules:AreaNames").Get<Dictionary<string, string>>()!;
