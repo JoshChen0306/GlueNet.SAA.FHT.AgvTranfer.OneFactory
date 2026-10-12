@@ -1,0 +1,100 @@
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace SCP.Tests.Config
+{
+    /// <summary>
+    /// T3 一廠 AB 棟 1F 區域設定檢查（ToDo/20260726_一廠AB棟1F新路線與邏輯，對應 spec.md AC-1「新區域代碼與既有 Block 無衝突」）
+    /// 直接讀取 SCP 專案的 appsettings.json，防止日後改設定時區域重複或漏掉新區域。
+    /// 區域代碼依據：區域代碼對照表.md（T1）。
+    /// 命名規則：MethodName_Scenario_ExpectedResult
+    /// </summary>
+    [TestClass]
+    [TestCategory("ABBuilding1F")]
+    public class AppSettingsAreaConfigTests
+    {
+        /// <summary>AB 棟新區域：中光電 A/B/C/D = O/P/Z/D，迅得 2~4 = E，迅得 5~7 = F。</summary>
+        private static readonly string[] AbBuildingBlocks = { "D", "E", "F", "O", "P", "Z" };
+
+        /// <summary>ACC FHtSetting.config 電梯點字母，站點不可同名。</summary>
+        private static readonly string[] ElevatorLetters = { "U", "V", "W", "X", "Y" };
+
+        private static IConfiguration LoadScpAppSettings()
+        {
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null && !File.Exists(Path.Combine(dir.FullName, "SCP", "appsettings.json")))
+            {
+                dir = dir.Parent;
+            }
+            Assert.IsNotNull(dir, "找不到 SCP/appsettings.json");
+
+            return new ConfigurationBuilder()
+                .AddJsonFile(Path.Combine(dir!.FullName, "SCP", "appsettings.json"), optional: false)
+                .Build();
+        }
+
+        private static Dictionary<string, string[]> FloorAreas(IConfiguration config)
+            => config.GetSection("FloorSettings").GetChildren()
+                .ToDictionary(f => f.Key, f => f.GetSection("Areas").Get<string[]>() ?? Array.Empty<string>());
+
+        [TestMethod]
+        public void FloorSettings_AbBuildingBlocks_AllOn1F()
+        {
+            var floors = FloorAreas(LoadScpAppSettings());
+
+            CollectionAssert.IsSubsetOf(AbBuildingBlocks, floors["FHT1-1F"]);
+        }
+
+        [TestMethod]
+        public void FloorSettings_EachBlock_BelongsToOnlyOneFloor()
+        {
+            var floors = FloorAreas(LoadScpAppSettings());
+
+            var duplicated = floors.SelectMany(f => f.Value)
+                .GroupBy(a => a)
+                .Where(g => g.Count() > 1)
+                .Select(g => g.Key)
+                .ToList();
+
+            Assert.AreEqual(0, duplicated.Count, "重複的區域：" + string.Join(",", duplicated));
+        }
+
+        [TestMethod]
+        public void FloorSettings_AllBlocks_SingleLetterAndNotElevatorPoint()
+        {
+            var floors = FloorAreas(LoadScpAppSettings());
+
+            foreach (var block in floors.SelectMany(f => f.Value))
+            {
+                Assert.AreEqual(1, block.Length, $"區域 {block} 不是單一字母（站號第一個字元即區域）");
+                CollectionAssert.DoesNotContain(ElevatorLetters, block, $"區域 {block} 與電梯點字母相同");
+            }
+        }
+
+        [TestMethod]
+        public void AreaSection_DispatchSourceAreas_AllDefinedInFloorSettings()
+        {
+            var config = LoadScpAppSettings();
+            var allBlocks = FloorAreas(config).SelectMany(f => f.Value).ToHashSet();
+            var dispatchAreas = config.GetSection("Area").Get<Dictionary<string, string>>()!;
+
+            foreach (var area in dispatchAreas.Values)
+            {
+                Assert.IsTrue(allBlocks.Contains(area), $"派送區域 {area} 未列在 FloorSettings");
+            }
+            // R1、R2、R4 的起點區（R3 起點 B 為既有區域）
+            CollectionAssert.IsSubsetOf(new[] { "D", "E", "O" }, dispatchAreas.Values.ToList());
+        }
+
+        [TestMethod]
+        public void AreaNames_AbBuildingBlocks_AllHaveDisplayName()
+        {
+            var names = LoadScpAppSettings().GetSection("AreaRules:AreaNames").Get<Dictionary<string, string>>()!;
+
+            foreach (var block in AbBuildingBlocks)
+            {
+                Assert.IsTrue(names.ContainsKey(block) && !string.IsNullOrWhiteSpace(names[block]), $"區域 {block} 缺少 AreaNames");
+            }
+        }
+    }
+}
