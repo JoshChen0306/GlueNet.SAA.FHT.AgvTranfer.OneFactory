@@ -20,11 +20,11 @@
 |------|-------|---------|-------|-------|------|
 | P0 | US-1 新貨架站點建置 | T1、T2、T3 | 5 | 4 | [-] |
 | P1 | US-2 儲位設定頁維護新貨架 | T11 | 2 | 0 | [ ] |
-| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 9 | 5 | [-] |
+| P1 | US-3 中光電貨架有貨自動派車（R1、R4） | T6、T25 | 9 | 8 | [-] |
 | P1 | US-4 既有 M→K 自動派車不受影響 | T6 | 2 | 2 | [x] |
 | P1 | US-5 人員派發 R2、R3 | T5、T7、T9、T10 | 5 | 0 | [ ] |
 | P1 | US-6 搬運完成物料資料跟著走 | T20（T8 取消） | 4 | 0 | [ ] |
-| P1 | US-7 中光電儲位 API 同步 | T25、T13 | 6 | 0 | [ ] |
+| P1 | US-7 中光電儲位 API 同步 | T25、T13 | 6 | 3 | [-] |
 | P1 | US-8 sensor 讀取擴充到新貨架 | T13 | 2 | 0 | [ ] |
 | P1 | US-9 貨架狀態顏色顯示 | T14、T15 | 3 | 0 | [ ] |
 | P2 | US-10 三色燈跟著貨架狀態變 | T16、T17、T18 | 5 | 0 | [ ] |
@@ -32,7 +32,7 @@
 | P2 | US-12 系統內全流程 | T20 | 4 | 0 | [ ] |
 | P3 | US-13 地圖正確顯示 AB 棟 | T4、T12 | 3 | 0 | [ ] |
 | P3 | US-14 現場對測、聯測與上線 | T22、T23、T24 | 3 | 0 | [ ] |
-| | **合計** | | **56** | **11** | |
+| | **合計** | | **56** | **17** | |
 
 ---
 
@@ -69,14 +69,14 @@
 
 | 狀態 | # | 情境 | 預期結果 | 驗證方式 | 驗證日期 | 證據／備註 |
 |------|---|------|---------|---------|---------|-----------|
-| [-] | 3-1 | D1 Sensor ON（HaveFlag=1），status 回 code=0 與 itemCode；E 區有空位 | 補資料：D1 改 HaveFlag=3、WorkOrder=itemCode；派車：建一筆 oNeed，TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oPort／oNeed | 2026-10-12 | 派車部分完成：Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData；設定 R1 只認 3（AutoDispatchRoutes_R1OnlyHaveFlag3_R4OnlyHaveFlag1）；補資料待 T25 |
-| [ ] | 3-1b | D1 已補成 HaveFlag=3，但 E 區全滿 | 不再呼叫 status；E 區有空位時直接派車 | 單元測試（mock HTTP 呼叫次數） | | 2026-10-12 定案「先補資料再派車」 |
-| [-] | 3-2 | O1 Sensor ON（HaveFlag=1，空盤）、F 區有空位 | 不呼叫 status，直接建 oNeed（無工單） | 單元測試 | 2026-10-12 | 引擎部分完成：Execute_TwoRoutesSameRound_EachDispatchesIndependently（含 R4）；設定 R4 只認 1；「不呼叫 status」待 T25 驗證 |
+| [-] | 3-1 | D1 Sensor ON（HaveFlag=1），status 回 code=0 與 itemCode；E 區有空位 | 補資料：D1 改 HaveFlag=3、WorkOrder=itemCode；派車：建一筆 oNeed，TaskSource=Auto，起點 D1，終點為 E 區空位，WorkOrder=itemCode | 單元測試＋測試環境查 oPort／oNeed | 2026-10-12 | 派車：Execute_R1SourceHaveFlag3WithWorkOrder_CarriesMaterialData；補資料：CgdWcsLinkTests.FillStatusOnce_D1為HaveFlag1_status成功_寫回工單（ACC `Update_oPortMaterial` 限定 HaveFlag='1'）；測試環境查 oPort／oNeed 待 T20（假中光電 Server） |
+| [x] | 3-1b | D1 已補成 HaveFlag=3，但 E 區全滿 | 不再呼叫 status；E 區有空位時直接派車 | 單元測試（mock HTTP 呼叫次數） | 2026-10-12 | FillStatusOnce_D1為HaveFlag0或3_不呼叫status；R1 只認 3（AutoDispatchRoutes_R1OnlyHaveFlag3_R4OnlyHaveFlag1） |
+| [x] | 3-2 | O1 Sensor ON（HaveFlag=1，空盤）、F 區有空位 | 不呼叫 status，直接建 oNeed（無工單） | 單元測試 | 2026-10-12 | FillStatusOnce_O1空盤不在StatusStations_不呼叫status；Execute_TwoRoutesSameRound_EachDispatchesIndependently（含 R4）；R4 只認 1 |
 | [x] | 3-3 | E1～E3 有多個空位 | 依 Priority 由高到低、Port 由小到大取一個 | 單元測試 | 2026-10-12 | AutoDispatchRouteEngineTests.Execute_MultipleTargetSlots_PicksByPriorityThenPort |
 | [x] | 3-4 | 目的區全滿，或空位都已被其他任務指派 | 不建任務、不拋例外，下一輪再試 | 單元測試 | 2026-10-12 | Execute_NoEmptyTargetSlot_…、Execute_TargetAlreadyAssignedAsEnd_…、Execute_TwoRoutesSharingTarget_SlotNotAssignedTwice |
 | [x] | 3-5 | 起點已有進行中任務（oNeed/oRequire/oMission） | 不重複派車 | 單元測試 | 2026-10-12 | Execute_SourceHasPendingTask_ExcludesFromDispatch；M→K 快照 MToK_SourcePendingInNeedRequireOrMission_Excluded |
 | [x] | 3-6 | HaveFlag 與登記狀態不一致（sensor 防呆） | 不派車，記 Warning Log | 單元測試＋查 Log | 2026-10-12 | Execute_SensorGuard…（來源 3 無工單、目的 0 有殘留）＋節流 10 分鐘 1 次；Log 寫入 C:\Logs\AMS（現場查 Log 待 T20） |
-| [ ] | 3-7 | （僅 R1）status 回 code≠0 或 itemCode 為空 | D1 維持 HaveFlag=1、不派車，記 Warning Log（10 分鐘節流），下一輪再查 | 單元測試（mock HTTP） | | 2026-10-08 確認 itemCode = WorkOrder；2026-10-12 定案只套用 R1，R4 空盤不查 status |
+| [x] | 3-7 | （僅 R1）status 回 code≠0 或 itemCode 為空 | D1 維持 HaveFlag=1、不派車，記 Warning Log（10 分鐘節流），下一輪再查 | 單元測試（mock HTTP） | 2026-10-12 | FillStatusOnce_status回code2_不寫回_下一輪再查、_itemCode空_不寫回、_連線失敗_不寫回不拋例外；Warning 同站 10 分鐘節流（未另寫測試） |
 | [x] | 3-8 | 規則設成 Enabled=false | 整條路線不派 | 單元測試 | 2026-10-12 | Execute_RouteDisabled_SkipsEntireRoute |
 
 ### US-4 既有 M→K 自動派車不受影響（T6 回歸）
@@ -119,12 +119,12 @@
 
 | 狀態 | # | 情境 | 預期呼叫 | 驗證方式 | 驗證日期 | 證據／備註 |
 |------|---|------|---------|---------|---------|-----------|
-| [ ] | 7-1 | R1/R4 任務 outbin（貨架離開中光電） | POST `release` | mock HTTP 單元測試 | | |
-| [ ] | 7-2 | R2/R3 任務 end（放到中光電） | POST `Mapping`，帶 itemCode | 同上 | | |
-| [ ] | 7-3 | 中光電貨架 Sensor OFF | POST `release` | 同上 | | |
-| [ ] | 7-4 | 回傳 code=1 | release 視為成功；Mapping 記 Error Log 並通知人員，不自動 release 再 Mapping | 同上 | | 2026-10-08 定案 |
-| [ ] | 7-5 | Mapping／release 回傳 code=2 或逾時（單次 5 秒） | 背景隔 5s／15s／60s 重試，三次失敗記 Error Log；不卡住 RCS 回呼 | 同上＋量測回呼回應時間 | | 2026-10-08 定案 |
-| [ ] | 7-6 | 我方 AGV 取貨：outbin 已清空 oPort 後 sensor 才 OFF | 只由 outbin 送一次 release；sensor 清空時因 oPort 已空而跳過；若時序顛倒重複送出，回 1 視為成功 | 同上 | | 2026-10-08 定案（API 流程第六節 #2） |
+| [-] | 7-1 | R1/R4 任務 outbin（貨架離開中光電） | POST `release` | mock HTTP 單元測試 | 2026-10-12 | 佇列：EnqueueRelease_中光電站_送出release並移出佇列；掛點 `CallBackAPI.UpdateOutBin` 待 T20 以假 Server 整合驗證 |
+| [-] | 7-2 | R2/R3 任務 end（放到中光電） | POST `Mapping`，帶 itemCode | 同上 | 2026-10-12 | 佇列：EnqueueMapping_帶WorkOrder為itemCode；掛點 `CallBackAPI.UpdateEnd`（無工單記 Error）待 T20 整合驗證 |
+| [-] | 7-3 | 中光電貨架 Sensor OFF | POST `release` | 同上 | 2026-10-12 | ScanOnce_OFF清空_觸發StockCleared供中光電release；Global.asax 掛 release 待 T20 整合驗證；D1/O1 PLC 位址待迅得 |
+| [x] | 7-4 | 回傳 code=1 | release 視為成功；Mapping 記 Error Log 並通知人員，不自動 release 再 Mapping | 同上 | 2026-10-12 | ProcessDue_release回code1已釋放_視為成功、ProcessDue_Mapping回code1已佔用_不重試（記 Error） |
+| [x] | 7-5 | Mapping／release 回傳 code=2 或逾時（單次 5 秒） | 背景隔 5s／15s／60s 重試，三次失敗記 Error Log；不卡住 RCS 回呼 | 同上＋量測回呼回應時間 | 2026-10-12 | ProcessDue_回code2_依5s15s60s重試_第四次失敗後放棄、_連線失敗或逾時_視同code2重試、_一筆重試中_不阻擋其他筆；回呼只排入佇列、由背景執行緒送出（回呼回應時間未實測，T20 補） |
+| [x] | 7-6 | 我方 AGV 取貨：outbin 已清空 oPort 後 sensor 才 OFF | 只由 outbin 送一次 release；sensor 清空時因 oPort 已空而跳過；若時序顛倒重複送出，回 1 視為成功 | 同上 | 2026-10-12 | StockSensorLink 只清佔用中的庫位（ScanOnce_bitOFF但軟體已空_不清）＋release 回 1 視為成功 |
 
 > 2026-10-08 定案：先以無認證實作，binCode 與 Base URL 放設定檔（暫定值）。驗證分兩層：單元測試用 mock HTTP；整合測試（US-12）連**假的中光電 Server**。實際連線於 US-14 聯測驗證。
 

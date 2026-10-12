@@ -299,6 +299,76 @@ namespace HikAGVWebAPI
     #endregion Elevator Config
 
     #region SensorClear Config
+    /// <summary>中光電儲位 API 介接（T25）</summary>
+    public class SectionCgdWcs : ConfigurationSection
+    {
+        [ConfigurationProperty(nameof(CgdWcsSettings))]
+        public CgdWcsSettings CgdWcsSettings
+        {
+            get { return (CgdWcsSettings)this[nameof(CgdWcsSettings)]; }
+            set { this[nameof(CgdWcsSettings)] = value; }
+        }
+    }
+
+    public class CgdWcsSettings : ConfigurationElement
+    {
+        // 總開關：false 或整段缺失 → 不呼叫中光電
+        [ConfigurationProperty(nameof(Enable), DefaultValue = "false", IsRequired = false)]
+        public string Enable
+        {
+            get { return (string)this[nameof(Enable)]; }
+            set { this[nameof(Enable)] = value; }
+        }
+
+        // 中光電 WCS Base URL（例：http://10.0.0.1:8080）
+        [ConfigurationProperty(nameof(BaseUrl), DefaultValue = "http://localhost:5080", IsRequired = false)]
+        public string BaseUrl
+        {
+            get { return (string)this[nameof(BaseUrl)]; }
+            set { this[nameof(BaseUrl)] = value; }
+        }
+
+        // 單次呼叫逾時（毫秒）
+        [ConfigurationProperty(nameof(TimeoutMs), DefaultValue = 5000, IsRequired = false)]
+        public int TimeoutMs
+        {
+            get { return (int)this[nameof(TimeoutMs)]; }
+            set { this[nameof(TimeoutMs)] = value; }
+        }
+
+        // release／Mapping 失敗重試間隔（秒，逗號分隔）
+        [ConfigurationProperty(nameof(RetryDelaysSec), DefaultValue = "5,15,60", IsRequired = false)]
+        public string RetryDelaysSec
+        {
+            get { return (string)this[nameof(RetryDelaysSec)]; }
+            set { this[nameof(RetryDelaysSec)] = value; }
+        }
+
+        // 我方站號:中光電 binCode，逗號分隔
+        [ConfigurationProperty(nameof(BinCodeMap), DefaultValue = "", IsRequired = false)]
+        public string BinCodeMap
+        {
+            get { return (string)this[nameof(BinCodeMap)]; }
+            set { this[nameof(BinCodeMap)] = value; }
+        }
+
+        // 需查 status 補資料的來源站（R1 物料，例：D1；R4 空盤不查）
+        [ConfigurationProperty(nameof(StatusStations), DefaultValue = "", IsRequired = false)]
+        public string StatusStations
+        {
+            get { return (string)this[nameof(StatusStations)]; }
+            set { this[nameof(StatusStations)] = value; }
+        }
+
+        // 補資料輪詢間隔（毫秒）
+        [ConfigurationProperty(nameof(StatusPollMs), DefaultValue = 10000, IsRequired = false)]
+        public int StatusPollMs
+        {
+            get { return (int)this[nameof(StatusPollMs)]; }
+            set { this[nameof(StatusPollMs)] = value; }
+        }
+    }
+
     public class SectionSensorClear : ConfigurationSection
     {
         [ConfigurationProperty(nameof(SensorClearSettings))]

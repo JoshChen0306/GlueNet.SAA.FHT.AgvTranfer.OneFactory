@@ -22,6 +22,14 @@ namespace HikAGVWebAPI
 
             // 庫位 SENSOR 監控（設定 Enable=true 時才會啟動；未設定 / 關閉時回傳 null）
             stockSensorLink = StockSensorLinkBootstrap.Create(ConfigFileName);
+
+            // 中光電儲位 API 介接（Enable=true 時才會啟動）；Sensor 清空中光電站點時通知 release
+            CgdWcsBootstrap.Start(ConfigFileName);
+            if (stockSensorLink != null)
+            {
+                stockSensorLink.StockCleared += stationNo => CgdWcsBootstrap.Current?.EnqueueRelease(stationNo);
+            }
+
             stockSensorLink?.Start();
         }
 
@@ -30,6 +38,7 @@ namespace HikAGVWebAPI
             // 在应用程序结束时，确保线程停止
             dispatch.Stop();
             stockSensorLink?.Stop();
+            CgdWcsBootstrap.Stop();
         }
     }
 }

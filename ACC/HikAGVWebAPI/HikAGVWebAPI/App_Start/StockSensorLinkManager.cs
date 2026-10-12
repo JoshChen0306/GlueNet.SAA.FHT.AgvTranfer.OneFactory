@@ -197,6 +197,9 @@ namespace HikAGVWebAPI.App_Start
         private Thread _thread;
         private volatile bool _stop;
 
+        /// <summary>Sensor OFF 確認後清空庫位時觸發（參數：StationNo），供中光電 release 等後續動作掛載。</summary>
+        public event Action<string> StockCleared;
+
         /// <summary>生產用：reader 由 factory 在 STA 執行緒上建立（PlcDevice 之 COM 須與讀取同一條 thread）。</summary>
         public StockSensorLinkManager(IList<SensorMapping> mappings, Func<IBitReader> readerFactory,
             IStockClearer clearer, IPortStateReader portReader, Log log,
@@ -331,6 +334,7 @@ namespace HikAGVWebAPI.App_Start
                     _log?.TraceOut($"[StockSensorLink] {map.Address} 連續 {_confirmCount} 輪 OFF 且佔用，清空庫位 {map.StationNo}", Log.LogType.TRACE);
                     _counter[map.Address] = 0;
                     HandleSourceStationCleared(map.StationNo);
+                    RaiseStockCleared(map.StationNo);
                 }
                 else
                 {
@@ -367,6 +371,18 @@ namespace HikAGVWebAPI.App_Start
             else
             {
                 _onCounter[map.Address] = c;
+            }
+        }
+
+        private void RaiseStockCleared(string stationNo)
+        {
+            try
+            {
+                StockCleared?.Invoke(stationNo);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[StockSensorLink] {stationNo} 清空後續動作失敗：{ex.Message}", Log.LogType.WARN);
             }
         }
 

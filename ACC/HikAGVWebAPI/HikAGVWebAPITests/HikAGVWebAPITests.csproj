@@ -57,6 +57,7 @@
     <Otherwise />
   </Choose>
   <ItemGroup>
+    <Compile Include="App_Start\CgdWcsLinkTests.cs" />
     <Compile Include="App_Start\CrossFloorManagerCooldownTests.cs" />
     <Compile Include="App_Start\CrossFloorManagerFloorTrustTests.cs" />
     <Compile Include="App_Start\CrossFloorManagerSelectNextMissionTests.cs" />

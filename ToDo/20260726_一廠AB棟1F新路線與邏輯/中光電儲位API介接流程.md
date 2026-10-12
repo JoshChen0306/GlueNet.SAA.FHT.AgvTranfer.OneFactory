@@ -142,7 +142,7 @@
 | 5 | 回 `2`（ERROR）或逾時 | 隔 5s／15s／60s 重試，三次失敗記 Error；單次逾時 5 秒（2026-10-08 定案） |
 | 6 | 我方站號 ↔ 中光電 `binCode` | 設定檔對照表（例：`O1 → 中光電 A 的 binCode`），我方站號沿用 T1 草案（中光電 A/B/C/D → O1/P1/Z1/D1） |
 | 7 | ④ 的觸發點在 ACC `StockSensorLinkManager` | 既有 sensor 清空只處理 HaveFlag ∈ {1,3}（HaveFlag=2 不清），中光電站點的 HaveFlag 規劃須一併考量 |
-| 8 | 實作位置 | ① SCP AutoDispatch（T6）；②③ ACC 回呼或 T8 物料轉寫；④ ACC StockSensorLink（T13）；統一由 T25 的 client 送出 |
+| 8 | 實作位置 | 2026-10-12 實作：全部在 ACC `App_Start/CgdWcsLink.cs`。① 補資料背景輪詢（D1 HaveFlag=1 → status → 寫回 3）；② outbin 回呼；③ end 回呼；④ StockSensorLink `StockCleared` 事件。②③④ 排入背景佇列重試，不阻塞回呼。設定 `FHtSetting.config` 的 `SectionCgdWcs`；測試用假 Server `Tools/FakeCgdWcs` |
 
 ## 七、待中光電／客戶確認
 

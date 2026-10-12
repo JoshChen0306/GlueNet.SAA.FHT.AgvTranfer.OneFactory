@@ -183,6 +183,12 @@ namespace HikAGVWebAPI
 
                 mDB.Update_oPortEmpty(sCurrentPositionCode);
                 mLog.TraceOut($"Update oPort Rack ID To Empty And HaveFlag = E! [Position] : {sCurrentPositionCode}", Log.LogType.NONE);
+
+                // 中光電站點被取走 → 通知中光電 release（背景佇列，不阻塞回呼）
+                if (CgdWcsBootstrap.Current?.EnqueueRelease(sCurrentPositionCode) == true)
+                {
+                    mLog.TraceOut($"[CgdWcs] 排入 release [Position] : {sCurrentPositionCode}", Log.LogType.NONE);
+                }
             }
             catch (Exception ex)
             {
@@ -213,6 +219,12 @@ namespace HikAGVWebAPI
                     mDB.Delete_oMission(oMission);
                     mDB.Update_oShuttleStation(oMission, "I");
                     mLog.TraceOut($"Update End Job Finish!", Log.LogType.NONE);
+
+                    // 放貨到中光電站點 → Mapping(itemCode=WorkOrder)（背景佇列，不阻塞回呼）
+                    if (CgdWcsBootstrap.Current?.EnqueueMapping(oMission.EndStation, oMission.WorkOrder) == true)
+                    {
+                        mLog.TraceOut($"[CgdWcs] 排入 Mapping [EndStation] : {oMission.EndStation}, [WorkOrder] : {oMission.WorkOrder}", Log.LogType.NONE);
+                    }
                 }
 
                 mDB.Update_ubActivation(ubActivation, "EndTime");

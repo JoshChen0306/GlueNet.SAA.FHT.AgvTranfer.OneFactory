@@ -539,6 +539,22 @@ namespace HikAGVWebAPITests.App_Start
         }
 
         [TestMethod]
+        public void ScanOnce_OFF清空_觸發StockCleared供中光電release()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var sut = CreateSut(reader, ports, new SpyStockClearer(), 1, new SensorMapping("M11", "D1"));
+            var raised = new List<string>();
+            sut.StockCleared += raised.Add;
+
+            reader.Values["M11"] = false;
+            ports.Ports["D1"] = Port(haveFlag: "1");
+            sut.ScanOnce();
+
+            CollectionAssert.AreEqual(new[] { "D1" }, raised);
+        }
+
+        [TestMethod]
         public void ParseStationList_逗號分隔含空白_去除空白與空片段()
         {
             CollectionAssert.AreEqual(new[] { "D1", "O1" }, StockSensorLinkManager.ParseStationList(" D1, ,O1 "));

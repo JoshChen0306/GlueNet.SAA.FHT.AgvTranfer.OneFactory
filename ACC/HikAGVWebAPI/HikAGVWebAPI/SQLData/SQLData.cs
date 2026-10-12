@@ -279,6 +279,18 @@ namespace HikAGVWebAPI.App_Start
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
+        /// <summary>R1 來源站補資料（中光電 status 取得 itemCode）：只在 HaveFlag=1 時改為 3 並寫入 WorkOrder，PutTime 設為現在。</summary>
+        public void Update_oPortMaterial(string StationNo, string WorkOrder)
+        {
+            string sSQL = $@"update oPort
+                                set HaveFlag = '3'
+                                   ,WorkOrder = '{WorkOrder.Replace("'", "''")}'
+                                   ,PutTime = '{DateTime.Now.ToString("yyyyMMddHHmmssffffff")}'
+                              where StationNo = '{StationNo}'
+                                and HaveFlag = '1' ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
         public void Update_oPort(oMissionModel oMission, string HaveFlag)
         {
             string sSQL = $@"update oPort
