@@ -343,6 +343,14 @@ namespace HikAGVWebAPI
             set { this[nameof(ConfirmCount)] = value; }
         }
 
+        // 中光電來源站（逗號分隔，例：D1,O1）：Sensor ON 且 HaveFlag=0 時寫 HaveFlag=1；Sensor OFF 清空時刪除未派出的 oNeed
+        [ConfigurationProperty(nameof(SensorOnStations), DefaultValue = "", IsRequired = false)]
+        public string SensorOnStations
+        {
+            get { return (string)this[nameof(SensorOnStations)]; }
+            set { this[nameof(SensorOnStations)] = value; }
+        }
+
         // "PLC位址:庫位StationNo"，逗號分隔可多筆，例：M10:B1,M11:B2
         [ConfigurationProperty(nameof(SensorMap), DefaultValue = "M10:B1", IsRequired = true)]
         public string SensorMap

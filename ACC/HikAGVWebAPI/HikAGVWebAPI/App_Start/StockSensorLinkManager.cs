@@ -24,6 +24,22 @@ namespace HikAGVWebAPI.App_Start
         void ClearStock(string stationNo);
     }
 
+    /// <summary>中光電來源站 Sensor ON 時登記「有貨架、無工單」的抽象，正式實作呼叫 SQLData.Update_oPortRackPresent。</summary>
+    public interface IStockRegistrar
+    {
+        void MarkRackPresent(string stationNo);
+    }
+
+    /// <summary>中光電來源站的任務查詢與清理抽象（Sensor ON 防誤寫、Sensor OFF 處理已建任務）。</summary>
+    public interface ISourceTaskStore
+    {
+        /// <summary>該站是否為已派出任務（oRequire / oMission 進行中）的起點。</summary>
+        bool HasActiveTask(string stationNo);
+
+        /// <summary>刪除該站為起點、尚未派出（AssignFlag 空）的 oNeed，回傳刪除筆數。</summary>
+        int DeleteUndispatchedNeeds(string stationNo);
+    }
+
     /// <summary>正式清空實作：呼叫既有 SQLData.Update_oPortEmpty（清 RackId / WorkOrder、HaveFlag 設回 0）。</summary>
     public class SqlStockClearer : IStockClearer
     {
@@ -45,6 +61,70 @@ namespace HikAGVWebAPI.App_Start
             catch (Exception ex)
             {
                 _log?.TraceOut($"[SqlStockClearer] 清空庫位 {stationNo} 失敗：{ex.Message}", Log.LogType.ERROR);
+            }
+        }
+    }
+
+    /// <summary>正式登記實作：只在 HaveFlag=0 時改為 1（條件寫在 SQL，避免與其他程序競爭時覆蓋有工單的狀態）。</summary>
+    public class SqlStockRegistrar : IStockRegistrar
+    {
+        private readonly SQLData _db;
+        private readonly Log _log;
+
+        public SqlStockRegistrar(SQLData db, Log log = null)
+        {
+            _db = db;
+            _log = log;
+        }
+
+        public void MarkRackPresent(string stationNo)
+        {
+            try
+            {
+                _db.Update_oPortRackPresent(stationNo);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[SqlStockRegistrar] 登記庫位 {stationNo} 有貨架失敗：{ex.Message}", Log.LogType.ERROR);
+            }
+        }
+    }
+
+    /// <summary>正式任務查詢與清理：走 SQLData。查詢失敗視為有任務（寧可不寫 HaveFlag）。</summary>
+    public class SqlSourceTaskStore : ISourceTaskStore
+    {
+        private readonly SQLData _db;
+        private readonly Log _log;
+
+        public SqlSourceTaskStore(SQLData db, Log log = null)
+        {
+            _db = db;
+            _log = log;
+        }
+
+        public bool HasActiveTask(string stationNo)
+        {
+            try
+            {
+                return _db.Exists_ActiveTaskAsBegin(stationNo);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[SqlSourceTaskStore] 查詢 {stationNo} 進行中任務失敗：{ex.Message}", Log.LogType.WARN);
+                return true;
+            }
+        }
+
+        public int DeleteUndispatchedNeeds(string stationNo)
+        {
+            try
+            {
+                return _db.Delete_oNeedUndispatched(stationNo);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[SqlSourceTaskStore] 刪除 {stationNo} 未派出 oNeed 失敗：{ex.Message}", Log.LogType.ERROR);
+                return 0;
             }
         }
     }
@@ -93,6 +173,9 @@ namespace HikAGVWebAPI.App_Start
     /// 庫位 SENSOR 監控：定時掃描 PLC M 暫存器（平板偵測，ON=平板在 / OFF=平板不在）。
     /// 當 bit=OFF 且軟體仍認為庫位佔用（RackId / WorkOrder / HaveFlag 任一），連續達 ConfirmCount 輪後清空該庫位。
     /// 採 level + 去抖：避開 AGV 送料落位瞬間的短暫 OFF 誤清，並能於 ACC 重啟後補清殘留。
+    /// 中光電來源站（SensorOnStations，如 D1、O1）另外處理：
+    ///   bit=ON 且 HaveFlag=0、無進行中任務，連續達 ConfirmCount 輪 → 寫 HaveFlag=1（有貨架、無工單），供 SCP R1/R4 觸發；
+    ///   bit=OFF 清空時 → 刪除未派出的 oNeed（Warning），已派出的任務只記 Error，由人員到 RCS 取消。
     /// 掃描跑在自有的專屬 STA 背景執行緒上（ActUtlType 為 STA COM），全程同一條 thread，零跨執行緒 marshaling。
     /// </summary>
     public class StockSensorLinkManager
@@ -105,6 +188,10 @@ namespace HikAGVWebAPI.App_Start
         private readonly int _pollIntervalMs;
         private readonly int _confirmCount;
         private readonly Dictionary<string, int> _counter;   // address → 連續(OFF 且佔用)輪數
+        private readonly Dictionary<string, int> _onCounter; // address → 連續(ON 且來源站為空)輪數
+        private readonly IStockRegistrar _registrar;
+        private readonly ISourceTaskStore _taskStore;
+        private readonly HashSet<string> _sensorOnStations;
 
         private IBitReader _reader;
         private Thread _thread;
@@ -113,7 +200,8 @@ namespace HikAGVWebAPI.App_Start
         /// <summary>生產用：reader 由 factory 在 STA 執行緒上建立（PlcDevice 之 COM 須與讀取同一條 thread）。</summary>
         public StockSensorLinkManager(IList<SensorMapping> mappings, Func<IBitReader> readerFactory,
             IStockClearer clearer, IPortStateReader portReader, Log log,
-            int pollIntervalMs = 1000, int confirmCount = 3)
+            int pollIntervalMs = 1000, int confirmCount = 3,
+            IStockRegistrar registrar = null, ISourceTaskStore taskStore = null, IEnumerable<string> sensorOnStations = null)
         {
             _mappings = mappings ?? new List<SensorMapping>();
             _readerFactory = readerFactory;
@@ -122,18 +210,24 @@ namespace HikAGVWebAPI.App_Start
             _log = log;
             _pollIntervalMs = pollIntervalMs <= 0 ? 1000 : pollIntervalMs;
             _confirmCount = confirmCount <= 0 ? 1 : confirmCount;   // 至少確認 1 輪
+            _registrar = registrar;
+            _taskStore = taskStore;
+            _sensorOnStations = new HashSet<string>(sensorOnStations ?? new string[0], StringComparer.OrdinalIgnoreCase);
             _counter = new Dictionary<string, int>();
+            _onCounter = new Dictionary<string, int>();
             foreach (var m in _mappings)
             {
                 _counter[m.Address] = 0;
+                _onCounter[m.Address] = 0;
             }
         }
 
         /// <summary>測試 / 直接用：已有 reader 實例，可不經 Start() 直接呼叫 ScanOnce()。</summary>
         public StockSensorLinkManager(IList<SensorMapping> mappings, IBitReader reader,
             IStockClearer clearer, IPortStateReader portReader, Log log,
-            int pollIntervalMs = 1000, int confirmCount = 3)
-            : this(mappings, () => reader, clearer, portReader, log, pollIntervalMs, confirmCount)
+            int pollIntervalMs = 1000, int confirmCount = 3,
+            IStockRegistrar registrar = null, ISourceTaskStore taskStore = null, IEnumerable<string> sensorOnStations = null)
+            : this(mappings, () => reader, clearer, portReader, log, pollIntervalMs, confirmCount, registrar, taskStore, sensorOnStations)
         {
             _reader = reader;
         }
@@ -206,6 +300,7 @@ namespace HikAGVWebAPI.App_Start
                 if (!_reader.TryReadBit(map.Address, out bool on))
                 {
                     _counter[map.Address] = 0;
+                    _onCounter[map.Address] = 0;
                     _log?.TraceOut($"[StockSensorLink] 讀取 {map.Address} 失敗，略過該輪", Log.LogType.WARN);
                     continue;
                 }
@@ -214,8 +309,11 @@ namespace HikAGVWebAPI.App_Start
                 if (on)
                 {
                     _counter[map.Address] = 0;
+                    ScanSourceStationOn(map);
                     continue;
                 }
+
+                _onCounter[map.Address] = 0;
 
                 // ③ bit=OFF：讀庫位狀態，判斷軟體是否仍佔用
                 var port = _portReader?.GetPort(map.StationNo);
@@ -232,12 +330,85 @@ namespace HikAGVWebAPI.App_Start
                     _clearer?.ClearStock(map.StationNo);
                     _log?.TraceOut($"[StockSensorLink] {map.Address} 連續 {_confirmCount} 輪 OFF 且佔用，清空庫位 {map.StationNo}", Log.LogType.TRACE);
                     _counter[map.Address] = 0;
+                    HandleSourceStationCleared(map.StationNo);
                 }
                 else
                 {
                     _counter[map.Address] = c;
                 }
             }
+        }
+
+        /// <summary>
+        /// 中光電來源站 bit=ON：HaveFlag=0 且無進行中任務才累積計數，達 ConfirmCount 寫 HaveFlag=1。
+        /// 有進行中任務時不寫：outbin 已清空起點但貨架尚未離開 sensor，避免誤登記後又觸發派車。
+        /// </summary>
+        private void ScanSourceStationOn(SensorMapping map)
+        {
+            if (!_sensorOnStations.Contains(map.StationNo))
+            {
+                return;
+            }
+
+            var port = _portReader?.GetPort(map.StationNo);
+            if (port == null || port.HaveFlag != "0" || (_taskStore != null && _taskStore.HasActiveTask(map.StationNo)))
+            {
+                _onCounter[map.Address] = 0;
+                return;
+            }
+
+            int c = (_onCounter.TryGetValue(map.Address, out int cv) ? cv : 0) + 1;
+            if (c >= _confirmCount)
+            {
+                _registrar?.MarkRackPresent(map.StationNo);
+                _log?.TraceOut($"[StockSensorLink] {map.Address} 連續 {_confirmCount} 輪 ON 且庫位為空，登記 {map.StationNo} HaveFlag=1", Log.LogType.TRACE);
+                _onCounter[map.Address] = 0;
+            }
+            else
+            {
+                _onCounter[map.Address] = c;
+            }
+        }
+
+        /// <summary>中光電來源站被清空後（貨架被移走）：刪除未派出 oNeed；已派出任務只記 Error，不自動取消 RCS 任務。</summary>
+        private void HandleSourceStationCleared(string stationNo)
+        {
+            if (_taskStore == null || !_sensorOnStations.Contains(stationNo))
+            {
+                return;
+            }
+
+            int deleted = _taskStore.DeleteUndispatchedNeeds(stationNo);
+            if (deleted > 0)
+            {
+                _log?.TraceOut($"[StockSensorLink] {stationNo} 貨架被移走，刪除未派出的 oNeed {deleted} 筆", Log.LogType.WARN);
+            }
+
+            if (_taskStore.HasActiveTask(stationNo))
+            {
+                _log?.TraceOut($"[StockSensorLink] {stationNo} 貨架被移走，但已有派出中的任務，請人員至 RCS 取消", Log.LogType.ERROR);
+            }
+        }
+
+        /// <summary>解析 "D1,O1" 為站號清單。空白與空片段略過。</summary>
+        public static List<string> ParseStationList(string raw)
+        {
+            var result = new List<string>();
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return result;
+            }
+
+            foreach (var part in raw.Split(','))
+            {
+                var token = part.Trim();
+                if (token.Length > 0)
+                {
+                    result.Add(token);
+                }
+            }
+
+            return result;
         }
 
         /// <summary>軟體端是否仍認為該庫位「有平板/料」。任一指標成立即視為佔用。</summary>
@@ -347,9 +518,12 @@ namespace HikAGVWebAPI.App_Start
             Func<IBitReader> readerFactory = () => new PlcDevice(station, log);
             IPortStateReader portReader = new SqlPortStateReader(db, log);
             IStockClearer clearer = new SqlStockClearer(db, log);
+            IStockRegistrar registrar = new SqlStockRegistrar(db, log);
+            ISourceTaskStore taskStore = new SqlSourceTaskStore(db, log);
+            var sensorOnStations = StockSensorLinkManager.ParseStationList(settings.SensorOnStations);
 
             return new StockSensorLinkManager(mappings, readerFactory, clearer, portReader, log,
-                settings.PollIntervalMs, settings.ConfirmCount);
+                settings.PollIntervalMs, settings.ConfirmCount, registrar, taskStore, sensorOnStations);
         }
     }
 }

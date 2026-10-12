@@ -93,6 +93,22 @@ namespace HikAGVWebAPI.App_Start
             return JsonConvert.DeserializeObject<List<oPortModel>>(sJson);
         }
 
+        /// <summary>
+        /// 該站是否為已派出任務的起點（oRequire OkFlag 空/R、oMission OkFlag 空/Y/R，與 SCP StationAvailability 定義一致）。
+        /// </summary>
+        public bool Exists_ActiveTaskAsBegin(string StationNo)
+        {
+            string sSQL = $@"select case when exists (select 1 from oRequire
+                                                       where BeginStation = '{StationNo}'
+                                                         and (OkFlag is null or OkFlag in ('', 'R')))
+                                          or exists (select 1 from oMission
+                                                       where BeginStation = '{StationNo}'
+                                                         and (OkFlag is null or OkFlag in ('', 'Y', 'R')))
+                                        then 1 else 0 end ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            return Convert.ToInt32(dt.Rows[0][0]) == 1;
+        }
+
         public List<oShuttleModel> Select_oShuttle()
         {
             string sSQL = $@"select * from oShuttle ";
@@ -252,6 +268,17 @@ namespace HikAGVWebAPI.App_Start
             mSql.WriteSqlByAutoOpen(sSQL);
         }
 
+        /// <summary>中光電來源站 Sensor ON：只在 HaveFlag=0 時登記為 1（有貨架、無工單），PutTime 設為現在供 FIFO 排序。</summary>
+        public void Update_oPortRackPresent(string StationNo)
+        {
+            string sSQL = $@"update oPort
+                                set HaveFlag = '1'
+                                   ,PutTime = '{DateTime.Now.ToString("yyyyMMddHHmmssffffff")}'
+                              where StationNo = '{StationNo}'
+                                and HaveFlag = '0' ";
+            mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
         public void Update_oPort(oMissionModel oMission, string HaveFlag)
         {
             string sSQL = $@"update oPort
@@ -279,6 +306,17 @@ namespace HikAGVWebAPI.App_Start
             string sSQL = $@"delete oMission
                               where TaskDateTime = {oMission.TaskDateTime} ";
             mSql.WriteSqlByAutoOpen(sSQL);
+        }
+
+        /// <summary>刪除該站為起點、尚未派出（AssignFlag 空）的 oNeed，回傳刪除筆數。</summary>
+        public int Delete_oNeedUndispatched(string StationNo)
+        {
+            string sSQL = $@"delete oNeed
+                              where ObjStation = '{StationNo}'
+                                and (AssignFlag is null or AssignFlag = '');
+                             select @@ROWCOUNT ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            return Convert.ToInt32(dt.Rows[0][0]);
         }
         #endregion 刪除類
 

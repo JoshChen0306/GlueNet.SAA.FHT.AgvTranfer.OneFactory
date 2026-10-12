@@ -332,5 +332,219 @@ namespace HikAGVWebAPITests.App_Start
         }
 
         #endregion SensorMap 解析
+
+        #region 中光電來源站 Sensor ON 寫 HaveFlag=1（T13，2026-10-12 定案）
+
+        private class SpyStockRegistrar : IStockRegistrar
+        {
+            public List<string> Marked { get; } = new List<string>();
+            public void MarkRackPresent(string stationNo) => Marked.Add(stationNo);
+        }
+
+        private class FakeSourceTaskStore : ISourceTaskStore
+        {
+            public HashSet<string> ActiveStations { get; } = new HashSet<string>();
+            public Dictionary<string, int> UndispatchedNeeds { get; } = new Dictionary<string, int>();
+            public List<string> DeleteCalls { get; } = new List<string>();
+
+            public bool HasActiveTask(string stationNo) => ActiveStations.Contains(stationNo);
+
+            public int DeleteUndispatchedNeeds(string stationNo)
+            {
+                DeleteCalls.Add(stationNo);
+                return UndispatchedNeeds.TryGetValue(stationNo, out var n) ? n : 0;
+            }
+        }
+
+        private static StockSensorLinkManager CreateSourceSut(
+            FakeBitReader reader, FakePortReader portReader, SpyStockClearer clearer,
+            SpyStockRegistrar registrar, FakeSourceTaskStore taskStore, int confirmCount,
+            string[] sensorOnStations, params SensorMapping[] mappings)
+        {
+            return new StockSensorLinkManager(new List<SensorMapping>(mappings), reader, clearer,
+                portReader, null, 1000, confirmCount, registrar, taskStore, sensorOnStations);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站bitON且HaveFlag0_連續達ConfirmCount_寫HaveFlag1一次()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, new FakeSourceTaskStore(), 3,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = true;
+            ports.Ports["D1"] = Port();
+            sut.ScanOnce();
+            sut.ScanOnce();
+            Assert.AreEqual(0, registrar.Marked.Count, "未達 ConfirmCount 不可寫");
+
+            sut.ScanOnce();
+            CollectionAssert.AreEqual(new[] { "D1" }, registrar.Marked);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站已是HaveFlag1或3_不重複寫()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, new FakeSourceTaskStore(), 1,
+                new[] { "D1", "O1" }, new SensorMapping("M11", "D1"), new SensorMapping("M12", "O1"));
+
+            reader.Values["M11"] = true;
+            reader.Values["M12"] = true;
+            ports.Ports["D1"] = Port(haveFlag: "1");
+            ports.Ports["O1"] = Port(workOrder: "WO1", haveFlag: "3");
+            sut.ScanOnce();
+            sut.ScanOnce();
+
+            Assert.AreEqual(0, registrar.Marked.Count);
+        }
+
+        [TestMethod]
+        public void ScanOnce_非來源站bitON_維持既有行為不寫()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, new FakeSourceTaskStore(), 1,
+                new[] { "D1" }, new SensorMapping("M10", "B1"));
+
+            reader.Values["M10"] = true;
+            ports.Ports["B1"] = Port();
+            sut.ScanOnce();
+
+            Assert.AreEqual(0, registrar.Marked.Count);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站有進行中任務_outbin後sensor未熄_不寫()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var tasks = new FakeSourceTaskStore();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, tasks, 1,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = true;
+            ports.Ports["D1"] = Port();          // outbin 已清空
+            tasks.ActiveStations.Add("D1");      // oMission 尚未 end
+            sut.ScanOnce();
+
+            Assert.AreEqual(0, registrar.Marked.Count);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站ON去抖中途讀取失敗_計數重置()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, new FakeSourceTaskStore(), 2,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = true;
+            ports.Ports["D1"] = Port();
+            sut.ScanOnce();                      // 1
+            reader.FailAddresses.Add("M11");
+            sut.ScanOnce();                      // 失敗 → 歸 0
+            reader.FailAddresses.Clear();
+            sut.ScanOnce();                      // 1
+            Assert.AreEqual(0, registrar.Marked.Count);
+
+            sut.ScanOnce();                      // 2 → 寫
+            Assert.AreEqual(1, registrar.Marked.Count);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站ON去抖中途OFF_計數重置()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var registrar = new SpyStockRegistrar();
+            var sut = CreateSourceSut(reader, ports, new SpyStockClearer(), registrar, new FakeSourceTaskStore(), 2,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            ports.Ports["D1"] = Port();
+            reader.Values["M11"] = true;
+            sut.ScanOnce();
+            reader.Values["M11"] = false;
+            sut.ScanOnce();
+            reader.Values["M11"] = true;
+            sut.ScanOnce();
+
+            Assert.AreEqual(0, registrar.Marked.Count);
+        }
+
+        #endregion 中光電來源站 Sensor ON 寫 HaveFlag=1
+
+        #region 中光電來源站 Sensor OFF 清空時處理已建任務（T13，2026-10-12 定案）
+
+        [TestMethod]
+        public void ScanOnce_來源站OFF清空_刪除未派出oNeed()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var clearer = new SpyStockClearer();
+            var tasks = new FakeSourceTaskStore();
+            var sut = CreateSourceSut(reader, ports, clearer, new SpyStockRegistrar(), tasks, 1,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = false;
+            ports.Ports["D1"] = Port(workOrder: "WO1", haveFlag: "3");
+            tasks.UndispatchedNeeds["D1"] = 1;
+            sut.ScanOnce();
+
+            CollectionAssert.AreEqual(new[] { "D1" }, clearer.Cleared);
+            CollectionAssert.AreEqual(new[] { "D1" }, tasks.DeleteCalls);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站OFF清空且任務已派出_仍清空庫位不取消任務()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var clearer = new SpyStockClearer();
+            var tasks = new FakeSourceTaskStore();
+            var sut = CreateSourceSut(reader, ports, clearer, new SpyStockRegistrar(), tasks, 1,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = false;
+            ports.Ports["D1"] = Port(haveFlag: "1");
+            tasks.ActiveStations.Add("D1");      // 已進 oMission：只記 Error，由人員到 RCS 取消
+            sut.ScanOnce();
+
+            CollectionAssert.AreEqual(new[] { "D1" }, clearer.Cleared);
+        }
+
+        [TestMethod]
+        public void ScanOnce_非來源站OFF清空_不動oNeed()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var clearer = new SpyStockClearer();
+            var tasks = new FakeSourceTaskStore();
+            var sut = CreateSourceSut(reader, ports, clearer, new SpyStockRegistrar(), tasks, 1,
+                new[] { "D1" }, new SensorMapping("M10", "B1"));
+
+            reader.Values["M10"] = false;
+            ports.Ports["B1"] = Port(workOrder: "WO1", haveFlag: "3");
+            sut.ScanOnce();
+
+            CollectionAssert.AreEqual(new[] { "B1" }, clearer.Cleared);
+            Assert.AreEqual(0, tasks.DeleteCalls.Count);
+        }
+
+        [TestMethod]
+        public void ParseStationList_逗號分隔含空白_去除空白與空片段()
+        {
+            CollectionAssert.AreEqual(new[] { "D1", "O1" }, StockSensorLinkManager.ParseStationList(" D1, ,O1 "));
+            Assert.AreEqual(0, StockSensorLinkManager.ParseStationList(null).Count);
+        }
+
+        #endregion 中光電來源站 Sensor OFF 清空時處理已建任務
     }
 }
