@@ -344,10 +344,18 @@ namespace HikAGVWebAPITests.App_Start
         private class FakeSourceTaskStore : ISourceTaskStore
         {
             public HashSet<string> ActiveStations { get; } = new HashSet<string>();
+            public HashSet<string> RunningStations { get; } = new HashSet<string>();
+            public List<string> RunningQueries { get; } = new List<string>();
             public Dictionary<string, int> UndispatchedNeeds { get; } = new Dictionary<string, int>();
             public List<string> DeleteCalls { get; } = new List<string>();
 
             public bool HasActiveTask(string stationNo) => ActiveStations.Contains(stationNo);
+
+            public bool HasRunningMission(string stationNo)
+            {
+                RunningQueries.Add(stationNo);
+                return RunningStations.Contains(stationNo);
+            }
 
             public int DeleteUndispatchedNeeds(string stationNo)
             {
@@ -518,6 +526,26 @@ namespace HikAGVWebAPITests.App_Start
             sut.ScanOnce();
 
             CollectionAssert.AreEqual(new[] { "D1" }, clearer.Cleared);
+        }
+
+        [TestMethod]
+        public void ScanOnce_來源站OFF清空且AGV執行中_視為正常取貨並查詢執行狀態()
+        {
+            var reader = new FakeBitReader();
+            var ports = new FakePortReader();
+            var clearer = new SpyStockClearer();
+            var tasks = new FakeSourceTaskStore();
+            var sut = CreateSourceSut(reader, ports, clearer, new SpyStockRegistrar(), tasks, 1,
+                new[] { "D1" }, new SensorMapping("M11", "D1"));
+
+            reader.Values["M11"] = false;
+            ports.Ports["D1"] = Port(workOrder: "WO1", haveFlag: "3");
+            tasks.ActiveStations.Add("D1");
+            tasks.RunningStations.Add("D1");   // AGV 已頂起貨架、outbin 尚未回報
+            sut.ScanOnce();
+
+            CollectionAssert.AreEqual(new[] { "D1" }, clearer.Cleared);
+            CollectionAssert.AreEqual(new[] { "D1" }, tasks.RunningQueries, "須先判斷是否為 AGV 執行中，再決定是否記 Error");
         }
 
         [TestMethod]

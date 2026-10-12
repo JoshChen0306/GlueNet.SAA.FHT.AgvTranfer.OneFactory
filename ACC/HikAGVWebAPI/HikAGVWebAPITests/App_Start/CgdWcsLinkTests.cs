@@ -51,7 +51,13 @@ namespace HikAGVWebAPITests.App_Start
         private class SpyFiller : IMaterialFiller
         {
             public List<string> Filled { get; } = new List<string>();
-            public void FillMaterial(string stationNo, string itemCode) => Filled.Add($"{stationNo}:{itemCode}");
+            public bool Result { get; set; } = true;
+
+            public bool FillMaterial(string stationNo, string itemCode)
+            {
+                Filled.Add($"{stationNo}:{itemCode}");
+                return Result;
+            }
         }
 
         private DateTime _now = new DateTime(2026, 10, 12, 8, 0, 0);
@@ -213,6 +219,38 @@ namespace HikAGVWebAPITests.App_Start
             CollectionAssert.AreEqual(new[] { "release:BIN-D", "mapping:BIN-C:WO-2" }, _client.Calls);
         }
 
+        [TestMethod]
+        public void ProcessDue_同一儲位release重試中_後到的Mapping等release完成才送()
+        {
+            _client.Responses.Enqueue(CgdWcsResult.FromCode(2, "ERROR"));   // release 第 1 次失敗
+            var sut = CreateSut();
+            sut.EnqueueRelease("P1");
+            sut.ProcessDue();
+
+            sut.EnqueueMapping("P1", "WO-NEW");                             // 新貨放上 P1
+            sut.ProcessDue();
+            CollectionAssert.AreEqual(new[] { "release:BIN-B" }, _client.Calls, "release 未完成前不可送 Mapping");
+
+            Advance(5); sut.ProcessDue();                                   // release 重試成功
+            sut.ProcessDue();                                               // 接著送 Mapping
+
+            CollectionAssert.AreEqual(new[] { "release:BIN-B", "release:BIN-B", "mapping:BIN-B:WO-NEW" }, _client.Calls);
+            Assert.AreEqual(0, sut.PendingCount);
+        }
+
+        [TestMethod]
+        public void Stop_尚有未送出指令_清空佇列()
+        {
+            _client.Default = CgdWcsResult.FromCode(2, "ERROR");
+            var sut = CreateSut();
+            sut.EnqueueRelease("D1");
+            sut.ProcessDue();
+
+            sut.Stop();
+
+            Assert.AreEqual(0, sut.PendingCount);
+        }
+
         #endregion release / Mapping 佇列
 
         #region R1 來源站補資料（status）
@@ -228,6 +266,20 @@ namespace HikAGVWebAPITests.App_Start
 
             CollectionAssert.AreEqual(new[] { "status:BIN-D" }, _client.Calls);
             CollectionAssert.AreEqual(new[] { "D1:ITEM-123" }, _filler.Filled);
+        }
+
+        [TestMethod]
+        public void FillStatusOnce_寫回失敗_下一輪再查status()
+        {
+            _ports.Ports["D1"] = new oPortModel { HaveFlag = "1" };
+            _client.Default = CgdWcsResult.FromCode(0, "OK", "ITEM-123");
+            _filler.Result = false;
+            var sut = CreateSut();
+
+            sut.FillStatusOnce();
+            sut.FillStatusOnce();
+
+            Assert.AreEqual(2, _client.Calls.Count);
         }
 
         [TestMethod]

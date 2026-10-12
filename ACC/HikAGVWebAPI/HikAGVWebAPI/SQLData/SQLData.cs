@@ -109,6 +109,17 @@ namespace HikAGVWebAPI.App_Start
             return Convert.ToInt32(dt.Rows[0][0]) == 1;
         }
 
+        /// <summary>該站是否為 AGV 已開始執行（oMission OkFlag='R'）任務的起點。</summary>
+        public bool Exists_RunningMissionAsBegin(string StationNo)
+        {
+            string sSQL = $@"select case when exists (select 1 from oMission
+                                                       where BeginStation = '{StationNo}'
+                                                         and OkFlag = 'R')
+                                        then 1 else 0 end ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            return Convert.ToInt32(dt.Rows[0][0]) == 1;
+        }
+
         public List<oShuttleModel> Select_oShuttle()
         {
             string sSQL = $@"select * from oShuttle ";
@@ -280,15 +291,17 @@ namespace HikAGVWebAPI.App_Start
         }
 
         /// <summary>R1 來源站補資料（中光電 status 取得 itemCode）：只在 HaveFlag=1 時改為 3 並寫入 WorkOrder，PutTime 設為現在。</summary>
-        public void Update_oPortMaterial(string StationNo, string WorkOrder)
+        public int Update_oPortMaterial(string StationNo, string WorkOrder)
         {
             string sSQL = $@"update oPort
                                 set HaveFlag = '3'
                                    ,WorkOrder = '{WorkOrder.Replace("'", "''")}'
                                    ,PutTime = '{DateTime.Now.ToString("yyyyMMddHHmmssffffff")}'
                               where StationNo = '{StationNo}'
-                                and HaveFlag = '1' ";
-            mSql.WriteSqlByAutoOpen(sSQL);
+                                and HaveFlag = '1';
+                             select @@ROWCOUNT ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            return Convert.ToInt32(dt.Rows[0][0]);
         }
 
         public void Update_oPort(oMissionModel oMission, string HaveFlag)

@@ -213,18 +213,19 @@ namespace HikAGVWebAPI
                     oMission.OkFlag = "Y";
                     oMission.EndTime = DateTime.Now.ToString("yyyyMMddHHmmssffffff");
                     mDB.Update_oPort(oMission, sHaveFlag);
+
+                    // 放貨到中光電站點 → Mapping(itemCode=WorkOrder)（緊接 oPort 寫入排入背景佇列，後續 DB 動作失敗也不漏送）
+                    if (CgdWcsBootstrap.Current?.EnqueueMapping(oMission.EndStation, oMission.WorkOrder) == true)
+                    {
+                        mLog.TraceOut($"[CgdWcs] 排入 Mapping [EndStation] : {oMission.EndStation}, [WorkOrder] : {oMission.WorkOrder}", Log.LogType.NONE);
+                    }
+
                     mDB.Update_oRequire(oMission);
                     mDB.Update_oMissionEndTime(oMission);
                     mDB.Insert_ubMission(oMission);
                     mDB.Delete_oMission(oMission);
                     mDB.Update_oShuttleStation(oMission, "I");
                     mLog.TraceOut($"Update End Job Finish!", Log.LogType.NONE);
-
-                    // 放貨到中光電站點 → Mapping(itemCode=WorkOrder)（背景佇列，不阻塞回呼）
-                    if (CgdWcsBootstrap.Current?.EnqueueMapping(oMission.EndStation, oMission.WorkOrder) == true)
-                    {
-                        mLog.TraceOut($"[CgdWcs] 排入 Mapping [EndStation] : {oMission.EndStation}, [WorkOrder] : {oMission.WorkOrder}", Log.LogType.NONE);
-                    }
                 }
 
                 mDB.Update_ubActivation(ubActivation, "EndTime");

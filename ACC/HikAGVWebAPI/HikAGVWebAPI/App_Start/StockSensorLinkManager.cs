@@ -36,6 +36,9 @@ namespace HikAGVWebAPI.App_Start
         /// <summary>該站是否為已派出任務（oRequire / oMission 進行中）的起點。</summary>
         bool HasActiveTask(string stationNo);
 
+        /// <summary>該站是否為 AGV 已開始執行（oMission OkFlag='R'）任務的起點：正常取貨時 sensor 會先於 outbin 熄滅。</summary>
+        bool HasRunningMission(string stationNo);
+
         /// <summary>刪除該站為起點、尚未派出（AssignFlag 空）的 oNeed，回傳刪除筆數。</summary>
         int DeleteUndispatchedNeeds(string stationNo);
     }
@@ -112,6 +115,19 @@ namespace HikAGVWebAPI.App_Start
             {
                 _log?.TraceOut($"[SqlSourceTaskStore] 查詢 {stationNo} 進行中任務失敗：{ex.Message}", Log.LogType.WARN);
                 return true;
+            }
+        }
+
+        public bool HasRunningMission(string stationNo)
+        {
+            try
+            {
+                return _db.Exists_RunningMissionAsBegin(stationNo);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[SqlSourceTaskStore] 查詢 {stationNo} 執行中任務失敗：{ex.Message}", Log.LogType.WARN);
+                return false;
             }
         }
 
@@ -400,9 +416,14 @@ namespace HikAGVWebAPI.App_Start
                 _log?.TraceOut($"[StockSensorLink] {stationNo} 貨架被移走，刪除未派出的 oNeed {deleted} 筆", Log.LogType.WARN);
             }
 
-            if (_taskStore.HasActiveTask(stationNo))
+            if (_taskStore.HasRunningMission(stationNo))
             {
-                _log?.TraceOut($"[StockSensorLink] {stationNo} 貨架被移走，但已有派出中的任務，請人員至 RCS 取消", Log.LogType.ERROR);
+                // AGV 已開始執行：正常取貨時頂起貨架後 sensor 會先於 outbin 回呼熄滅，不視為異常
+                _log?.TraceOut($"[StockSensorLink] {stationNo} sensor 熄滅且 AGV 任務執行中，視為取貨中（outbin 尚未回報）", Log.LogType.TRACE);
+            }
+            else if (_taskStore.HasActiveTask(stationNo))
+            {
+                _log?.TraceOut($"[StockSensorLink] {stationNo} 貨架被移走，但已有派出、AGV 尚未開始的任務，請人員至 RCS 取消", Log.LogType.ERROR);
             }
         }
 

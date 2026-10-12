@@ -44,7 +44,8 @@ namespace HikAGVWebAPI.App_Start
     /// <summary>R1 來源站補資料：HaveFlag=1 改為 3 並寫入 WorkOrder=itemCode，正式實作呼叫 SQLData.Update_oPortMaterial。</summary>
     public interface IMaterialFiller
     {
-        void FillMaterial(string stationNo, string itemCode);
+        /// <summary>回傳是否實際寫入（SQL 限定 HaveFlag='1'；期間被清空或例外回 false）。</summary>
+        bool FillMaterial(string stationNo, string itemCode);
     }
 
     /// <summary>中光電儲位 API 的 HTTP 實作（無認證，2026-10-08 定案；逾時由 HttpClient.Timeout 控制）。</summary>
@@ -207,18 +208,22 @@ namespace HikAGVWebAPI.App_Start
             return true;
         }
 
-        /// <summary>送出所有到期的 release／Mapping。由背景執行緒呼叫，測試可直接呼叫。</summary>
+        /// <summary>
+        /// 送出到期的 release／Mapping。由背景執行緒呼叫，測試可直接呼叫。
+        /// 同一 binCode 先進先出：只送每個 binCode 最前面的一筆，前一筆成功或放棄前後面的不送，
+        /// 避免 release 重試期間 Mapping 先送出，造成中光電帳務順序顛倒。
+        /// </summary>
         public void ProcessDue()
         {
             List<Command> due;
             DateTime now = _clock();
             lock (_lock)
             {
-                due = _pending.Where(c => c.DueAt <= now).ToList();
-                foreach (var c in due)
-                {
-                    _pending.Remove(c);
-                }
+                due = _pending
+                    .GroupBy(c => c.BinCode, StringComparer.OrdinalIgnoreCase)
+                    .Select(g => g.First())
+                    .Where(c => c.DueAt <= now)
+                    .ToList();
             }
 
             foreach (var cmd in due)
@@ -231,28 +236,38 @@ namespace HikAGVWebAPI.App_Start
                 if (result.Reached && (result.Code == 0 || (result.Code == 1 && cmd.Kind == CommandKind.Release)))
                 {
                     _log?.TraceOut($"[CgdWcs] {cmd} 成功（{result}）", Log.LogType.TRACE);
+                    Remove(cmd);
                     continue;
                 }
 
                 if (result.Reached && result.Code == 1)
                 {
                     _log?.TraceOut($"[CgdWcs] {cmd} 回已佔用，兩邊物料資料不一致，請人員確認（{result}）", Log.LogType.ERROR);
+                    Remove(cmd);
                     continue;
                 }
 
                 if (cmd.Attempts > _retryDelaysSec.Length)
                 {
-                    _log?.TraceOut($"[CgdWcs] {cmd} 重試 {_retryDelaysSec.Length} 次仍失敗，放棄（{result}）", Log.LogType.ERROR);
+                    _log?.TraceOut($"[CgdWcs] {cmd} 重試 {_retryDelaysSec.Length} 次仍失敗，放棄，請人員確認中光電儲位資料（{result}）", Log.LogType.ERROR);
+                    Remove(cmd);
                     continue;
                 }
 
                 int delay = _retryDelaysSec[cmd.Attempts - 1];
-                cmd.DueAt = _clock().AddSeconds(delay);
-                _log?.TraceOut($"[CgdWcs] {cmd} 失敗，{delay} 秒後重試（{result}）", Log.LogType.WARN);
                 lock (_lock)
                 {
-                    _pending.Add(cmd);
+                    cmd.DueAt = _clock().AddSeconds(delay);
                 }
+                _log?.TraceOut($"[CgdWcs] {cmd} 失敗，{delay} 秒後重試（{result}）", Log.LogType.WARN);
+            }
+        }
+
+        private void Remove(Command cmd)
+        {
+            lock (_lock)
+            {
+                _pending.Remove(cmd);
             }
         }
 
@@ -276,8 +291,14 @@ namespace HikAGVWebAPI.App_Start
                 var result = _client.GetStatus(binCode);
                 if (result.Reached && result.Code == 0 && !string.IsNullOrEmpty(result.ItemCode))
                 {
-                    _filler?.FillMaterial(stationNo, result.ItemCode);
-                    _log?.TraceOut($"[CgdWcs] {stationNo} 取得物料 itemCode={result.ItemCode}，寫回 HaveFlag=3", Log.LogType.TRACE);
+                    if (_filler != null && _filler.FillMaterial(stationNo, result.ItemCode))
+                    {
+                        _log?.TraceOut($"[CgdWcs] {stationNo} 取得物料 itemCode={result.ItemCode}，寫回 HaveFlag=3", Log.LogType.TRACE);
+                    }
+                    else
+                    {
+                        WarnThrottled(stationNo + ":fill", $"[CgdWcs] {stationNo} 取得物料 itemCode={result.ItemCode} 但寫回失敗（庫位已非 HaveFlag=1 或 DB 例外），下一輪再查");
+                    }
                     continue;
                 }
 
@@ -298,11 +319,24 @@ namespace HikAGVWebAPI.App_Start
             _thread.Start();
         }
 
+        /// <summary>停止背景執行緒；尚未送出／重試中的指令逐筆記 Error，供人員手動補送。</summary>
         public void Stop()
         {
             _stop = true;
-            _thread?.Join(3000);
+            _thread?.Join(15000);   // 須大於單次 HTTP 逾時，讓進行中的呼叫有機會完成
             _thread = null;
+
+            List<Command> left;
+            lock (_lock)
+            {
+                left = _pending.ToList();
+                _pending.Clear();
+            }
+
+            foreach (var cmd in left)
+            {
+                _log?.TraceOut($"[CgdWcs] 程式停止時尚未送出：{cmd}（已嘗試 {cmd.Attempts} 次），請人員確認中光電儲位資料", Log.LogType.ERROR);
+            }
         }
 
         private void Execute(int statusPollMs)
@@ -392,15 +426,16 @@ namespace HikAGVWebAPI.App_Start
             _log = log;
         }
 
-        public void FillMaterial(string stationNo, string itemCode)
+        public bool FillMaterial(string stationNo, string itemCode)
         {
             try
             {
-                _db.Update_oPortMaterial(stationNo, itemCode);
+                return _db.Update_oPortMaterial(stationNo, itemCode) > 0;
             }
             catch (Exception ex)
             {
-                _log?.TraceOut($"[SqlMaterialFiller] 寫回 {stationNo} 物料失敗：{ex.Message}", Log.LogType.ERROR);
+                _log?.TraceOut($"[SqlMaterialFiller] 寫回 {stationNo} 物料失敗：{ex.Message}", Log.LogType.WARN);
+                return false;
             }
         }
     }
@@ -413,7 +448,30 @@ namespace HikAGVWebAPI.App_Start
     {
         public static CgdWcsLink Current { get; private set; }
 
+        /// <summary>啟動中光電介接。任何設定錯誤只停用介接並記錄，不拋出（避免拖垮 ACC 啟動）。</summary>
         public static CgdWcsLink Start(string configFilePath)
+        {
+            try
+            {
+                return StartCore(configFilePath);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Trace.WriteLine($"[CgdWcs] 啟動失敗，停用中光電介接：{ex}");
+                try
+                {
+                    new Log("CgdWcs").TraceOut($"[CgdWcs] 啟動失敗，停用中光電介接：{ex.Message}", Log.LogType.ERROR);
+                }
+                catch (Exception logEx)
+                {
+                    System.Diagnostics.Trace.WriteLine($"[CgdWcs] 寫入啟動失敗 Log 也失敗：{logEx.Message}");
+                }
+                Current = null;
+                return null;
+            }
+        }
+
+        private static CgdWcsLink StartCore(string configFilePath)
         {
             Configuration config;
             try
