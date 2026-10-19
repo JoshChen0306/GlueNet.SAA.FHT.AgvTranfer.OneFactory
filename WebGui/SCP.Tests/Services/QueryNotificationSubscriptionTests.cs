@@ -28,6 +28,9 @@ namespace SCP.Tests.Services
             /// <summary>依序決定每次 Subscribe 是否丟例外（未列到的次數視為成功）。</summary>
             public Queue<bool> FailPlan { get; } = new Queue<bool>();
 
+            /// <summary>所有成功註冊的 (SQL, callback)，依註冊順序。</summary>
+            public List<(string Sql, Action<QueryNotification> Callback)> Registrations { get; } = new List<(string, Action<QueryNotification>)>();
+
             public void Subscribe(string sql, Action<QueryNotification> onNotified)
             {
                 SubscribeCount++;
@@ -37,10 +40,16 @@ namespace SCP.Tests.Services
                 {
                     throw new InvalidOperationException("模擬註冊失敗");
                 }
+                Registrations.Add((sql, onNotified));
             }
 
-            public void Notify(SqlNotificationType type, SqlNotificationInfo info = SqlNotificationInfo.Update)
-                => LastCallback!(new QueryNotification(type, info, SqlNotificationSource.Data));
+            public void Notify(SqlNotificationType type, SqlNotificationInfo info = SqlNotificationInfo.Update,
+                SqlNotificationSource source = SqlNotificationSource.Data)
+                => LastCallback!(new QueryNotification(type, info, source));
+
+            /// <summary>接收端中斷（實測：停用 Broker 時 6 條都收到 Change/Error/Client）。</summary>
+            public void NotifyListenerError(Action<QueryNotification> callback)
+                => callback(new QueryNotification(SqlNotificationType.Change, SqlNotificationInfo.Error, SqlNotificationSource.Client));
         }
 
         internal sealed class FakeNotifier : IRealtimeNotifier
@@ -200,6 +209,54 @@ namespace SCP.Tests.Services
             Assert.AreEqual(0, scheduler.Scheduled.Count);
             Assert.AreEqual(1, source.SubscribeCount);
             Assert.IsFalse(log.Events.Any(e => e.Level >= LogEventLevel.Warning));
+        }
+
+        // ── 接收端中斷（整合測試發現：停用再啟用 Broker 後通知永遠送不到）──
+
+        [TestMethod]
+        public void OnNotified_ListenerErrorWithHandler_DelegatesToServiceAndSendsOnce()
+        {
+            var source = new FakeSource();
+            var notifier = new FakeNotifier();
+            var scheduler = new FakeScheduler();
+            int listenerErrors = 0;
+            var logger = new LoggerConfiguration().CreateLogger();
+            var sut = new QueryNotificationSubscription(Sql, EventName, source, notifier, scheduler, logger, () => listenerErrors++);
+            sut.Start();
+
+            source.NotifyListenerError(source.LastCallback!);
+
+            Assert.AreEqual(1, listenerErrors, "交給 Service 重建接收端");
+            Assert.AreEqual(0, scheduler.Scheduled.Count, "不自行重註冊（接收端壞掉時註冊看似成功但收不到）");
+            CollectionAssert.AreEqual(new[] { EventName }, notifier.Sent);
+        }
+
+        [TestMethod]
+        public void Resubscribe_OldCallbackFiresLater_Ignored()
+        {
+            // code review S3：重新註冊後，舊世代的訂閱若之後才觸發，不可再推播或再註冊（避免同一查詢兩條訂閱）
+            var (sut, source, notifier, _) = Create();
+            sut.Start();
+            var oldCallback = source.LastCallback!;
+
+            sut.Resubscribe();
+            oldCallback(new QueryNotification(SqlNotificationType.Change, SqlNotificationInfo.Update, SqlNotificationSource.Data));
+
+            Assert.AreEqual(2, source.SubscribeCount);
+            Assert.AreEqual(0, notifier.Sent.Count);
+        }
+
+        [TestMethod]
+        public void Resubscribe_PendingRetryFromOldGeneration_Skipped()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            source.FailPlan.Enqueue(true);
+            sut.Start();                     // 失敗 → 排程重試
+
+            sut.Resubscribe();               // 例：接收端重建後統一重新註冊
+            scheduler.RunLast();             // 舊重試到期
+
+            Assert.AreEqual(2, source.SubscribeCount, "舊重試不可再註冊一次");
         }
 
         // ── T6 重註冊失敗自動重試 ────────────────────────────────
