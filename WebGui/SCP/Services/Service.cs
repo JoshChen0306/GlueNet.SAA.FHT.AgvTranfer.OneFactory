@@ -82,7 +82,15 @@ namespace SCP.Services
             }
             _retryScheduler.Cancel();
 
-            _listener.Stop(_connectionString);
+            try
+            {
+                _listener.Stop(_connectionString);
+            }
+            catch (Exception ex)
+            {
+                // 與 Start 對稱：停止失敗不外拋，避免主機關閉流程中斷
+                _log.Warning(ex, "SqlDependency.Stop 失敗（服務停止中，可忽略；若反覆發生請檢查資料庫連線）");
+            }
             return Task.CompletedTask;
         }
     }

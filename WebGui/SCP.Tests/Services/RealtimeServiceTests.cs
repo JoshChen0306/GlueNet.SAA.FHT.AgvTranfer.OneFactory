@@ -67,6 +67,20 @@ namespace SCP.Tests.Services
             Assert.IsTrue(log.Has(LogEventLevel.Error, "ENABLE_BROKER"));
         }
 
+        // ── T4 StopAsync 例外不外拋 ──────────────────────────────
+
+        [TestMethod]
+        public async Task StopAsync_ListenerStopThrows_LogsWarningAndDoesNotThrow()
+        {
+            var (sut, listener, _, _, log) = Create();
+            await sut.StartAsync(CancellationToken.None);
+            listener.FailStop = true;
+
+            await sut.StopAsync(CancellationToken.None);
+
+            Assert.IsTrue(log.Has(LogEventLevel.Warning, "SqlDependency.Stop"));
+        }
+
         [TestMethod]
         public async Task StopAsync_PendingRetry_NoLongerSubscribes()
         {
