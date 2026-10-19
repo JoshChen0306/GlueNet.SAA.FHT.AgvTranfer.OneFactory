@@ -38,7 +38,8 @@
 
 ### 無限重註冊迴圈防護
 - [ ] 6 個 `OnChange` 處理器在重註冊 / 推播前皆判斷 `e.Type == SqlNotificationType.Change`
-- [ ] 非 `Change`（`Invalid` / `Subscribe`）時記 Warning log 並**不**重註冊，無緊密迴圈
+- [ ] 非 `Change`（`Invalid` / `Subscribe`）時記 Warning log 並**不立即**重註冊，改走下方「重註冊失敗自動重試」的退避排程，無緊密迴圈
+  > 2026-10-19 使用者確認：照字面「不重註冊」會讓該訂閱永久死亡（與 2026-07-16 oShuttle 凍結同一結果），改交給退避重試
 
 ### 記憶體 / 執行緒安全
 - [ ] `_dependency` 不再無界成長（移除，或重註冊前移除舊項並 `OnChange -=` 解除訂閱）
