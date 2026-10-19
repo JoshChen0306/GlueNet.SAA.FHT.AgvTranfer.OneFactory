@@ -30,6 +30,20 @@ namespace SCP.Tests.Helpers
 
         // ── P0 案例 ──────────────────────────────────────────────
 
+        /// <summary>T27：加工站區域（登記時附加 ^DONE），代號去空白轉大寫比對；未設定時為空。</summary>
+        [TestMethod]
+        public void IsProcessDoneArea_ConfiguredAndMissing_ReturnsExpected()
+        {
+            var rules = FactoryOneRules();
+            rules["AreaRules:ProcessDoneAreas:0"] = " e ";
+
+            var provider = Build(rules);
+
+            Assert.IsTrue(provider.IsProcessDoneArea("E"));
+            Assert.IsFalse(provider.IsProcessDoneArea("A"));
+            Assert.IsFalse(Build(FactoryOneRules()).IsProcessDoneArea("E"));
+        }
+
         [TestMethod]
         public void GetReleaseTargets_ConfiguredArea_ReturnsConfiguredTargets()
         {

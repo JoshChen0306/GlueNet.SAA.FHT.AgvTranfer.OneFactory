@@ -82,7 +82,7 @@ namespace SCP.Controllers
                     MachineName = item.MachineName,
                     UseFlag = item.UseFlag,
                     HaveFlag = item.HaveFlag,
-                    WorkOrder = item.WorkOrder,
+                    WorkOrder = WorkOrderMarker.Strip(item.WorkOrder),   // 畫面不顯示 ^DONE 標記
                 };
                 result.Add(data);
             }
@@ -172,6 +172,14 @@ namespace SCP.Controllers
 
             try
             {
+                // 畫面顯示的工單已移除 ^DONE；工單未修改時保留原本的加工完成標記，避免儲位設定存檔後 R2 不再自動派送
+                var current = _DBContext.oPort.AsNoTracking().FirstOrDefault(p => p.StationNo == name);
+                if (current != null && WorkOrderMarker.HasProcessDone(current.WorkOrder)
+                    && workorder == WorkOrderMarker.Strip(current.WorkOrder))
+                {
+                    workorder = current.WorkOrder;
+                }
+
                 _DBContext.oPort
                     .Where(p => p.StationNo == name)
                     .ExecuteUpdate(setters => setters
@@ -183,7 +191,8 @@ namespace SCP.Controllers
             }
             catch (Exception ex)
             {
-
+                // 維持原流程（仍回 Ok），僅補記錄以免寫入失敗無跡可查
+                LogMgt.Logger?.Warn($"[UpdateoPort] 更新 oPort 失敗：StationNo={name}, Error={ex.Message}");
             }
 
             return Ok();

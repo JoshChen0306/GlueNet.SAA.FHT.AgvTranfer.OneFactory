@@ -190,12 +190,22 @@ namespace HikAGVWebAPI.App_Start
             return true;
         }
 
+        /// <summary>SCP 加工完成標記（SCP Helpers.WorkOrderMarker.ProcessDone）。</summary>
+        private const string ProcessDoneMarker = "^DONE";
+
         /// <summary>放貨到中光電站點（end）：排入 Mapping(itemCode=WorkOrder)。非中光電站點或無工單回傳 false。</summary>
         public bool EnqueueMapping(string stationNo, string itemCode)
         {
             if (!TryGetBinCode(stationNo, out string binCode))
             {
                 return false;
+            }
+
+            // 防呆：SCP 加工完成標記 ^DONE 只用於派送判斷（建 oNeed 時已移除），萬一殘留也不送給中光電
+            itemCode = itemCode ?? "";
+            if (itemCode.EndsWith(ProcessDoneMarker, StringComparison.Ordinal) && !itemCode.EndsWith("^VCUT^DONE", StringComparison.Ordinal))
+            {
+                itemCode = itemCode.Substring(0, itemCode.Length - ProcessDoneMarker.Length);
             }
 
             if (string.IsNullOrEmpty(itemCode))

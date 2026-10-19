@@ -404,6 +404,88 @@ namespace SCP.Tests.Services
             Assert.AreEqual(0, created);
         }
 
+        // ── R2 迅得2/3/4→中光電C＋^DONE（T27）─────────────────
+
+        /// <summary>R2：只派人員加工後登記（WorkOrder 帶 ^DONE）的 E 站。</summary>
+        private static AutoDispatchRoute R2() => new AutoDispatchRoute
+        {
+            Name = "R2",
+            SourceBlocks = new List<string> { "E" },
+            TargetBlocks = new List<string> { "Z" },
+            SourceHaveFlags = new List<string> { "3" },
+            SourceWorkOrderMarker = "^DONE",
+        };
+
+        [TestMethod]
+        public async Task Execute_R2ArrivedFromDWithoutMarker_DoesNotDispatch()
+        {
+            // D→E 剛送達：HaveFlag=3＋中光電 itemCode，尚未加工，不可送去 C
+            using var db = new ScpTestDb();
+            db.AddPort("E1", haveFlag: "3", workOrder: "ITEM-D1");
+            db.AddPort("Z1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R2());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_R2MarkedAndZEmpty_DispatchesWithMarkerStripped()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("E1", haveFlag: "3", workOrder: "ITEM-D1");
+            db.AddPort("E2", haveFlag: "3", workOrder: "WO-NEW^DONE");
+            db.AddPort("Z1", haveFlag: "0");
+
+            await Run(db, new ListLogger(), R2());
+
+            var need = db.Needs().Single();
+            Assert.AreEqual("E2", need.ObjStation);
+            Assert.AreEqual("Z1", need.EndStation);
+            Assert.AreEqual("WO-NEW", need.WorkOrder, "oNeed 不可帶 ^DONE，否則會帶到中光電 Mapping 的 itemCode");
+        }
+
+        [TestMethod]
+        public async Task Execute_R2LegacyVcutDoneWorkOrder_DoesNotDispatch()
+        {
+            // 二廠殘留字樣 ^VCUT^DONE 不是加工完成標記，不可觸發 R2
+            using var db = new ScpTestDb();
+            db.AddPort("E1", haveFlag: "3", workOrder: "LOT01^VCUT^DONE");
+            db.AddPort("Z1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R2());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_R2MarkedButZOccupied_DoesNotDispatch()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("E2", haveFlag: "3", workOrder: "WO-NEW^DONE");
+            db.AddPort("Z1", haveFlag: "3", workOrder: "WO-OLD");
+
+            int created = await Run(db, new ListLogger(), R2());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_RouteWithoutMarkerSetting_DispatchesRegardlessOfMarker()
+        {
+            // 未設 SourceWorkOrderMarker 的路線（M→K、R1、R3、R4、R5）行為不變；oNeed 仍移除 ^DONE
+            using var db = new ScpTestDb();
+            db.AddPort("M1", haveFlag: "3", workOrder: "WO-M1", area: "FHT1-3F", putTime: "20260101010000");
+            db.AddPort("M2", haveFlag: "3", workOrder: "WO-M2^DONE", area: "FHT1-3F", putTime: "20260101020000");
+            db.AddPort("K1", haveFlag: "0", area: "FHT1-3F");
+            db.AddPort("K2", haveFlag: "0", area: "FHT1-3F");
+
+            int created = await Run(db, new ListLogger(), AutoDispatchRoute.LegacyMToK());
+
+            Assert.AreEqual(2, created);
+            CollectionAssert.AreEquivalent(new[] { "WO-M1", "WO-M2" }, db.Needs().Select(n => n.WorkOrder).ToList());
+        }
+
         // ── P1 案例 ──────────────────────────────────────────────
 
         [TestMethod]

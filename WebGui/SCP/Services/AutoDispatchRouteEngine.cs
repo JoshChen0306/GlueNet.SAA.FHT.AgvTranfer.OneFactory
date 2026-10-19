@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using SCP.Helpers;
 using SCP.Models;
 
 namespace SCP.Services
@@ -116,6 +117,17 @@ namespace SCP.Services
                 .OrderBy(p => p.PutTime)  // 時間優先 (FIFO)
                 .ToListAsync(stoppingToken);
 
+            if (!string.IsNullOrEmpty(route.SourceWorkOrderMarker))
+            {
+                // 例：R2 只派加工完成登記（^DONE）的站，D 剛送達的物料不派
+                // ^DONE 只認結尾、不含二廠舊字樣 ^VCUT^DONE（與 WorkOrderMarker 一致）；其他標記以包含判斷
+                sourceMaterials = sourceMaterials
+                    .Where(p => route.SourceWorkOrderMarker == WorkOrderMarker.ProcessDone
+                        ? WorkOrderMarker.HasProcessDone(p.WorkOrder)
+                        : (p.WorkOrder ?? "").Contains(route.SourceWorkOrderMarker))
+                    .ToList();
+            }
+
             if (route.SensorGuard)
             {
                 sourceMaterials = sourceMaterials.Where(p => IsSourceConsistent(route, p)).ToList();
@@ -159,11 +171,12 @@ namespace SCP.Services
                 var slot = targetSlots[i];
 
                 // 參照 DispatchController.InsertoNeed，改用 Raw SQL 插入
+                // 工單移除 ^DONE：標記只用於派送判斷，不可經 oMission 帶到中光電 Mapping 的 itemCode
                 string sql = "INSERT INTO oNeed (ObjStation,RackId,WorkOrder,EndStation,TaskSource,TaskDateTime,AssignFlag) VALUES({0},{1},{2},{3},{4},{5},{6})";
                 await _dbContext.Database.ExecuteSqlRawAsync(sql,
                     material.StationNo,
                     material.RackId ?? "",
-                    material.WorkOrder ?? "",
+                    WorkOrderMarker.Strip(material.WorkOrder),
                     slot.StationNo,
                     "Auto",
                     DateTime.Now.ToString("yyyyMMddHHmmssffffff"),

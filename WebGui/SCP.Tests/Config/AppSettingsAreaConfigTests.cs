@@ -158,6 +158,29 @@ namespace SCP.Tests.Config
             Assert.IsFalse(r5.Enabled, "AB 棟上線前不可啟用");
         }
 
+        /// <summary>
+        /// 2026-10-19 定案（T27）：R2 改自動，只派加工完成並在 SCP 登記（^DONE）的 E 站；
+        /// E 須為物料登記區與加工站區域；AB 棟上線前停用。
+        /// </summary>
+        [TestMethod]
+        public void AutoDispatchRoutes_R2EToZ_RequiresDoneMarkerAndDisabledBeforeGoLive()
+        {
+            var config = LoadScpAppSettings();
+            var routes = config.GetSection("AutoDispatch:Routes").Get<List<SCP.Services.AutoDispatchRoute>>()!;
+            var rules = new SCP.Helpers.AreaRuleProvider(config);
+
+            var r2 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "E" }));
+            CollectionAssert.AreEqual(new[] { "Z" }, r2.TargetBlocks);
+            CollectionAssert.AreEqual(new[] { "3" }, r2.SourceHaveFlags);
+            Assert.AreEqual(SCP.Helpers.WorkOrderMarker.ProcessDone, r2.SourceWorkOrderMarker);
+            Assert.IsTrue(r2.SensorGuard);
+            Assert.IsFalse(r2.Enabled, "AB 棟上線前不可啟用");
+
+            Assert.IsTrue(rules.IsRegisterArea("E"), "E 須可在地圖點選登記物料");
+            Assert.IsTrue(rules.IsProcessDoneArea("E"), "E 登記時須附加 ^DONE");
+            Assert.IsFalse(rules.IsProcessDoneArea("A"), "A 區登記不可附加 ^DONE");
+        }
+
         [TestMethod]
         public void DispatchRoutes_R2R3Configured_AndAllAreasDefined()
         {

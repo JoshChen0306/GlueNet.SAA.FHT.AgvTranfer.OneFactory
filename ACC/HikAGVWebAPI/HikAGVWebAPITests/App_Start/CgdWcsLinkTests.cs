@@ -124,6 +124,18 @@ namespace HikAGVWebAPITests.App_Start
             CollectionAssert.AreEqual(new[] { "mapping:BIN-C:WO-001" }, _client.Calls);
         }
 
+        /// <summary>T27 防呆：SCP 建任務時已移除 ^DONE，萬一殘留也不可送給中光電。</summary>
+        [TestMethod]
+        public void EnqueueMapping_工單帶DONE標記_itemCode移除標記()
+        {
+            var sut = CreateSut();
+
+            Assert.IsTrue(sut.EnqueueMapping("Z1", "WO-001^DONE"));
+            sut.ProcessDue();
+
+            CollectionAssert.AreEqual(new[] { "mapping:BIN-C:WO-001" }, _client.Calls);
+        }
+
         [TestMethod]
         public void EnqueueMapping_WorkOrder空_不排入()
         {

@@ -180,7 +180,7 @@ namespace SCP.Controllers
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
                     HaveFlag = item.HaveFlag,
                     RackId = item.RackId,
-                    WorkOrder = item.WorkOrder,
+                    WorkOrder = WorkOrderMarker.Strip(item.WorkOrder),   // 畫面不顯示 ^DONE 標記
                     InterfaceName = item.InterfaceName,
                     PutTime = item.PutTime
                 };
@@ -207,7 +207,7 @@ namespace SCP.Controllers
                     Reserve = string.IsNullOrEmpty(item.BgnToEnd) ? "N" : "Y",
                     HaveFlag = item.HaveFlag,
                     RackId = item.RackId,
-                    WorkOrder = item.WorkOrder,
+                    WorkOrder = WorkOrderMarker.Strip(item.WorkOrder),   // 畫面不顯示 ^DONE 標記
                     InterfaceName = item.InterfaceName,
                     PutTime = item.PutTime
                 };

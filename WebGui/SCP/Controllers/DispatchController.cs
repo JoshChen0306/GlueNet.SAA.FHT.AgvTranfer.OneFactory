@@ -209,7 +209,9 @@ namespace SCP.Controllers
                     .Where(p => p.StationNo == objStation)
                     .FirstOrDefault()?.WorkOrder ?? "";
             }
-            
+            // 移除 ^DONE 加工完成標記：只用於派送判斷，不可經 oMission 帶到中光電 Mapping 的 itemCode
+            workOrder = WorkOrderMarker.Strip(workOrder);
+
             // AreaRules.DispatchRoutes 列管的起點區（R2 E→Z、R3 B→P）：後端檢查起點有貨、終點為允許目的區的空位
             // 其他區域（A→K、L→B）維持原流程，不做以下檢查
             var areaRules = new AreaRuleProvider(_configuration);
@@ -431,6 +433,21 @@ namespace SCP.Controllers
                         p.PutTime,
                         p.MachineName
                     })
+                    .ToList()
+                    .Select(p => new
+                    {
+                        p.Area,
+                        p.Port,
+                        p.BgnToEnd,
+                        p.Reserve,
+                        p.StationNo,
+                        p.Block,
+                        p.HaveFlag,
+                        WorkOrder = WorkOrderMarker.Strip(p.WorkOrder),   // 畫面不顯示 ^DONE 標記
+                        p.RackId,
+                        p.PutTime,
+                        p.MachineName
+                    })
                     .ToList();
 
                 return Json(stations);
@@ -503,6 +520,18 @@ namespace SCP.Controllers
                 {
                     // 站點不是空架，但仍允許覆蓋登記
                     // 可在此處記錄日誌
+                }
+
+                // 加工站區域（AreaRules:ProcessDoneAreas，例：迅得2/3/4）：人員加工後登記，附加 ^DONE 供 R2 自動派送判斷
+                // 其他區域工單原樣保存（前置清理計畫 B6：不再增刪任何標記）
+                if (new AreaRuleProvider(_configuration).IsProcessDoneArea(stationArea))
+                {
+                    // 條碼剛好是標記本身時，移除後沒有工單 → 視同未輸入（否則 R2 會派出無工單任務，中光電收不到 Mapping）
+                    if (string.IsNullOrEmpty(WorkOrderMarker.Strip(workOrder)))
+                    {
+                        return BadRequest(new { message = "請輸入工單條碼" });
+                    }
+                    workOrder = WorkOrderMarker.MarkProcessDone(workOrder);
                 }
 
                 // 更新 oPort 表

@@ -32,6 +32,12 @@
         public bool SensorGuard { get; set; }
 
         /// <summary>
+        /// 來源站 WorkOrder 須含此標記才派送；未設定（空字串）時不檢查。
+        /// R2 設 "^DONE"：只派人員加工後在 SCP 登記的迅得2/3/4，D 剛送達的物料不派（2026-10-19，T27）。
+        /// </summary>
+        public string SourceWorkOrderMarker { get; set; } = "";
+
+        /// <summary>
         /// 路線6 M→K（重構前寫死的唯一路線）。設定檔沒有 Routes 區段時沿用此路線，維持重構前行為。
         /// </summary>
         public static AutoDispatchRoute LegacyMToK() => new AutoDispatchRoute

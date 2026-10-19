@@ -7,7 +7,7 @@ namespace SCP.Helpers
 {
     /// <summary>
     /// 讀取 appsettings 的 "AreaRules"，提供區域規則查詢：
-    /// RegisterAreas（物料登記區）、RackIdRequiredAreas（貨架條碼必填區）、
+    /// RegisterAreas（物料登記區）、RackIdRequiredAreas（貨架條碼必填區）、ProcessDoneAreas（加工站區域，登記時附加 ^DONE）、
     /// ReleaseRoutes（回送區 → 目的區清單，依序找空位）、
     /// DispatchRoutes（人工帶料派送起點區 → 允許的目的區，後端會檢查起點有貨、終點為空位）、
     /// AreaNames（訊息用顯示名稱，可省略）。
@@ -19,6 +19,7 @@ namespace SCP.Helpers
 
         private readonly HashSet<string> _registerAreas;
         private readonly HashSet<string> _rackIdRequiredAreas;
+        private readonly HashSet<string> _processDoneAreas;
         private readonly Dictionary<string, IReadOnlyList<string>> _releaseRoutes;
         private readonly Dictionary<string, IReadOnlyList<string>> _dispatchRoutes;
         private readonly Dictionary<string, string> _areaNames;
@@ -33,6 +34,7 @@ namespace SCP.Helpers
 
             _registerAreas = ReadAreaList(section.GetSection("RegisterAreas")).ToHashSet();
             _rackIdRequiredAreas = ReadAreaList(section.GetSection("RackIdRequiredAreas")).ToHashSet();
+            _processDoneAreas = ReadAreaList(section.GetSection("ProcessDoneAreas")).ToHashSet();
 
             _releaseRoutes = ReadRouteMap(section.GetSection("ReleaseRoutes"));
             _dispatchRoutes = ReadRouteMap(section.GetSection("DispatchRoutes"));
@@ -64,6 +66,9 @@ namespace SCP.Helpers
         public bool IsReleaseArea(string area) => _releaseRoutes.ContainsKey(Normalize(area));
 
         public bool IsRackIdRequired(string area) => _rackIdRequiredAreas.Contains(Normalize(area));
+
+        /// <summary>加工站區域：登記物料時附加 ^DONE（WorkOrderMarker），供 R2 自動派送判斷已加工完成。</summary>
+        public bool IsProcessDoneArea(string area) => _processDoneAreas.Contains(Normalize(area));
 
         /// <summary>回送目的區清單，依設定順序；未設定則回傳空清單。</summary>
         public IReadOnlyList<string> GetReleaseTargets(string area)
