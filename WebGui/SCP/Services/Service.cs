@@ -7,13 +7,29 @@ namespace SCP.Services
 {
     public class Service : IHostedService
     {
-        private readonly IHubContext<CommonHub> _hub;
+        /// <summary>6 條即時更新訂閱：查詢欄位變動時推播對應事件（前端 connection.on 依賴事件名稱，不可改）。</summary>
+        public static readonly IReadOnlyList<(string Sql, string EventName)> Definitions = new List<(string, string)>
+        {
+            ("select HaveFlag,BgnToEnd from dbo.oPort", "SendTracChange"),
+            ("select PosX,PosY from dbo.oShuttle", "SendAgvChange"),
+            ("select Battery,Status,LastStation,BeginStation,EndStation from dbo.oShuttle", "SendAgvStatusChange"),
+            ("select TaskDateTime from dbo.ubMission", "SendTotalTaskChange"),
+            ("select AssignFlag,OkFlag from dbo.oRequire", "SendDispatchChange"),
+            ("select OkFlag from dbo.oMission", "SendMissionChange"),
+        };
+
         private string _connectionString;
-        private List<SqlDependency> _dependency = new List<SqlDependency>();
+        private readonly List<QueryNotificationSubscription> _subscriptions;
+
         public Service(IConfiguration configuration, IHubContext<CommonHub> hub)
         {
-            _hub = hub;
             _connectionString = configuration.GetConnectionString("DBContext");
+
+            var source = new SqlDependencyNotificationSource(_connectionString);
+            var notifier = new HubRealtimeNotifier(hub);
+            _subscriptions = Definitions
+                .Select(d => new QueryNotificationSubscription(d.Sql, d.EventName, source, notifier, Log.Logger))
+                .ToList();
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -34,12 +50,10 @@ namespace SCP.Services
                 return Task.CompletedTask;
             }
 
-            RegisterDependency("select HaveFlag,BgnToEnd from dbo.oPort", OnTracChange);
-            RegisterDependency("select PosX,PosY from dbo.oShuttle", OnAgvChange);
-            RegisterDependency("select Battery,Status,LastStation,BeginStation,EndStation from dbo.oShuttle", OnAgvStatusChange);
-            RegisterDependency("select TaskDateTime from dbo.ubMission", OnTotalTaskChange);
-            RegisterDependency("select AssignFlag,OkFlag from dbo.oRequire", OnDispatchChange);
-            RegisterDependency("select OkFlag from dbo.oMission", OnMissionChange);
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.Start();
+            }
             return Task.CompletedTask;
         }
 
@@ -47,66 +61,6 @@ namespace SCP.Services
         {
             SqlDependency.Stop(_connectionString);
             return Task.CompletedTask;
-        }
-
-        private void RegisterDependency(string _sql, OnChangeEventHandler eventHandler)
-        {
-            try
-            {
-                using (var connection = new SqlConnection(_connectionString))
-                {
-                    connection.Open();
-
-                    using (var command = new SqlCommand(_sql, connection))
-                    {
-                        var dependency = new SqlDependency(command);
-                        dependency.OnChange += eventHandler;
-                        _dependency.Add(dependency);
-
-                        // 執行命令以註冊 SqlDependency 物件
-                        command.ExecuteReader();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // 單一查詢註冊失敗不應中斷其他通知；記錄後讓對應功能退化為需 F5。
-                Log.Error(ex, "註冊 SqlDependency 失敗，該即時更新將失效（SQL: {Sql}）", _sql);
-            }
-        }
-
-        private async void OnTracChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select HaveFlag,BgnToEnd from dbo.oPort", OnTracChange);
-            await _hub.Clients.All.SendAsync("SendTracChange");
-        }
-
-        private async void OnAgvChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select PosX,PosY from dbo.oShuttle", OnAgvChange);
-            await _hub.Clients.All.SendAsync("SendAgvChange");
-        }
-
-        private async void OnAgvStatusChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select Battery,Status,LastStation,BeginStation,EndStation from dbo.oShuttle", OnAgvStatusChange);
-            await _hub.Clients.All.SendAsync("SendAgvStatusChange");
-        }
-
-        private async void OnTotalTaskChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select TaskDateTime from dbo.ubMission", OnTotalTaskChange);
-            await _hub.Clients.All.SendAsync("SendTotalTaskChange");
-        }
-        private async void OnDispatchChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select AssignFlag,OkFlag from dbo.oRequire", OnDispatchChange);
-            await _hub.Clients.All.SendAsync("SendDispatchChange");
-        }
-        private async void OnMissionChange(object sender, SqlNotificationEventArgs e)
-        {
-            RegisterDependency("select OkFlag from dbo.oMission", OnMissionChange);
-            await _hub.Clients.All.SendAsync("SendMissionChange");
         }
     }
 }
