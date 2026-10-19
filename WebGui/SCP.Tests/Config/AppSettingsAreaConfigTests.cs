@@ -142,6 +142,22 @@ namespace SCP.Tests.Config
             Assert.IsFalse(r3.Enabled, "AB 棟上線前不可啟用，否則現行 B1 物料會被自動搬走");
         }
 
+        /// <summary>
+        /// 2026-10-19 新增（T26）：R5 迅得5/6/7 空盤 → A1/A2（客戶圖「梯1、梯2」）。
+        /// R4 送達 F 時無工單、HaveFlag=1；F 無 sensor 位址故不開防呆；AB 棟上線前停用。
+        /// </summary>
+        [TestMethod]
+        public void AutoDispatchRoutes_R5FToA_HaveFlag1AndDisabledBeforeGoLive()
+        {
+            var routes = LoadScpAppSettings().GetSection("AutoDispatch:Routes").Get<List<SCP.Services.AutoDispatchRoute>>()!;
+
+            var r5 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "F" }));
+            CollectionAssert.AreEqual(new[] { "A" }, r5.TargetBlocks);
+            CollectionAssert.AreEqual(new[] { "1" }, r5.SourceHaveFlags, "R5 空盤無工單，HaveFlag=1 即派");
+            Assert.IsFalse(r5.SensorGuard, "F1～F3 尚無 sensor 位址");
+            Assert.IsFalse(r5.Enabled, "AB 棟上線前不可啟用");
+        }
+
         [TestMethod]
         public void DispatchRoutes_R2R3Configured_AndAllAreasDefined()
         {

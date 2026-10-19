@@ -44,6 +44,15 @@ namespace SCP.Tests.Services
             SensorGuard = true,
         };
 
+        /// <summary>R5 迅得5/6/7(F)→A1/A2：R4 送達的空盤轉送（2026-10-19，T26）。</summary>
+        private static AutoDispatchRoute R5() => new AutoDispatchRoute
+        {
+            Name = "R5",
+            SourceBlocks = new List<string> { "F" },
+            TargetBlocks = new List<string> { "A" },
+            SourceHaveFlags = new List<string> { "1" },
+        };
+
         private static async Task<int> Run(ScpTestDb db, ListLogger logger, params AutoDispatchRoute[] routes)
             => await new AutoDispatchRouteEngine(db.Context, logger).ExecuteAsync(routes, CancellationToken.None);
 
@@ -333,6 +342,64 @@ namespace SCP.Tests.Services
             db.AddNeed("B1", "A1", assignFlag: "");
 
             int created = await Run(db, new ListLogger(), R3());
+
+            Assert.AreEqual(0, created);
+        }
+
+        // ── R5 迅得5/6/7→A1/A2（T26）───────────────────────────
+
+        [TestMethod]
+        public async Task Execute_R5EmptyTrayOnFAndAEmpty_CreatesFToA()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("F1", haveFlag: "1");
+            db.AddPort("A1", haveFlag: "0");
+
+            await Run(db, new ListLogger(), R5());
+
+            var need = db.Needs().Single();
+            Assert.AreEqual("F1", need.ObjStation);
+            Assert.AreEqual("A1", need.EndStation);
+        }
+
+        [TestMethod]
+        public async Task Execute_R5A1A2Occupied_DoesNotDispatch()
+        {
+            // A1 有登記物料、A2 有回送空板 → 不派，下一輪再查
+            using var db = new ScpTestDb();
+            db.AddPort("F1", haveFlag: "1");
+            db.AddPort("A1", haveFlag: "3", workOrder: "WO-A1");
+            db.AddPort("A2", haveFlag: "1");
+
+            int created = await Run(db, new ListLogger(), R5());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_R5DisabledA3_NotSelectedAsTarget()
+        {
+            // 一廠 A3～A5 為 UseFlag=N，只能送 A1/A2
+            using var db = new ScpTestDb();
+            db.AddPort("F1", haveFlag: "1");
+            db.AddPort("F2", haveFlag: "1");
+            db.AddPort("A1", haveFlag: "0");
+            db.AddPort("A3", haveFlag: "0", useFlag: "N");
+
+            await Run(db, new ListLogger(), R5());
+
+            Assert.AreEqual("A1", db.Needs().Single().EndStation);
+        }
+
+        [TestMethod]
+        public async Task Execute_R5FHasMaterialHaveFlag3_DoesNotDispatch()
+        {
+            // R5 只送空盤；F 站若被登記成有料（HaveFlag=3）不送到 A
+            using var db = new ScpTestDb();
+            db.AddPort("F1", haveFlag: "3", workOrder: "WO-F1");
+            db.AddPort("A1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R5());
 
             Assert.AreEqual(0, created);
         }

@@ -57,13 +57,24 @@ WHEN MATCHED THEN
 WHEN NOT MATCHED THEN
     INSERT (RouteId, RouteName, SourceFloor, TargetFloor, RouteType, SourceAreas, TargetAreas, ControlFlag, SortOrder, DispatchMode)
     VALUES ('ROUTE_F1_O_TO_F_AUTO', N'R4 中光電A→迅得5/6/7', '1F', '1F', 'INTERNAL', 'O', 'F', 'Y', 10, 'AUTO');
+
+-- R5: 迅得5/6/7 → A1/A2 空盤（自動，2026-10-19 新增；客戶圖「梯1、梯2」＝A1、A2）
+MERGE INTO pRoute AS target
+USING (SELECT 'ROUTE_F1_F_TO_A_AUTO' AS RouteId) AS source ON target.RouteId = source.RouteId
+WHEN MATCHED THEN
+    UPDATE SET RouteName = N'R5 迅得5/6/7→A1/A2', SourceFloor = '1F', TargetFloor = '1F',
+               RouteType = 'INTERNAL', SourceAreas = 'F', TargetAreas = 'A',
+               ControlFlag = 'Y', SortOrder = 11, DispatchMode = 'AUTO'
+WHEN NOT MATCHED THEN
+    INSERT (RouteId, RouteName, SourceFloor, TargetFloor, RouteType, SourceAreas, TargetAreas, ControlFlag, SortOrder, DispatchMode)
+    VALUES ('ROUTE_F1_F_TO_A_AUTO', N'R5 迅得5/6/7→A1/A2', '1F', '1F', 'INTERNAL', 'F', 'A', 'Y', 11, 'AUTO');
 GO
 
 -- 管理員權限（只補不存在的）
 MERGE INTO pUserRoute AS target
 USING (
     SELECT 'admin' AS UserId, RouteId
-    FROM (VALUES ('ROUTE_F1_D_TO_E_AUTO'), ('ROUTE_F1_E_TO_Z'), ('ROUTE_F1_B_TO_P'), ('ROUTE_F1_O_TO_F_AUTO')) AS r(RouteId)
+    FROM (VALUES ('ROUTE_F1_D_TO_E_AUTO'), ('ROUTE_F1_E_TO_Z'), ('ROUTE_F1_B_TO_P'), ('ROUTE_F1_O_TO_F_AUTO'), ('ROUTE_F1_F_TO_A_AUTO')) AS r(RouteId)
 ) AS source
 ON target.UserId = source.UserId AND target.RouteId = source.RouteId
 WHEN NOT MATCHED THEN
@@ -75,15 +86,15 @@ GO
 -- =============================================
 SELECT RouteId, RouteName, SourceFloor, TargetFloor, SourceAreas, TargetAreas, ControlFlag, DispatchMode
 FROM pRoute
-WHERE RouteId IN ('ROUTE_F1_D_TO_E_AUTO', 'ROUTE_F1_E_TO_Z', 'ROUTE_F1_B_TO_P', 'ROUTE_F1_O_TO_F_AUTO')
+WHERE RouteId IN ('ROUTE_F1_D_TO_E_AUTO', 'ROUTE_F1_E_TO_Z', 'ROUTE_F1_B_TO_P', 'ROUTE_F1_O_TO_F_AUTO', 'ROUTE_F1_F_TO_A_AUTO')
 ORDER BY SortOrder;
 GO
 
 SELECT ur.UserId, ur.RouteId
 FROM pUserRoute ur
-WHERE ur.RouteId IN ('ROUTE_F1_D_TO_E_AUTO', 'ROUTE_F1_E_TO_Z', 'ROUTE_F1_B_TO_P', 'ROUTE_F1_O_TO_F_AUTO')
+WHERE ur.RouteId IN ('ROUTE_F1_D_TO_E_AUTO', 'ROUTE_F1_E_TO_Z', 'ROUTE_F1_B_TO_P', 'ROUTE_F1_O_TO_F_AUTO', 'ROUTE_F1_F_TO_A_AUTO')
 ORDER BY ur.UserId, ur.RouteId;
 GO
 
 PRINT 'AB 棟 1F pRoute deployment completed.';
-PRINT '預期：pRoute 4 筆（R1~R4）、admin 權限 4 筆';
+PRINT '預期：pRoute 5 筆（R1~R5）、admin 權限 5 筆';
