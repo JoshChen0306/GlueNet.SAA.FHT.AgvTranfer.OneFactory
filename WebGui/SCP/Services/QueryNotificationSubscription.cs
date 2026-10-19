@@ -68,7 +68,22 @@ namespace SCP.Services
             }
         }
 
+        /// <summary>
+        /// SqlDependency 通知進入點（async void）：任何例外都在此接住，否則會在執行緒集區重新拋出、直接結束 SCP 行程。
+        /// </summary>
         private async void OnNotified(QueryNotification notification)
+        {
+            try
+            {
+                await HandleNotificationAsync(notification);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "即時更新通知處理失敗（事件 {EventName}，SQL: {Sql}），前端此次需 F5，下次變更會再推播", _eventName, _sql);
+            }
+        }
+
+        private async Task HandleNotificationAsync(QueryNotification notification)
         {
             if (notification.Type != SqlNotificationType.Change)
             {

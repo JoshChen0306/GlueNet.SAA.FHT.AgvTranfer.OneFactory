@@ -46,11 +46,13 @@ namespace SCP.Tests.Services
         internal sealed class FakeNotifier : IRealtimeNotifier
         {
             public List<string> Sent { get; } = new List<string>();
+            /// <summary>true 時模擬 SignalR 推播失敗（回傳失敗的 Task）。</summary>
+            public bool Fail { get; set; }
 
             public Task SendAsync(string eventName)
             {
                 Sent.Add(eventName);
-                return Task.CompletedTask;
+                return Fail ? Task.FromException(new InvalidOperationException("模擬推播失敗")) : Task.CompletedTask;
             }
         }
 
@@ -89,6 +91,26 @@ namespace SCP.Tests.Services
             scheduler = new FakeScheduler();
             var logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(sink).CreateLogger();
             return (new QueryNotificationSubscription(Sql, EventName, source, notifier, scheduler, logger), source, notifier, sink);
+        }
+
+        // ── T3 推播例外不可打掛行程 ──────────────────────────────
+
+        [TestMethod]
+        public void OnNotified_SendThrows_LogsWarningAndKeepsSubscription()
+        {
+            // 修正前：async void 內的例外會在執行緒集區重新拋出，直接結束整個行程
+            var (sut, source, notifier, log) = Create();
+            sut.Start();
+            notifier.Fail = true;
+
+            source.Notify(SqlNotificationType.Change);
+
+            Assert.IsTrue(log.Has(LogEventLevel.Warning, EventName));
+            Assert.AreEqual(2, source.SubscribeCount, "推播失敗前已重新註冊，下一次變更仍收得到");
+
+            notifier.Fail = false;
+            source.Notify(SqlNotificationType.Change);
+            Assert.AreEqual(2, notifier.Sent.Count);
         }
 
         // ── T1 非 Change 通知不立即重註冊（擋無限迴圈），交給退避重試 ─────
