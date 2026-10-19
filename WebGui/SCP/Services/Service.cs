@@ -18,7 +18,9 @@ namespace SCP.Services
             ("select OkFlag from dbo.oMission", "SendMissionChange"),
         };
 
-        private string _connectionString;
+        private readonly string? _connectionString;
+        /// <summary>SqlDependency.Start 成功才需要 Stop（連線字串缺失或 Start 失敗時呼叫 Stop 只會留下誤導的 log）。</summary>
+        private bool _listenerStarted;
         private readonly List<QueryNotificationSubscription> _subscriptions;
         private readonly IQueryNotificationListener _listener;
         private readonly IRetryScheduler _retryScheduler;
@@ -63,6 +65,7 @@ namespace SCP.Services
                 // SUBSCRIBE QUERY NOTIFICATIONS 權限。任一未滿足，Start 會丟例外，
                 // 導致整套 SignalR 即時推播（任務列表/AGV/地圖）失效、客戶端需手動 F5。
                 _listener.Start(_connectionString);
+                _listenerStarted = true;
                 _log.Information("SqlDependency.Start 成功，開始註冊查詢通知");
             }
             catch (Exception ex)
@@ -89,9 +92,14 @@ namespace SCP.Services
             }
             _retryScheduler.Cancel();
 
+            if (!_listenerStarted)
+            {
+                return Task.CompletedTask;
+            }
+
             try
             {
-                _listener.Stop(_connectionString);
+                _listener.Stop(_connectionString!);
             }
             catch (Exception ex)
             {

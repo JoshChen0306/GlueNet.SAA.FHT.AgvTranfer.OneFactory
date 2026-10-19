@@ -82,6 +82,19 @@ namespace SCP.Tests.Services
             Assert.IsFalse(log.Has(LogEventLevel.Error, "ENABLE_BROKER"), "不可誤導為 broker 未啟用");
         }
 
+        [TestMethod]
+        public async Task StopAsync_ListenerNeverStarted_DoesNotCallStopOrLogWarning()
+        {
+            // code review S2：連線字串缺失或 Start 失敗時，Stop 不再呼叫 SqlDependency.Stop（避免誤導的 Warning）
+            var (sut, listener, _, _, log) = Create(connectionString: "");
+            listener.FailStop = true;
+            await sut.StartAsync(CancellationToken.None);
+
+            await sut.StopAsync(CancellationToken.None);
+
+            Assert.IsFalse(log.Has(LogEventLevel.Warning, "SqlDependency.Stop"));
+        }
+
         // ── T4 StopAsync 例外不外拋 ──────────────────────────────
 
         [TestMethod]

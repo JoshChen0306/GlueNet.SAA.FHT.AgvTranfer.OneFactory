@@ -169,6 +169,39 @@ namespace SCP.Tests.Services
             Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled.Single().Delay);
         }
 
+        [TestMethod]
+        public void OnNotified_ChangeWithErrorInfo_SendsOnceButResubscribesViaBackoff()
+        {
+            // code review W1：連線中斷／逾時／伺服器重啟時 SqlClient 送 Type=Change、Info=Error/Restart，
+            // 不是資料變更；立即重註冊可能立刻又收到同樣通知（緊密迴圈）。斷線期間資料可能已變，仍推播一次讓前端刷新
+            var (sut, source, notifier, log) = Create(out var scheduler);
+            sut.Start();
+
+            source.Notify(SqlNotificationType.Change, SqlNotificationInfo.Error);
+
+            Assert.AreEqual(1, source.SubscribeCount, "不可立即重註冊");
+            CollectionAssert.AreEqual(new[] { EventName }, notifier.Sent);
+            Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled.Single().Delay);
+            Assert.IsTrue(log.Has(LogEventLevel.Warning, "Error"));
+        }
+
+        [TestMethod]
+        public void OnNotified_AfterStop_DoesNothing()
+        {
+            // code review S1：停止期間的通知不推播、不排程、不留誤導 log
+            var (sut, source, notifier, log) = Create(out var scheduler);
+            sut.Start();
+            sut.Stop();
+
+            source.Notify(SqlNotificationType.Change);
+            source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);
+
+            Assert.AreEqual(0, notifier.Sent.Count);
+            Assert.AreEqual(0, scheduler.Scheduled.Count);
+            Assert.AreEqual(1, source.SubscribeCount);
+            Assert.IsFalse(log.Events.Any(e => e.Level >= LogEventLevel.Warning));
+        }
+
         // ── T6 重註冊失敗自動重試 ────────────────────────────────
 
         [TestMethod]

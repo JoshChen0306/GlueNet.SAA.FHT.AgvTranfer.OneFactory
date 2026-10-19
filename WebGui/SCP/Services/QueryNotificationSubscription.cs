@@ -83,17 +83,33 @@ namespace SCP.Services
             }
         }
 
+        /// <summary>真正的資料變更（Type=Change 且 Info 為以下之一）才立即重註冊。</summary>
+        private static readonly HashSet<SqlNotificationInfo> DataChangeInfos = new HashSet<SqlNotificationInfo>
+        {
+            SqlNotificationInfo.Insert, SqlNotificationInfo.Update, SqlNotificationInfo.Delete,
+            SqlNotificationInfo.Truncate, SqlNotificationInfo.Merge,
+        };
+
         private async Task HandleNotificationAsync(QueryNotification notification)
         {
-            if (notification.Type != SqlNotificationType.Change)
+            if (_stopped) return;
+
+            bool isDataChange = notification.Type == SqlNotificationType.Change && DataChangeInfos.Contains(notification.Info);
+            if (!isDataChange)
             {
-                // 非資料變更（例：Subscribe/Invalid＝訂閱本身失敗）立即重註冊會立刻收到同樣通知 → 緊密迴圈；
-                // 也不可放棄（訂閱會永久死亡），改依退避間隔重註冊。資料沒有變更，不推播。
+                // 非資料變更：Subscribe/Invalid（訂閱本身失敗），或 Change 但 Info=Error/Restart 等（連線中斷、逾時、伺服器重啟）。
+                // 立即重註冊可能立刻收到同樣通知 → 緊密迴圈；也不可放棄（訂閱會永久死亡），改依退避間隔重註冊。
                 int attempt = Interlocked.Increment(ref _nonChangeCount);
                 var delay = RetryDelays[Math.Min(attempt, RetryDelays.Length) - 1];
                 _log.Warning("收到非資料變更通知（Type={Type}, Info={Info}, Source={Source}，連續第 {Attempt} 次），{DelaySeconds} 秒後重新註冊（SQL: {Sql}）",
                     notification.Type, notification.Info, notification.Source, attempt, delay.TotalSeconds, _sql);
                 _scheduler.Schedule(delay, Register);
+
+                // Type=Change 的異常（斷線、重啟）期間資料可能已變，推播一次讓前端刷新；Subscribe 類資料沒變，不推播
+                if (notification.Type == SqlNotificationType.Change)
+                {
+                    await _notifier.SendAsync(_eventName);
+                }
                 return;
             }
 
