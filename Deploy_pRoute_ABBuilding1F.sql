@@ -7,6 +7,8 @@
 --   1. 可重複執行（idempotent）：pRoute 以 MERGE 同步，pUserRoute 只補不存在的權限。
 --   2. R1、R4 由中光電貨架 Sensor ON 自動觸發（DispatchMode=AUTO，派送頁不顯示）；
 --      R2、R3 由人員在派送頁派發（DispatchMode=DISPATCH）。2026-10-06 客戶流程圖。
+--      2026-10-19：R2、R3 改由 SCP AutoDispatch 自動派送（appsettings AutoDispatch:Routes，引擎不讀 pRoute）；
+--      此處 DISPATCH 路線保留作為人員派發的例外備援。
 --   3. 權限先只給管理員 admin；現場操作帳號待客戶提供後再補。
 -- 區域對照（區域代碼對照表.md）:
 --   D=中光電D  E=迅得2/3/4  F=迅得5/6/7  O=中光電A  P=中光電B  Z=中光電C  B=迅得1(B1)

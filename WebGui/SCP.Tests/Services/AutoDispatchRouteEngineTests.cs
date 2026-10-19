@@ -34,6 +34,16 @@ namespace SCP.Tests.Services
             SensorGuard = true,
         };
 
+        /// <summary>R3 迅得1(B1)→中光電B(P1)：L→B 跨樓層送達後轉送（2026-10-19，T28）。</summary>
+        private static AutoDispatchRoute R3() => new AutoDispatchRoute
+        {
+            Name = "R3",
+            SourceBlocks = new List<string> { "B" },
+            TargetBlocks = new List<string> { "P" },
+            SourceHaveFlags = new List<string> { "3" },
+            SensorGuard = true,
+        };
+
         private static async Task<int> Run(ScpTestDb db, ListLogger logger, params AutoDispatchRoute[] routes)
             => await new AutoDispatchRouteEngine(db.Context, logger).ExecuteAsync(routes, CancellationToken.None);
 
@@ -269,6 +279,62 @@ namespace SCP.Tests.Services
             await Run(db, new ListLogger(), R1(), r4ToE);
 
             Assert.AreEqual(1, db.Needs().Count);
+        }
+
+        // ── R3 B1→中光電B（T28）────────────────────────────────
+
+        [TestMethod]
+        public async Task Execute_R3B1ArrivedFromLAndPEmpty_CreatesB1ToP1()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("B1", haveFlag: "3", rackId: "R-L1", workOrder: "WO-L1");
+            db.AddPort("P1", haveFlag: "0");
+
+            await Run(db, new ListLogger(), R3());
+
+            var need = db.Needs().Single();
+            Assert.AreEqual("B1", need.ObjStation);
+            Assert.AreEqual("P1", need.EndStation);
+            Assert.AreEqual("WO-L1", need.WorkOrder);
+        }
+
+        [TestMethod]
+        public async Task Execute_R3POccupied_DoesNotDispatch()
+        {
+            using var db = new ScpTestDb();
+            db.AddPort("B1", haveFlag: "3", workOrder: "WO-L1");
+            db.AddPort("P1", haveFlag: "3", workOrder: "WO-OLD");
+
+            int created = await Run(db, new ListLogger(), R3());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_R3B1MarkedEmptyTray_DoesNotDispatch()
+        {
+            // B1 標記空板（HaveFlag=1）走路線5 Release 回 A，不可被 R3 送去中光電B
+            using var db = new ScpTestDb();
+            db.AddPort("B1", haveFlag: "1");
+            db.AddPort("P1", haveFlag: "0");
+
+            int created = await Run(db, new ListLogger(), R3());
+
+            Assert.AreEqual(0, created);
+        }
+
+        [TestMethod]
+        public async Task Execute_R3B1AlreadyHasPendingTask_DoesNotDispatch()
+        {
+            // B1 已有人員建立的任務（例：人員派發備援 B1→P1 或 Release）時不重複派送
+            using var db = new ScpTestDb();
+            db.AddPort("B1", haveFlag: "3", workOrder: "WO-L1");
+            db.AddPort("P1", haveFlag: "0");
+            db.AddNeed("B1", "A1", assignFlag: "");
+
+            int created = await Run(db, new ListLogger(), R3());
+
+            Assert.AreEqual(0, created);
         }
 
         // ── P1 案例 ──────────────────────────────────────────────

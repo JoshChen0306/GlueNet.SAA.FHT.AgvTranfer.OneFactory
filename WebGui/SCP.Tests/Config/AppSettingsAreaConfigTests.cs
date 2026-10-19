@@ -126,6 +126,22 @@ namespace SCP.Tests.Config
             Assert.IsTrue(r4.SensorGuard);
         }
 
+        /// <summary>
+        /// 2026-10-19 定案（T28）：R3 改自動。L→B 跨樓層送達 B1（HaveFlag=3＋工單）後，中光電B 為空即派 1F 同樓層任務。
+        /// AB 棟上線前與 R1/R4 一樣先停用。
+        /// </summary>
+        [TestMethod]
+        public void AutoDispatchRoutes_R3BToP_HaveFlag3AndDisabledBeforeGoLive()
+        {
+            var routes = LoadScpAppSettings().GetSection("AutoDispatch:Routes").Get<List<SCP.Services.AutoDispatchRoute>>()!;
+
+            var r3 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "B" }));
+            CollectionAssert.AreEqual(new[] { "P" }, r3.TargetBlocks);
+            CollectionAssert.AreEqual(new[] { "3" }, r3.SourceHaveFlags, "R3 只派 L→B 送達、有工單的 B1");
+            Assert.IsTrue(r3.SensorGuard);
+            Assert.IsFalse(r3.Enabled, "AB 棟上線前不可啟用，否則現行 B1 物料會被自動搬走");
+        }
+
         [TestMethod]
         public void DispatchRoutes_R2R3Configured_AndAllAreasDefined()
         {
