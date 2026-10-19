@@ -50,6 +50,13 @@ namespace SCP.Services
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(_connectionString))
+            {
+                // 與「broker 未啟用」分開記錄，避免現場往資料庫設定方向誤查
+                _log.Error("即時更新未啟動：appsettings 缺少連線字串 ConnectionStrings:DBContext，前端需手動 F5");
+                return Task.CompletedTask;
+            }
+
             try
             {
                 // SqlDependency 需要資料庫啟用 Service Broker，且連線帳號具備

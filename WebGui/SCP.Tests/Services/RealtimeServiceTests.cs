@@ -67,6 +67,21 @@ namespace SCP.Tests.Services
             Assert.IsTrue(log.Has(LogEventLevel.Error, "ENABLE_BROKER"));
         }
 
+        // ── T5 連線字串缺失 ───────────────────────────────────────
+
+        [TestMethod]
+        public async Task StartAsync_EmptyConnectionString_LogsMissingConnectionStringNotBroker()
+        {
+            var (sut, listener, source, _, log) = Create(connectionString: "");
+
+            await sut.StartAsync(CancellationToken.None);
+
+            Assert.AreEqual(0, listener.StartCount, "連線字串缺失不必嘗試 SqlDependency.Start");
+            Assert.AreEqual(0, source.SubscribeCount);
+            Assert.IsTrue(log.Has(LogEventLevel.Error, "ConnectionStrings:DBContext"));
+            Assert.IsFalse(log.Has(LogEventLevel.Error, "ENABLE_BROKER"), "不可誤導為 broker 未啟用");
+        }
+
         // ── T4 StopAsync 例外不外拋 ──────────────────────────────
 
         [TestMethod]
