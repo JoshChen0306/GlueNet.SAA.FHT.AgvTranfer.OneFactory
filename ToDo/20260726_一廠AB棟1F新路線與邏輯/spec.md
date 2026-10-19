@@ -16,8 +16,10 @@
    - R1：中光電 D → 迅得 2/3/4（檢查目的空位 → 搬運 → 更新物料資訊）
    - R2：迅得 2/3/4 → 中光電 C（原需求為多來源合併、最舊物料優先 FIFO；2026-10-08 改為**人員自選起點，系統不排序、不強制最舊優先**）
    - R3：迅得 1 → 中光電 B
-   - 觸發方式（2026-10-06 客戶流程圖）：R1、R4 由中光電貨架 Sensor ON 自動派送；**R2、R3 由人員派發**
+   - 觸發方式（2026-10-06 客戶流程圖）：R1、R4 由中光電貨架 Sensor ON 自動派送；~~R2、R3 由人員派發~~
+   - 🆕 2026-10-19（客戶 `高技AB棟AGV搬運邏輯表.xlsx`，使用者確認）：**R2、R3 改為自動派送**，人員派發保留作例外備援。R2 只送「加工完成並由人員在 SCP 登記」的物料（WorkOrder 附加 `^DONE`）；R3 為 L→B 跨樓層送達 B1 後，中光電B 為空即建 1F 同樓層任務
    - R4：中光電 A → 迅得 5/6/7（原文件 E 欄「檢查2/3/4」為筆誤，2026-07-26 已確認為 5/6/7）
+   - 🆕 R5（2026-10-19 新增）：迅得 5/6/7 → A1、A2（客戶圖「梯1、梯2」）空盤自動派送
 2. **地圖**：1F 底圖納入 AB 棟連廊與新貨架區、appsettings 樓層/區域/MapCode 設定、地圖顯示
 3. **貨架**：新區域代碼規劃、oPort 站點資料建置、儲位設定頁支援
 4. **sensor 自動搬運**：沿用 B1 現行鏈路（ACC StockSensorLink 讀 PLC → 更新 oPort → SCP 輪詢），AutoDispatchService 重構為規則驅動並新增 R1、R4（R2、R3 為人員派發）
@@ -88,6 +90,16 @@
 - [ ] Given 規則 Enabled=false，When 引擎執行，Then 該路線整條跳過
 - [ ] Given 既有 M→K 路線收斂為規則後，When 引擎執行，Then 行為與重構前一致（回歸）
 
+### AC-3a 🧪 2026-10-19 需求變更：R2／R3 自動化與 R5（T26～T28，Given-When-Then）
+
+- [ ] Given R5 規則啟用、F 站 HaveFlag=1、A1 或 A2 為空位，When 引擎執行，Then 建立 F→A 的 oNeed；Given A1、A2 皆非空位，Then 不建任務；停用站（A3～A5，UseFlag=N）不被選為終點
+- [ ] Given 人員在加工站區域（E）登記物料，When `RegisterLot` 完成，Then WorkOrder 附加 `^DONE`；重複登記不重複附加；非加工站區域不附加
+- [ ] Given E 站 HaveFlag=3 但 WorkOrder 無 `^DONE`（D 剛送達），When 引擎執行 R2，Then 不派車；Given 有 `^DONE` 且中光電C 為空，Then 建立 E→Z 的 oNeed
+- [ ] Given R2 建立任務，When 寫入 oNeed，Then WorkOrder 已移除 `^DONE`（自動與人員派發兩條路徑皆同）；ACC 呼叫 Mapping 時 itemCode 不含標記
+- [ ] Given 規則未設 `SourceWorkOrderMarker`，When 引擎執行，Then M→K、R1、R4 行為不變（回歸）
+- [ ] Given B1 HaveFlag=3（L→B 送達）且中光電B HaveFlag=0，When 引擎執行 R3，Then 建立 B1→P1 的 oNeed；Given 中光電B 有貨，Then 不建任務
+- [ ] 地圖／儲位頁顯示工單時不顯示 `^DONE` 標記
+
 ### AC-4 🧪 物料資訊轉寫（T8，Given-When-Then）
 
 > 2026-10-12：T8 取消，ACC 既有 outbin／end 回呼已實作（outbin 清空起點、end 寫入終點），改於 T20 現場整合驗證。
@@ -111,6 +123,6 @@
 
 ### AC-7 整合驗證（T20、T22~T24）
 
-- [ ] R1~R4 全流程（sensor 登記 → 自動派車 → 搬運 → 物料轉寫 → 狀態輸出）於測試環境跑通
+- [ ] R1~R5 全流程（sensor 登記 → 自動派車 → 搬運 → 物料轉寫 → 狀態輸出）於測試環境跑通；含 R2「D 送達 → 清空 → 登記 `^DONE` → 自動送 C」與 R3「L→B 跨樓層 → B1→P1 同樓層」接續流程
 - [ ] 與迅得 PLC/sensor 對測通過；與中光電聯測交接流程通過
 - [ ] 部署依 deployment-checklist 5 項全數通過
