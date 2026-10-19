@@ -117,9 +117,13 @@
 
 ### AC-6 🧪 空搬偵測（T19，Given-When-Then）
 
-- [ ] Given AGV 搬運任務完成且目的地 sensor 訊號 ON，When 偵測執行，Then 不記異常
-- [ ] Given 任務完成但目的地 sensor 訊號非 ON，When 偵測執行，Then 判定空搬並寫 Warning Log（含任務號、起訖站、時間）
-- [ ] 只寫 Log，不做畫面顯示（2026-07-26 確認）
+> 2026-10-19 調整（使用者確認）：偵測放 ACC，讀 PLC sensor（StockSensorLink）而非 oPort.HaveFlag——end 回呼會無條件把目的站寫成有料，HaveFlag 無法反映實際到料。
+
+- [x] Given AGV 搬運任務完成且目的地 sensor 訊號 ON，When 偵測執行，Then 不記異常
+- [x] Given 任務完成但目的地 sensor 訊號連續 ConfirmCount 輪 OFF，When 偵測執行，Then 判定空搬並寫 Warning Log（含任務號、起訖站、時間）
+- [x] Given 完成瞬間 sensor 短暫 OFF 後轉 ON（未達 ConfirmCount），When 偵測執行，Then 不誤判空搬（去抖涵蓋 sensor 延遲）
+- [x] Given 目的站不在 SensorMap 或站號為空，When 任務完成，Then 不判定空搬（無 sensor 記 Trace；站號為空記資料異常 Warning）
+- [x] 只寫 Log，不做畫面顯示（2026-07-26 確認）
 
 ### AC-7 整合驗證（T20、T22~T24）
 

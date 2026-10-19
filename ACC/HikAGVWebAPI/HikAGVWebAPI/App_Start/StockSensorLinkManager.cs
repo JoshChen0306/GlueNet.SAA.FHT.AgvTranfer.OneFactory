@@ -185,6 +185,36 @@ namespace HikAGVWebAPI.App_Start
         }
     }
 
+    /// <summary>WatchArrival 結果：只有 Watching 會進入空搬偵測。</summary>
+    public enum ArrivalWatchResult
+    {
+        /// <summary>目的站有 sensor 對應，已登記等待到料。</summary>
+        Watching,
+        /// <summary>目的站不在 SensorMap（無 sensor），無法偵測空搬。</summary>
+        NoSensor,
+        /// <summary>目的站號為空（資料異常），不判定空搬。</summary>
+        InvalidStation,
+        /// <summary>掃描執行緒未在執行（PLC 連線建立失敗或已停止），無法偵測空搬。</summary>
+        NotMonitoring,
+    }
+
+    /// <summary>一筆空搬判定（任務完成但目的站 sensor 連續未亮）。</summary>
+    public class EmptyTransferInfo
+    {
+        public string EndStation { get; }
+        public string TaskCode { get; }
+        public string BeginStation { get; }
+        public DateTime EndTime { get; }
+
+        public EmptyTransferInfo(string endStation, string taskCode, string beginStation, DateTime endTime)
+        {
+            EndStation = endStation;
+            TaskCode = taskCode;
+            BeginStation = beginStation;
+            EndTime = endTime;
+        }
+    }
+
     /// <summary>
     /// 庫位 SENSOR 監控：定時掃描 PLC M 暫存器（平板偵測，ON=平板在 / OFF=平板不在）。
     /// 當 bit=OFF 且軟體仍認為庫位佔用（RackId / WorkOrder / HaveFlag 任一），連續達 ConfirmCount 輪後清空該庫位。
@@ -192,6 +222,9 @@ namespace HikAGVWebAPI.App_Start
     /// 中光電來源站（SensorOnStations，如 D1、O1）另外處理：
     ///   bit=ON 且 HaveFlag=0、無進行中任務，連續達 ConfirmCount 輪 → 寫 HaveFlag=1（有貨架、無工單），供 SCP R1/R4 觸發；
     ///   bit=OFF 清空時 → 刪除未派出的 oNeed（Warning），已派出的任務只記 Error，由人員到 RCS 取消。
+    /// 空搬偵測（T19）：end 回呼呼叫 WatchArrival 登記目的站，之後 bit=ON → 到料正常；
+    ///   連續 ConfirmCount 輪 OFF → 判定空搬，寫 Warning 並觸發 EmptyTransferDetected（只寫 Log，不做畫面）。
+    ///   不看 oPort.HaveFlag：end 回呼會無條件把目的站寫成有料。
     /// 掃描跑在自有的專屬 STA 背景執行緒上（ActUtlType 為 STA COM），全程同一條 thread，零跨執行緒 marshaling。
     /// </summary>
     public class StockSensorLinkManager
@@ -209,12 +242,29 @@ namespace HikAGVWebAPI.App_Start
         private readonly ISourceTaskStore _taskStore;
         private readonly HashSet<string> _sensorOnStations;
 
+        /// <summary>等待到料的目的站（StationNo → 任務資訊與連續 OFF 輪數）；end 回呼（ASP.NET 執行緒）寫、掃描執行緒讀，以 _arrivalLock 保護。</summary>
+        private readonly Dictionary<string, PendingArrival> _arrivals = new Dictionary<string, PendingArrival>(StringComparer.OrdinalIgnoreCase);
+        private readonly object _arrivalLock = new object();
+
+        private class PendingArrival
+        {
+            public EmptyTransferInfo Info;
+            public int OffCount;
+            /// <summary>登記後第一次檢查只設為 true 不計數：該輪讀值可能早於登記（end 回呼夾在讀 bit 與檢查之間）。</summary>
+            public bool Armed;
+        }
+
         private IBitReader _reader;
         private Thread _thread;
         private volatile bool _stop;
+        /// <summary>掃描執行緒已結束（PLC 連線建立失敗或停止）：WatchArrival 不再登記，避免永遠無法判定。</summary>
+        private volatile bool _scanEnded;
 
         /// <summary>Sensor OFF 確認後清空庫位時觸發（參數：StationNo），供中光電 release 等後續動作掛載。</summary>
         public event Action<string> StockCleared;
+
+        /// <summary>判定空搬時觸發（已寫 Warning Log），供日後擴充通知。</summary>
+        public event Action<EmptyTransferInfo> EmptyTransferDetected;
 
         /// <summary>生產用：reader 由 factory 在 STA 執行緒上建立（PlcDevice 之 COM 須與讀取同一條 thread）。</summary>
         public StockSensorLinkManager(IList<SensorMapping> mappings, Func<IBitReader> readerFactory,
@@ -259,6 +309,7 @@ namespace HikAGVWebAPI.App_Start
             }
 
             _stop = false;
+            _scanEnded = false;
             _thread = new Thread(Execute) { IsBackground = true };
             _thread.SetApartmentState(ApartmentState.STA);   // ActUtlType 為 STA COM
             _thread.Start();
@@ -279,6 +330,7 @@ namespace HikAGVWebAPI.App_Start
             }
             catch (Exception ex)
             {
+                _scanEnded = true;
                 _log?.TraceOut($"[StockSensorLink] 建立 PLC 連線失敗：{ex.Message}", Log.LogType.ERROR);
                 return;
             }
@@ -297,6 +349,7 @@ namespace HikAGVWebAPI.App_Start
                 Thread.Sleep(_pollIntervalMs);
             }
 
+            _scanEnded = true;
             (_reader as IDisposable)?.Dispose();
         }
 
@@ -320,9 +373,12 @@ namespace HikAGVWebAPI.App_Start
                 {
                     _counter[map.Address] = 0;
                     _onCounter[map.Address] = 0;
+                    CancelArrivalOnReadFailure(map);
                     _log?.TraceOut($"[StockSensorLink] 讀取 {map.Address} 失敗，略過該輪", Log.LogType.WARN);
                     continue;
                 }
+
+                CheckArrival(map, on);
 
                 // ② 平板在位（bit=ON）→ 計數歸 0
                 if (on)
@@ -387,6 +443,115 @@ namespace HikAGVWebAPI.App_Start
             else
             {
                 _onCounter[map.Address] = c;
+            }
+        }
+
+        /// <summary>
+        /// 任務送達目的站（end 回呼）時登記等待到料。同站已有登記時以新任務取代並重新起算。
+        /// 目的站不在 SensorMap → NoSensor（記 Trace）；站號為空 → InvalidStation（記資料異常 Warning），兩者都不判定空搬。
+        /// </summary>
+        public ArrivalWatchResult WatchArrival(string endStation, string taskCode, string beginStation, DateTime endTime)
+        {
+            if (string.IsNullOrWhiteSpace(endStation))
+            {
+                _log?.TraceOut($"[StockSensorLink] 空搬偵測略過：任務 {taskCode} 目的站號為空（資料異常），起點 {beginStation}", Log.LogType.WARN);
+                return ArrivalWatchResult.InvalidStation;
+            }
+
+            string station = endStation.Trim();
+            bool hasSensor = false;
+            foreach (var m in _mappings)
+            {
+                if (string.Equals(m.StationNo, station, StringComparison.OrdinalIgnoreCase))
+                {
+                    hasSensor = true;
+                    break;
+                }
+            }
+
+            if (!hasSensor)
+            {
+                _log?.TraceOut($"[StockSensorLink] 空搬偵測略過：目的站 {station} 無 sensor 對應（任務 {taskCode}）", Log.LogType.TRACE);
+                return ArrivalWatchResult.NoSensor;
+            }
+
+            if (_scanEnded)
+            {
+                _log?.TraceOut($"[StockSensorLink] 空搬偵測略過：sensor 掃描未執行（任務 {taskCode}，目的站 {station}）", Log.LogType.TRACE);
+                return ArrivalWatchResult.NotMonitoring;
+            }
+
+            lock (_arrivalLock)
+            {
+                _arrivals[station] = new PendingArrival { Info = new EmptyTransferInfo(station, taskCode, beginStation, endTime) };
+            }
+            return ArrivalWatchResult.Watching;
+        }
+
+        /// <summary>
+        /// 空搬偵測：目的站 bit=ON → 到料正常解除；登記後第一輪 OFF 不計（讀值可能早於登記），
+        /// 之後連續 ConfirmCount 輪 OFF → 判定空搬並解除（只報一次）。
+        /// </summary>
+        private void CheckArrival(SensorMapping map, bool on)
+        {
+            EmptyTransferInfo detected = null;
+            lock (_arrivalLock)
+            {
+                if (!_arrivals.TryGetValue(map.StationNo, out var pending))
+                {
+                    return;
+                }
+
+                if (on)
+                {
+                    _arrivals.Remove(map.StationNo);
+                }
+                else if (!pending.Armed)
+                {
+                    pending.Armed = true;
+                }
+                else if (++pending.OffCount >= _confirmCount)
+                {
+                    _arrivals.Remove(map.StationNo);
+                    detected = pending.Info;
+                }
+            }
+
+            if (detected == null)
+            {
+                return;
+            }
+
+            _log?.TraceOut($"[StockSensorLink] 疑似空搬：任務 {detected.TaskCode} {detected.BeginStation}→{detected.EndStation} "
+                + $"於 {detected.EndTime:yyyy-MM-dd HH:mm:ss} 完成，目的站 sensor {map.Address} 連續 {_confirmCount} 輪未亮（可能有人為介入）", Log.LogType.WARN);
+            try
+            {
+                EmptyTransferDetected?.Invoke(detected);
+            }
+            catch (Exception ex)
+            {
+                _log?.TraceOut($"[StockSensorLink] {detected.EndStation} 空搬後續動作失敗：{ex.Message}", Log.LogType.WARN);
+            }
+        }
+
+        /// <summary>
+        /// 讀取失敗時取消該站的空搬偵測：保留登記會在 PLC 長時間斷線後、貨架早已正常取走時誤報舊任務。
+        /// </summary>
+        private void CancelArrivalOnReadFailure(SensorMapping map)
+        {
+            EmptyTransferInfo cancelled = null;
+            lock (_arrivalLock)
+            {
+                if (_arrivals.TryGetValue(map.StationNo, out var pending))
+                {
+                    _arrivals.Remove(map.StationNo);
+                    cancelled = pending.Info;
+                }
+            }
+
+            if (cancelled != null)
+            {
+                _log?.TraceOut($"[StockSensorLink] {map.Address} 讀取失敗，取消任務 {cancelled.TaskCode}（{cancelled.BeginStation}→{cancelled.EndStation}）的空搬偵測", Log.LogType.WARN);
             }
         }
 
@@ -508,6 +673,9 @@ namespace HikAGVWebAPI.App_Start
     /// </summary>
     public static class StockSensorLinkBootstrap
     {
+        /// <summary>執行中的監控（未啟動為 null）；供 end 回呼登記空搬偵測（比照 CgdWcsBootstrap.Current）。</summary>
+        public static StockSensorLinkManager Current { get; set; }
+
         public static StockSensorLinkManager Create(string configFilePath)
         {
             Configuration config;

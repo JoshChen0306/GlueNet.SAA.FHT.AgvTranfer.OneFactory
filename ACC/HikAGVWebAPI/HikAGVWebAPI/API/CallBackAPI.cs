@@ -226,6 +226,10 @@ namespace HikAGVWebAPI
                     mDB.Delete_oMission(oMission);
                     mDB.Update_oShuttleStation(oMission, "I");
                     mLog.TraceOut($"Update End Job Finish!", Log.LogType.NONE);
+
+                    // 空搬偵測：目的站 sensor 連續未亮 → StockSensorLink 記 Warning（oPort 已被寫成有料，只能看 sensor）。
+                    // 放在主流程 DB 動作之後，附加功能失敗不影響任務歸檔
+                    StockSensorLinkBootstrap.Current?.WatchArrival(oMission.EndStation, oMission.TaskCode, oMission.BeginStation, DateTime.Now);
                 }
 
                 mDB.Update_ubActivation(ubActivation, "EndTime");

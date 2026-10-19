@@ -31,12 +31,14 @@ namespace HikAGVWebAPI
             }
 
             stockSensorLink?.Start();
+            StockSensorLinkBootstrap.Current = stockSensorLink;   // end 回呼登記空搬偵測（T19）
         }
 
         protected void Application_End()
         {
             // 在应用程序结束时，确保线程停止
             dispatch.Stop();
+            StockSensorLinkBootstrap.Current = null;
             stockSensorLink?.Stop();
             CgdWcsBootstrap.Stop();
         }
