@@ -51,6 +51,7 @@ namespace SCP.Tests.Services
             SourceBlocks = new List<string> { "F" },
             TargetBlocks = new List<string> { "A" },
             SourceHaveFlags = new List<string> { "1" },
+            SensorGuard = true,
         };
 
         private static async Task<int> Run(ScpTestDb db, ListLogger logger, params AutoDispatchRoute[] routes)
@@ -389,6 +390,20 @@ namespace SCP.Tests.Services
             await Run(db, new ListLogger(), R5());
 
             Assert.AreEqual("A1", db.Needs().Single().EndStation);
+        }
+
+        [TestMethod]
+        public async Task Execute_R5TargetA1HasLeftoverData_SkipsA1()
+        {
+            // A1 HaveFlag=0 但殘留工單（帳料不一致）→ 不指派，改送 A2
+            using var db = new ScpTestDb();
+            db.AddPort("F1", haveFlag: "1");
+            db.AddPort("A1", haveFlag: "0", workOrder: "WO-OLD");
+            db.AddPort("A2", haveFlag: "0");
+
+            await Run(db, new ListLogger(), R5());
+
+            Assert.AreEqual("A2", db.Needs().Single().EndStation);
         }
 
         [TestMethod]

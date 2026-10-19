@@ -144,7 +144,8 @@ namespace SCP.Tests.Config
 
         /// <summary>
         /// 2026-10-19 新增（T26）：R5 迅得5/6/7 空盤 → A1/A2（客戶圖「梯1、梯2」）。
-        /// R4 送達 F 時無工單、HaveFlag=1；F 無 sensor 位址故不開防呆；AB 棟上線前停用。
+        /// R4 送達 F 時無工單、HaveFlag=1；AB 棟上線前停用。
+        /// SensorGuard 開啟：來源檢查只針對 HaveFlag=3，對空盤無影響；目的 A1/A2 若 HaveFlag=0 卻殘留工單/貨架則不指派（code review S5）。
         /// </summary>
         [TestMethod]
         public void AutoDispatchRoutes_R5FToA_HaveFlag1AndDisabledBeforeGoLive()
@@ -154,7 +155,7 @@ namespace SCP.Tests.Config
             var r5 = routes.Single(r => r.SourceBlocks.SequenceEqual(new[] { "F" }));
             CollectionAssert.AreEqual(new[] { "A" }, r5.TargetBlocks);
             CollectionAssert.AreEqual(new[] { "1" }, r5.SourceHaveFlags, "R5 空盤無工單，HaveFlag=1 即派");
-            Assert.IsFalse(r5.SensorGuard, "F1～F3 尚無 sensor 位址");
+            Assert.IsTrue(r5.SensorGuard, "目的 A1/A2 須做殘留資料檢查");
             Assert.IsFalse(r5.Enabled, "AB 棟上線前不可啟用");
         }
 
