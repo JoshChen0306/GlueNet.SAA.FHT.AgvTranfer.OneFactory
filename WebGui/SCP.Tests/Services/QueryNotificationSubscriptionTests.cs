@@ -62,13 +62,111 @@ namespace SCP.Tests.Services
                 => Events.Any(e => e.Level == level && e.RenderMessage().Contains(text));
         }
 
+        /// <summary>記錄排程，由測試手動執行到期的動作（不真的等待）。</summary>
+        internal sealed class FakeScheduler : IRetryScheduler
+        {
+            public List<(TimeSpan Delay, Action Action)> Scheduled { get; } = new List<(TimeSpan, Action)>();
+
+            public void Schedule(TimeSpan delay, Action action) => Scheduled.Add((delay, action));
+
+            /// <summary>執行最後一筆排程並移除。</summary>
+            public void RunLast()
+            {
+                var last = Scheduled[^1];
+                Scheduled.RemoveAt(Scheduled.Count - 1);
+                last.Action();
+            }
+        }
+
         private static (QueryNotificationSubscription Sut, FakeSource Source, FakeNotifier Notifier, ListSink Log) Create()
+            => Create(out _);
+
+        private static (QueryNotificationSubscription Sut, FakeSource Source, FakeNotifier Notifier, ListSink Log) Create(out FakeScheduler scheduler)
         {
             var source = new FakeSource();
             var notifier = new FakeNotifier();
             var sink = new ListSink();
+            scheduler = new FakeScheduler();
             var logger = new LoggerConfiguration().MinimumLevel.Verbose().WriteTo.Sink(sink).CreateLogger();
-            return (new QueryNotificationSubscription(Sql, EventName, source, notifier, logger), source, notifier, sink);
+            return (new QueryNotificationSubscription(Sql, EventName, source, notifier, scheduler, logger), source, notifier, sink);
+        }
+
+        // ── T6 重註冊失敗自動重試 ────────────────────────────────
+
+        [TestMethod]
+        public void Start_SubscribeFails_SchedulesRetryAfter5Seconds()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            source.FailPlan.Enqueue(true);
+
+            sut.Start();
+
+            Assert.AreEqual(1, scheduler.Scheduled.Count);
+            Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled[0].Delay);
+        }
+
+        [TestMethod]
+        public void Retry_KeepsFailing_BacksOff5s15s60sThenEvery5Minutes()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            for (int i = 0; i < 6; i++) source.FailPlan.Enqueue(true);
+
+            sut.Start();
+            var delays = new List<TimeSpan> { scheduler.Scheduled[^1].Delay };
+            for (int i = 0; i < 5; i++)
+            {
+                scheduler.RunLast();
+                delays.Add(scheduler.Scheduled[^1].Delay);
+            }
+
+            CollectionAssert.AreEqual(
+                new[] { 5, 15, 60, 300, 300, 300 }.Select(s => TimeSpan.FromSeconds(s)).ToArray(),
+                delays.ToArray());
+            Assert.AreEqual(6, source.SubscribeCount, "每次重試都要真的再註冊，不可放棄");
+        }
+
+        [TestMethod]
+        public void Retry_SucceedsAfterFailures_LogsRecoveryAndStopsRetrying()
+        {
+            var (sut, source, _, log) = Create(out var scheduler);
+            source.FailPlan.Enqueue(true);
+            source.FailPlan.Enqueue(true);
+
+            sut.Start();
+            scheduler.RunLast();
+            scheduler.RunLast();   // 第 3 次註冊成功
+
+            Assert.AreEqual(0, scheduler.Scheduled.Count);
+            Assert.IsTrue(log.Has(LogEventLevel.Information, "恢復"));
+        }
+
+        [TestMethod]
+        public void Retry_FailsAgainAfterRecovery_BackoffRestartsAt5Seconds()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            source.FailPlan.Enqueue(true);
+            source.FailPlan.Enqueue(true);
+            sut.Start();
+            scheduler.RunLast();
+            scheduler.RunLast();             // 恢復
+            source.FailPlan.Enqueue(true);
+
+            source.Notify(SqlNotificationType.Change);   // 收到通知後重新註冊失敗
+
+            Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled.Single().Delay);
+        }
+
+        [TestMethod]
+        public void Retry_AfterStop_DoesNotSubscribe()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            source.FailPlan.Enqueue(true);
+            sut.Start();
+
+            sut.Stop();
+            scheduler.RunLast();
+
+            Assert.AreEqual(1, source.SubscribeCount);
         }
 
         // ── T0 現有行為快照 ──────────────────────────────────────

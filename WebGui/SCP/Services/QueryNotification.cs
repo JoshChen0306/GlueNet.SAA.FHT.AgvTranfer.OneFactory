@@ -31,6 +31,48 @@ namespace SCP.Services
         Task SendAsync(string eventName);
     }
 
+    /// <summary>延遲執行（重註冊失敗的退避重試用）；正式實作為 TaskRetryScheduler。</summary>
+    public interface IRetryScheduler
+    {
+        void Schedule(TimeSpan delay, Action action);
+    }
+
+    /// <summary>以 Task.Delay 延遲執行；Cancel 後尚未到期的動作不再執行。</summary>
+    public sealed class TaskRetryScheduler : IRetryScheduler
+    {
+        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly Serilog.ILogger _log;
+
+        public TaskRetryScheduler(Serilog.ILogger log)
+        {
+            _log = log;
+        }
+
+        public void Schedule(TimeSpan delay, Action action)
+        {
+            var token = _cts.Token;
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(delay, token);
+                    action();
+                }
+                catch (OperationCanceledException)
+                {
+                    // 服務停止，取消尚未到期的重試（預期行為）
+                    _log.Debug("服務停止，取消即時更新重註冊排程");
+                }
+                catch (Exception ex)
+                {
+                    _log.Warning(ex, "即時更新重註冊排程執行失敗");
+                }
+            });
+        }
+
+        public void Cancel() => _cts.Cancel();
+    }
+
     /// <summary>以 SqlDependency 註冊查詢通知（需資料庫啟用 Service Broker）。</summary>
     public sealed class SqlDependencyNotificationSource : IQueryNotificationSource
     {

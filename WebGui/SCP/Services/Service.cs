@@ -20,6 +20,7 @@ namespace SCP.Services
 
         private string _connectionString;
         private readonly List<QueryNotificationSubscription> _subscriptions;
+        private readonly TaskRetryScheduler _retryScheduler;
 
         public Service(IConfiguration configuration, IHubContext<CommonHub> hub)
         {
@@ -27,8 +28,9 @@ namespace SCP.Services
 
             var source = new SqlDependencyNotificationSource(_connectionString);
             var notifier = new HubRealtimeNotifier(hub);
+            _retryScheduler = new TaskRetryScheduler(Log.Logger);
             _subscriptions = Definitions
-                .Select(d => new QueryNotificationSubscription(d.Sql, d.EventName, source, notifier, Log.Logger))
+                .Select(d => new QueryNotificationSubscription(d.Sql, d.EventName, source, notifier, _retryScheduler, Log.Logger))
                 .ToList();
         }
 
@@ -59,6 +61,13 @@ namespace SCP.Services
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            // 先停掉重註冊排程，避免停止期間又去註冊
+            foreach (var subscription in _subscriptions)
+            {
+                subscription.Stop();
+            }
+            _retryScheduler.Cancel();
+
             SqlDependency.Stop(_connectionString);
             return Task.CompletedTask;
         }
