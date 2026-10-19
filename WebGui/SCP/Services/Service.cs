@@ -20,17 +20,31 @@ namespace SCP.Services
 
         private string _connectionString;
         private readonly List<QueryNotificationSubscription> _subscriptions;
-        private readonly TaskRetryScheduler _retryScheduler;
+        private readonly IQueryNotificationListener _listener;
+        private readonly IRetryScheduler _retryScheduler;
+        private readonly Serilog.ILogger _log;
 
         public Service(IConfiguration configuration, IHubContext<CommonHub> hub)
+            : this(configuration.GetConnectionString("DBContext"), hub)
         {
-            _connectionString = configuration.GetConnectionString("DBContext");
+        }
 
-            var source = new SqlDependencyNotificationSource(_connectionString);
-            var notifier = new HubRealtimeNotifier(hub);
-            _retryScheduler = new TaskRetryScheduler(Log.Logger);
+        private Service(string connectionString, IHubContext<CommonHub> hub)
+            : this(connectionString, new SqlDependencyNotificationSource(connectionString), new HubRealtimeNotifier(hub),
+                   new SqlDependencyListener(), new TaskRetryScheduler(Log.Logger), Log.Logger)
+        {
+        }
+
+        /// <summary>供測試注入假的通知來源／推播／監聽／排程（DI 只會使用上方的建構子）。</summary>
+        public Service(string? connectionString, IQueryNotificationSource source, IRealtimeNotifier notifier,
+            IQueryNotificationListener listener, IRetryScheduler retryScheduler, Serilog.ILogger log)
+        {
+            _connectionString = connectionString;
+            _listener = listener;
+            _retryScheduler = retryScheduler;
+            _log = log;
             _subscriptions = Definitions
-                .Select(d => new QueryNotificationSubscription(d.Sql, d.EventName, source, notifier, _retryScheduler, Log.Logger))
+                .Select(d => new QueryNotificationSubscription(d.Sql, d.EventName, source, notifier, retryScheduler, log))
                 .ToList();
         }
 
@@ -41,12 +55,12 @@ namespace SCP.Services
                 // SqlDependency 需要資料庫啟用 Service Broker，且連線帳號具備
                 // SUBSCRIBE QUERY NOTIFICATIONS 權限。任一未滿足，Start 會丟例外，
                 // 導致整套 SignalR 即時推播（任務列表/AGV/地圖）失效、客戶端需手動 F5。
-                SqlDependency.Start(_connectionString);
-                Log.Information("SqlDependency.Start 成功，開始註冊查詢通知");
+                _listener.Start(_connectionString);
+                _log.Information("SqlDependency.Start 成功，開始註冊查詢通知");
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "SqlDependency.Start 失敗：請確認資料庫已啟用 Service Broker"
+                _log.Error(ex, "SqlDependency.Start 失敗：請確認資料庫已啟用 Service Broker"
                     + "（ALTER DATABASE [db] SET ENABLE_BROKER）且帳號具 SUBSCRIBE QUERY NOTIFICATIONS 權限。"
                     + "即時更新將失效，前端需手動 F5。");
                 return Task.CompletedTask;
@@ -68,7 +82,7 @@ namespace SCP.Services
             }
             _retryScheduler.Cancel();
 
-            SqlDependency.Stop(_connectionString);
+            _listener.Stop(_connectionString);
             return Task.CompletedTask;
         }
     }

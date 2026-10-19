@@ -35,6 +35,22 @@ namespace SCP.Services
     public interface IRetryScheduler
     {
         void Schedule(TimeSpan delay, Action action);
+
+        /// <summary>取消尚未到期的動作（服務停止時呼叫）。</summary>
+        void Cancel();
+    }
+
+    /// <summary>查詢通知監聽的啟停（SqlDependency.Start/Stop）；正式實作為 SqlDependencyListener。</summary>
+    public interface IQueryNotificationListener
+    {
+        void Start(string connectionString);
+        void Stop(string connectionString);
+    }
+
+    public sealed class SqlDependencyListener : IQueryNotificationListener
+    {
+        public void Start(string connectionString) => SqlDependency.Start(connectionString);
+        public void Stop(string connectionString) => SqlDependency.Stop(connectionString);
     }
 
     /// <summary>以 Task.Delay 延遲執行；Cancel 後尚未到期的動作不再執行。</summary>

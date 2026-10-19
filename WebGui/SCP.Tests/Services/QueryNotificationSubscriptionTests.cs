@@ -71,6 +71,10 @@ namespace SCP.Tests.Services
 
             public void Schedule(TimeSpan delay, Action action) => Scheduled.Add((delay, action));
 
+            public bool Cancelled { get; private set; }
+
+            public void Cancel() => Cancelled = true;
+
             /// <summary>執行最後一筆排程並移除。</summary>
             public void RunLast()
             {
