@@ -77,7 +77,6 @@ namespace SCP.Services
     public sealed class SqlDependencyNotificationSource : IQueryNotificationSource
     {
         private readonly string _connectionString;
-        private List<SqlDependency> _dependency = new List<SqlDependency>();
 
         public SqlDependencyNotificationSource(string connectionString)
         {
@@ -92,9 +91,10 @@ namespace SCP.Services
 
                 using (var command = new SqlCommand(sql, connection))
                 {
+                    // 不另外保存 SqlDependency：建立時已由 SqlClient 內部靜態表登記，觸發一次後自動移除；
+                    // 原本每次重註冊都 Add 進 List 且從未讀取，服務跑越久越大（記憶體洩漏，T2）
                     var dependency = new SqlDependency(command);
                     dependency.OnChange += (sender, e) => onNotified(new QueryNotification(e.Type, e.Info, e.Source));
-                    _dependency.Add(dependency);
 
                     // 執行命令以註冊 SqlDependency 物件
                     command.ExecuteReader();
