@@ -1,4 +1,6 @@
-﻿namespace SCP.Services
+﻿using Microsoft.Data.SqlClient;
+
+namespace SCP.Services
 {
     /// <summary>
     /// 單條查詢通知訂閱：註冊 → 收到通知 → 重新註冊並推播事件給前端。
@@ -31,6 +33,8 @@
         };
 
         private int _failureCount;
+        /// <summary>連續收到非 Change 通知的次數；收到 Change（訂閱恢復正常）才歸零，避免無效查詢每 5 秒重試一次洗 log。</summary>
+        private int _nonChangeCount;
         private volatile bool _stopped;
 
         public void Start() => Register();
@@ -66,6 +70,19 @@
 
         private async void OnNotified(QueryNotification notification)
         {
+            if (notification.Type != SqlNotificationType.Change)
+            {
+                // 非資料變更（例：Subscribe/Invalid＝訂閱本身失敗）立即重註冊會立刻收到同樣通知 → 緊密迴圈；
+                // 也不可放棄（訂閱會永久死亡），改依退避間隔重註冊。資料沒有變更，不推播。
+                int attempt = Interlocked.Increment(ref _nonChangeCount);
+                var delay = RetryDelays[Math.Min(attempt, RetryDelays.Length) - 1];
+                _log.Warning("收到非資料變更通知（Type={Type}, Info={Info}, Source={Source}，連續第 {Attempt} 次），{DelaySeconds} 秒後重新註冊（SQL: {Sql}）",
+                    notification.Type, notification.Info, notification.Source, attempt, delay.TotalSeconds, _sql);
+                _scheduler.Schedule(delay, Register);
+                return;
+            }
+
+            Interlocked.Exchange(ref _nonChangeCount, 0);
             Register();
             await _notifier.SendAsync(_eventName);
         }

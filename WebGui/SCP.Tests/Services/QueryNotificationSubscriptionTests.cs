@@ -91,6 +91,58 @@ namespace SCP.Tests.Services
             return (new QueryNotificationSubscription(Sql, EventName, source, notifier, scheduler, logger), source, notifier, sink);
         }
 
+        // ── T1 非 Change 通知不立即重註冊（擋無限迴圈），交給退避重試 ─────
+
+        [TestMethod]
+        public void OnNotified_SubscribeType_DoesNotResubscribeImmediatelyNorSend()
+        {
+            // 訂閱本身失敗（Type=Subscribe，例：查詢不符合通知規則）時立即重註冊會立刻再收到同樣通知 → 緊密迴圈
+            var (sut, source, notifier, log) = Create(out var scheduler);
+            sut.Start();
+
+            source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);
+
+            Assert.AreEqual(1, source.SubscribeCount, "不可立即重註冊");
+            Assert.AreEqual(0, notifier.Sent.Count, "資料沒有變更，不推播");
+            Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled.Single().Delay, "改走退避重試，不可永久放棄");
+            Assert.IsTrue(log.Has(LogEventLevel.Warning, "Invalid"));
+        }
+
+        [TestMethod]
+        public void OnNotified_RepeatedNonChange_BackoffGrows()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            sut.Start();
+            var delays = new List<TimeSpan>();
+
+            for (int i = 0; i < 4; i++)
+            {
+                source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);
+                delays.Add(scheduler.Scheduled[^1].Delay);
+                scheduler.RunLast();   // 重註冊（成功），又立刻收到同樣的無效通知
+            }
+
+            CollectionAssert.AreEqual(
+                new[] { 5, 15, 60, 300 }.Select(s => TimeSpan.FromSeconds(s)).ToArray(),
+                delays.ToArray());
+        }
+
+        [TestMethod]
+        public void OnNotified_ChangeAfterNonChange_ResetsBackoff()
+        {
+            var (sut, source, _, _) = Create(out var scheduler);
+            sut.Start();
+            source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);
+            scheduler.RunLast();
+            source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);
+            scheduler.RunLast();
+
+            source.Notify(SqlNotificationType.Change);                                   // 恢復正常
+            source.Notify(SqlNotificationType.Subscribe, SqlNotificationInfo.Invalid);  // 之後再出錯
+
+            Assert.AreEqual(TimeSpan.FromSeconds(5), scheduler.Scheduled.Single().Delay);
+        }
+
         // ── T6 重註冊失敗自動重試 ────────────────────────────────
 
         [TestMethod]
