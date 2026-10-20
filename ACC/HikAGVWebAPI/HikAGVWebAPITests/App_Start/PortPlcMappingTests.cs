@@ -73,6 +73,16 @@ namespace HikAGVWebAPITests.App_Start
             StringAssert.Contains(skipped[0], "O1");
         }
 
+        [TestMethod]
+        public void BuildSensorMappings_SameDeviceDifferentSpelling_TreatedAsDuplicate()
+        {
+            // 行為變更（T17 code review）：M010 與 M10 為同一點位，第二站略過並提示
+            var result = StockSensorLinkManager.BuildSensorMappings(new[] { Row("B1", "M10"), Row("O1", "M010") }, out var skipped);
+
+            Assert.AreEqual("B1", result.Single().StationNo);
+            StringAssert.Contains(skipped.Single(), "O1");
+        }
+
         // ── ResolveSensorMappings ───────────────────────────
 
         [TestMethod]

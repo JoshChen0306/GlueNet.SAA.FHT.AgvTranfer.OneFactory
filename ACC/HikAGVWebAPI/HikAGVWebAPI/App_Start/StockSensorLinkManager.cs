@@ -802,13 +802,14 @@ namespace HikAGVWebAPI.App_Start
                     continue;   // 例：只有三色燈、沒有 sensor 的站
                 }
 
-                if (usedBy.TryGetValue(address, out string first))
+                string key = PlcAddress.Normalize(address);   // M010＝M10
+                if (usedBy.TryGetValue(key, out string first))
                 {
                     skipped.Add($"oPortPlc sensor 位址 {address} 重複：{first} 已使用，略過 {station}，請修正 DB");
                     continue;
                 }
 
-                usedBy[address] = station;
+                usedBy[key] = station;
                 result.Add(new SensorMapping(address, station));
             }
 
