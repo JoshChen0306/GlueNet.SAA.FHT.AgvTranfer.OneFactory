@@ -9,6 +9,7 @@ namespace HikAGVWebAPI
     {
         private static Dispatch dispatch;
         private static StockSensorLinkManager stockSensorLink;
+        private static RackStatusOutputManager rackLampOutput;
 
         private static readonly string ConfigFileName = string.Format("{0}\\Config\\FHtSetting.config",
             string.IsNullOrEmpty(AppDomain.CurrentDomain.RelativeSearchPath)
@@ -32,6 +33,10 @@ namespace HikAGVWebAPI
 
             stockSensorLink?.Start();
             StockSensorLinkBootstrap.Current = stockSensorLink;   // end 回呼登記空搬偵測（T19）
+
+            // 三色燈輸出（T18，設定 Enable=true 時才會啟動）
+            rackLampOutput = RackStatusOutputBootstrap.Create(ConfigFileName);
+            rackLampOutput?.Start();
         }
 
         protected void Application_End()
@@ -40,6 +45,7 @@ namespace HikAGVWebAPI
             dispatch.Stop();
             StockSensorLinkBootstrap.Current = null;
             stockSensorLink?.Stop();
+            rackLampOutput?.Stop();
             CgdWcsBootstrap.Stop();
         }
     }

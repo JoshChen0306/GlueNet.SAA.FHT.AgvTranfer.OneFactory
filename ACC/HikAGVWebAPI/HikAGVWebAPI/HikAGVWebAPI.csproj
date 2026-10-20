@@ -111,6 +111,7 @@
     <Compile Include="App_Start\ElevatorPathCalculator.cs" />
     <Compile Include="App_Start\PlcContracts.cs" />
     <Compile Include="App_Start\PlcDevice.cs" />
+    <Compile Include="App_Start\RackStatusOutputManager.cs" />
     <Compile Include="App_Start\ShuttleMapCodeResolver.cs" />
     <Compile Include="App_Start\StockSensorLinkManager.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />

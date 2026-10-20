@@ -139,6 +139,25 @@ namespace HikAGVWebAPI.App_Start
             return JsonConvert.DeserializeObject<List<oPortPlcModel>>(sJson);
         }
 
+        /// <summary>一次查多站 HaveFlag（三色燈輸出每輪一次，T18）；查不到的站不在回傳中。失敗時丟例外由呼叫端處理。</summary>
+        public Dictionary<string, string> Select_oPortHaveFlag(IEnumerable<string> stationNos)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            var list = string.Join(",", stationNos.Select(s => $"'{s.Replace("'", "''")}'"));
+            if (list.Length == 0)
+            {
+                return result;
+            }
+
+            string sSQL = $@"select StationNo, HaveFlag from oPort where StationNo in ({list}) ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            foreach (DataRow row in dt.Rows)
+            {
+                result[Convert.ToString(row["StationNo"]).Trim()] = row["HaveFlag"] == DBNull.Value ? null : Convert.ToString(row["HaveFlag"]);
+            }
+            return result;
+        }
+
         public List<oTaskTypeRouteModel> Select_oTaskTypeRoute(string moveType)
         {
             string sSQL = $@"select * from oTaskTypeRoute where UseFlag = 'Y' and MoveType = '{moveType}' ";

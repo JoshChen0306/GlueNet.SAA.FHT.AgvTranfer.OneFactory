@@ -64,6 +64,7 @@
     <Compile Include="App_Start\ElevatorPathCalculatorTests.cs" />
     <Compile Include="App_Start\EmptyTransferDetectionTests.cs" />
     <Compile Include="App_Start\PortPlcMappingTests.cs" />
+    <Compile Include="App_Start\RackStatusOutputManagerTests.cs" />
     <Compile Include="App_Start\ShuttleMapCodeResolverTests.cs" />
     <Compile Include="App_Start\StockSensorLinkManagerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -111,8 +111,8 @@
 
 - [ ] 狀態定義規格文件經迅得/客戶確認（含顏色 ↔ 狀態值 ↔ PLC 位址對應）
 - [ ] 前端地圖/儲位頁依物料狀態顯示對應顏色
-- [ ] 🧪 Given 貨架狀態變化，When 輸出服務輪詢，Then 以 SetDevice2 寫入對應 PLC 位址；Given 狀態無變化，Then 不重複寫入
-- [ ] 🧪 Given PLC 寫入失敗，When 下一輪輪詢，Then 記 Warning Log 並依最新狀態重寫（自癒），不中斷服務
+- [x] 🧪 Given 貨架狀態變化，When 輸出服務輪詢，Then 以 SetDevice2 寫入對應 PLC 位址；Given 狀態無變化，Then 不重複寫入
+- [x] 🧪 Given PLC 寫入失敗，When 下一輪輪詢，Then 記 Warning Log 並依最新狀態重寫（自癒），不中斷服務
 - [ ] 現場對測：三色燈狀態與 SCP 顯示一致（斷線恢復後燈號自動追上）
 
 ### AC-5a 🧪 PLC 點位表移入 DB（T29，2026-10-20 新增，Given-When-Then）

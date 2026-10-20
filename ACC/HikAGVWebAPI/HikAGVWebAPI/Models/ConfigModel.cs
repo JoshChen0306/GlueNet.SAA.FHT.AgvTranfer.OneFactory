@@ -430,4 +430,43 @@ namespace HikAGVWebAPI
         }
     }
     #endregion SensorClear Config
+
+    #region LampOutput Config（三色燈輸出，T18）
+    public class SectionLampOutput : ConfigurationSection
+    {
+        [ConfigurationProperty(nameof(LampOutputSettings))]
+        public LampOutputSettings LampOutputSettings
+        {
+            get { return (LampOutputSettings)this[nameof(LampOutputSettings)]; }
+            set { this[nameof(LampOutputSettings)] = value; }
+        }
+    }
+
+    public class LampOutputSettings : ConfigurationElement
+    {
+        // 總開關：預設關閉；點位與各站啟用旗標在 DB oPortPlc（LampUseFlag）
+        [ConfigurationProperty(nameof(Enable), DefaultValue = "false", IsRequired = false)]
+        public string Enable
+        {
+            get { return (string)this[nameof(Enable)]; }
+            set { this[nameof(Enable)] = value; }
+        }
+
+        // MX Component 的 Logical Station Number（非 IP）
+        [ConfigurationProperty(nameof(StationNumber), DefaultValue = 1, IsRequired = false)]
+        public int StationNumber
+        {
+            get { return (int)this[nameof(StationNumber)]; }
+            set { this[nameof(StationNumber)] = value; }
+        }
+
+        // 輪詢 oPort 間隔（毫秒）
+        [ConfigurationProperty(nameof(PollIntervalMs), DefaultValue = 2000, IsRequired = false)]
+        public int PollIntervalMs
+        {
+            get { return (int)this[nameof(PollIntervalMs)]; }
+            set { this[nameof(PollIntervalMs)] = value; }
+        }
+    }
+    #endregion LampOutput Config
 }
