@@ -11,6 +11,13 @@ namespace HikAGVWebAPI.App_Start
         bool TryWriteBit(string address, bool on);
     }
 
+    /// <summary>PLC word 讀取抽象（T30，讀 CPU 運行狀態 SD203 等特殊暫存器用）。</summary>
+    public interface IWordReader
+    {
+        /// <summary>讀取單一 word。回傳 false 代表讀取失敗。</summary>
+        bool TryReadWord(string address, out short value);
+    }
+
     /// <summary>
     /// PLC 連線狀態（PlcDevice 實作）：最近一次讀寫因 Open 失敗（連不上 PLC）而失敗時為 true，呼叫端中止整輪，避免每點都等 Open 逾時。
     /// 位址或裝置錯誤不算（否則一個寫不進去的位址會讓之後所有站每輪都被跳過）。

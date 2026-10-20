@@ -12,7 +12,7 @@ namespace HikAGVWebAPI.App_Start
     /// 依行程位元（IntPtr.Size）自動選 32 位 ActUtlType 或 64 位 ActUtlType64，
     /// 須由呼叫端在同一條 STA 執行緒上建立與使用（COM 為 STA，避免跨執行緒 marshaling）。
     /// </summary>
-    public class PlcDevice : IBitReader, IBitWriter, IPlcConnectionState, IDisposable
+    public class PlcDevice : IBitReader, IWordReader, IBitWriter, IPlcConnectionState, IDisposable
     {
         private readonly int _stationNumber;
         private readonly IActAdapter _act;
@@ -122,7 +122,21 @@ namespace HikAGVWebAPI.App_Start
         /// <summary>讀取單一 bit。回傳 false 代表讀取失敗（呼叫端不應更新基準、不應清空）。</summary>
         public bool TryReadBit(string address, out bool on)
         {
-            on = false;
+            bool ok = TryGetDevice(address, out short value);
+            on = ok && value != 0;
+            return ok;
+        }
+
+        /// <summary>讀取單一 word（T30，例：CPU 運行狀態 SD203）。回傳 false 代表讀取失敗。</summary>
+        public bool TryReadWord(string address, out short value) => TryGetDevice(address, out value);
+
+        /// <summary>
+        /// 單點讀取用 GetDevice2（讀單一裝置：bit device 回 0/1，word device 回 16 位元值）。
+        /// 不可用 ReadDeviceBlock2 —— 它讀 word 區塊、需 word 對齊，對 bit 位址（如 M10）會回錯誤碼。
+        /// </summary>
+        private bool TryGetDevice(string address, out short value)
+        {
+            value = 0;
             string key = "R:" + address;
             try
             {
@@ -132,9 +146,8 @@ namespace HikAGVWebAPI.App_Start
                 {
                     return false;
                 }
-                // 單點讀取用 GetDevice2（讀單一裝置，bit device 直接回 0/1）。
-                // 不可用 ReadDeviceBlock2 —— 它讀 word 區塊、需 word 對齊，對 bit 位址（如 M10）會回錯誤碼。
-                int rc = _act.GetDevice2(address, out short value);
+
+                int rc = _act.GetDevice2(address, out short data);
 
                 if (rc != 0)
                 {
@@ -143,7 +156,7 @@ namespace HikAGVWebAPI.App_Start
                 }
 
                 OnOperationSucceeded(key);
-                on = value != 0;
+                value = data;
                 return true;
             }
             catch (Exception ex)

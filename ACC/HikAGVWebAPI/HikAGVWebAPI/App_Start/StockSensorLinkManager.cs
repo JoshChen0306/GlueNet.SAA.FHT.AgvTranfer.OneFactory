@@ -332,6 +332,12 @@ namespace HikAGVWebAPI.App_Start
         /// <summary>點位讀不到（例：DB 尚未就緒）時的重試間隔。</summary>
         public int MappingRetryMs { get; set; } = 10000;
 
+        /// <summary>CPU 運行狀態 word 位址（T30，例：SD203，RUN=0）；空白＝不檢查。</summary>
+        public string RunStatusAddress { get; set; }
+
+        /// <summary>從非 RUN 恢復為 RUN 後，再等幾輪才恢復判定（等 PLC 程式把 sensor M bit 寫回）。</summary>
+        public int RunResumeGraceRounds { get; set; } = 3;
+
         /// <summary>
         /// 載入點位一次（無 loader 時直接視為已載入）。回傳 false＝暫時讀不到，需重試；true＝已套用（可能為 0 筆）。
         /// 只應在掃描執行緒（或測試）呼叫。
@@ -468,6 +474,15 @@ namespace HikAGVWebAPI.App_Start
                 return;
             }
 
+            if (string.IsNullOrWhiteSpace(RunStatusAddress))
+            {
+                _log?.TraceOut("[StockSensorLink] 未設定 RunStatusAddress：不檢查 PLC 是否在 RUN，PLC 重開時可能把有料站誤清（建議設 SD203，T30）", Log.LogType.WARN);
+            }
+            else
+            {
+                _log?.TraceOut($"[StockSensorLink] PLC 運行狀態檢查：{RunStatusAddress.Trim()}（非 RUN 暫停判定，恢復後寬限 {Math.Max(0, RunResumeGraceRounds)} 輪）", Log.LogType.TRACE);
+            }
+
             try
             {
                 _reader = _readerFactory();   // 於 STA 執行緒建立 PlcDevice（COM）
@@ -498,7 +513,7 @@ namespace HikAGVWebAPI.App_Start
         }
 
         /// <summary>
-        /// 一輪掃描：逐筆讀 bit →
+        /// 一輪掃描：先確認 PLC 在 RUN（T30，見 CheckPlcRunning；非 RUN 整輪跳過），再逐筆讀 bit →
         ///   讀取失敗 / bit=ON / 軟體未佔用 → 計數歸 0；
         ///   bit=OFF 且軟體仍佔用 → 計數 +1，達 ConfirmCount 即清空並歸 0。
         /// 可由測試直接呼叫。
@@ -506,6 +521,11 @@ namespace HikAGVWebAPI.App_Start
         public void ScanOnce()
         {
             if (_reader == null)
+            {
+                return;
+            }
+
+            if (!CheckPlcRunning())
             {
                 return;
             }
@@ -556,6 +576,147 @@ namespace HikAGVWebAPI.App_Start
                 {
                     _counter[map.Address] = c;
                 }
+            }
+        }
+
+        /// <summary>非 RUN 暫停中（只在掃描執行緒存取），用於只在狀態轉換時記 Log。</summary>
+        private bool _runPaused;
+        /// <summary>上一次暫停原因（原因改變時再記一筆）。</summary>
+        private string _lastNotRunning;
+        /// <summary>本次暫停已持續輪數（定期提醒用）。</summary>
+        private int _pausedRounds;
+        /// <summary>連線正常但讀不到運行狀態的連續輪數（位址或機型不符的跡象）。</summary>
+        private int _statusAddressErrorRounds;
+        /// <summary>恢復 RUN 後尚需跳過的輪數。</summary>
+        private int _runGraceRemaining;
+        /// <summary>寬限結束時需記「已恢復判定」。</summary>
+        private bool _resumePending;
+
+        /// <summary>暫停持續時每幾輪提醒一次（預設 600 輪，輪詢 1 秒時約 10 分鐘），避免 sensor 功能靜默停擺。</summary>
+        public int PausedReminderRounds { get; set; } = 600;
+
+        /// <summary>連線正常卻連續幾輪讀不到運行狀態時，記 ERROR 提示位址／機型可能不適用。</summary>
+        private const int StatusAddressErrorRounds = 10;
+
+        /// <summary>SD203 b0～b3 為 CPU 運行狀態（0=RUN、2=STOP、3=PAUSE），b4～b7 為 STOP/PAUSE 要因，只看運行狀態。</summary>
+        private const short RunStatusMask = 0x0F;
+
+        /// <summary>
+        /// T30：本輪 sensor 值是否可信。PLC 重開後、程式執行前讀取會成功但 M 全為 0（2026-10-20 GX Simulator 實測），
+        /// 若照常判定會把有料站全清並通知中光電 release。STOP 時 SM400 仍為 1 不可用，改讀 CPU 運行狀態（SD203 低 4 bit，RUN=0）。
+        /// 讀取失敗或非 RUN → 整輪跳過、去抖計數歸 0、取消所有空搬偵測；恢復 RUN 後再跳過 RunResumeGraceRounds 輪
+        /// （等 PLC 程式把 sensor M bit 寫回）。RunStatusAddress 空白＝不檢查。
+        /// 刻意偏安全：運行狀態讀取失敗一次就整輪跳過並取消全部空搬偵測（單點 sensor 讀取失敗只影響該站）。
+        /// </summary>
+        private bool CheckPlcRunning()
+        {
+            string address = RunStatusAddress?.Trim();
+            if (string.IsNullOrEmpty(address))
+            {
+                return true;
+            }
+
+            string notRunning = null;
+            bool addressSuspect = false;
+            if (!(_reader is IWordReader wordReader))
+            {
+                notRunning = $"PLC 連線不支援讀取 {address}";
+                addressSuspect = true;
+            }
+            else if (!wordReader.TryReadWord(address, out short status))
+            {
+                notRunning = $"讀取 PLC 運行狀態 {address} 失敗";
+                // Open 成功卻讀不到 → 位址或機型問題；Open 失敗（斷線）不算
+                addressSuspect = !(_reader is IPlcConnectionState state) || !state.LastOpenFailed;
+            }
+            else if ((status & RunStatusMask) != 0)
+            {
+                notRunning = $"PLC 不在 RUN（{address}=0x{status:X4}）";
+            }
+
+            if (notRunning != null)
+            {
+                OnPlcNotRunning(address, notRunning, addressSuspect);
+                return false;
+            }
+
+            _statusAddressErrorRounds = 0;
+            if (_runPaused)
+            {
+                _runPaused = false;
+                _lastNotRunning = null;
+                _pausedRounds = 0;
+                _resumePending = true;
+                _log?.TraceOut($"[StockSensorLink] PLC 已 RUN（{address} 運行狀態=0），寬限 {_runGraceRemaining} 輪後恢復 sensor 判定", Log.LogType.WARN);
+            }
+
+            if (_runGraceRemaining > 0)
+            {
+                _runGraceRemaining--;
+                return false;
+            }
+
+            if (_resumePending)
+            {
+                _resumePending = false;
+                _log?.TraceOut("[StockSensorLink] 已恢復 sensor 判定", Log.LogType.WARN);
+            }
+            return true;
+        }
+
+        private void OnPlcNotRunning(string address, string notRunning, bool addressSuspect)
+        {
+            if (!_runPaused || notRunning != _lastNotRunning)
+            {
+                _log?.TraceOut($"[StockSensorLink] {notRunning}，暫停 sensor 判定（不清空、不登記、取消空搬偵測）", Log.LogType.WARN);
+            }
+            _runPaused = true;
+            _lastNotRunning = notRunning;
+            _resumePending = false;
+            _pausedRounds++;
+
+            _statusAddressErrorRounds = addressSuspect ? _statusAddressErrorRounds + 1 : 0;
+            if (_statusAddressErrorRounds == StatusAddressErrorRounds)
+            {
+                _log?.TraceOut($"[StockSensorLink] PLC 連線正常但連續 {StatusAddressErrorRounds} 輪讀不到 {address}："
+                    + "RunStatusAddress 可能不適用此 PLC 機型（例：FX3 無 SD203），sensor 判定停擺中，請確認位址或改為空白", Log.LogType.ERROR);
+            }
+
+            if (PausedReminderRounds > 0 && _pausedRounds % PausedReminderRounds == 0)
+            {
+                _log?.TraceOut($"[StockSensorLink] sensor 判定已暫停 {_pausedRounds} 輪（約 {_pausedRounds * (long)_pollIntervalMs / 60000} 分鐘），原因：{notRunning}", Log.LogType.WARN);
+            }
+
+            _runGraceRemaining = Math.Max(0, RunResumeGraceRounds);
+            ResetCounters();
+            CancelAllArrivals(notRunning);
+        }
+
+        private void ResetCounters()
+        {
+            foreach (var key in _counter.Keys.ToList())
+            {
+                _counter[key] = 0;
+            }
+            foreach (var key in _onCounter.Keys.ToList())
+            {
+                _onCounter[key] = 0;
+            }
+        }
+
+        /// <summary>非 RUN 時取消所有空搬偵測：PLC 恢復後 sensor 尚未寫回，保留登記會誤報。</summary>
+        private void CancelAllArrivals(string reason)
+        {
+            List<EmptyTransferInfo> cancelled;
+            lock (_arrivalLock)
+            {
+                cancelled = _arrivals.Values.Select(p => p.Info).ToList();
+                _arrivals.Clear();
+            }
+
+            foreach (var info in cancelled)
+            {
+                _log?.TraceOut($"[StockSensorLink] {reason}，取消任務 {info.TaskCode}（{info.BeginStation}→{info.EndStation}）的空搬偵測", Log.LogType.WARN);
             }
         }
 
@@ -963,7 +1124,11 @@ namespace HikAGVWebAPI.App_Start
             var sensorOnStations = StockSensorLinkManager.ParseStationList(settings.SensorOnStations);
 
             return new StockSensorLinkManager(mappingLoader, readerFactory, clearer, portReader, log,
-                settings.PollIntervalMs, settings.ConfirmCount, registrar, taskStore, sensorOnStations);
+                settings.PollIntervalMs, settings.ConfirmCount, registrar, taskStore, sensorOnStations)
+            {
+                RunStatusAddress = settings.RunStatusAddress,
+                RunResumeGraceRounds = settings.RunResumeGraceRounds,
+            };
         }
     }
 }

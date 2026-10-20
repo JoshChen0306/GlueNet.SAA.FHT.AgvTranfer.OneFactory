@@ -428,6 +428,22 @@ namespace HikAGVWebAPI
             get { return (string)this[nameof(SensorMap)]; }
             set { this[nameof(SensorMap)] = value; }
         }
+
+        // T30：CPU 運行狀態 word 位址（iQ-R/Q/L 為 SD203，RUN=0）；非 RUN 或讀取失敗時暫停 sensor 判定。空白＝不檢查
+        [ConfigurationProperty(nameof(RunStatusAddress), DefaultValue = "", IsRequired = false)]
+        public string RunStatusAddress
+        {
+            get { return (string)this[nameof(RunStatusAddress)]; }
+            set { this[nameof(RunStatusAddress)] = value; }
+        }
+
+        // T30：恢復 RUN 後再等幾輪才恢復判定（等 PLC 程式把 sensor M bit 寫回）
+        [ConfigurationProperty(nameof(RunResumeGraceRounds), DefaultValue = 3, IsRequired = false)]
+        public int RunResumeGraceRounds
+        {
+            get { return (int)this[nameof(RunResumeGraceRounds)]; }
+            set { this[nameof(RunResumeGraceRounds)] = value; }
+        }
     }
     #endregion SensorClear Config
 
