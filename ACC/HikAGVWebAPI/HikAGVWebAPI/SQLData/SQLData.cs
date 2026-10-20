@@ -128,6 +128,17 @@ namespace HikAGVWebAPI.App_Start
             return JsonConvert.DeserializeObject<List<oShuttleModel>>(sJson);
         }
 
+        /// <summary>站點 PLC 點位（sensor／三色燈）；資料表不存在時由呼叫端接例外退回設定檔（T29）。</summary>
+        public List<oPortPlcModel> Select_oPortPlc()
+        {
+            string sSQL = @"select StationNo, SensorAddress, SensorUseFlag, LampGreen, LampYellow, LampRed, LampUseFlag, Remark
+                              from oPortPlc
+                             order by StationNo ";
+            DataTable dt = mSql.QuerySqlByAutoOpen(sSQL).Tables[0];
+            string sJson = JsonConvert.SerializeObject(dt);
+            return JsonConvert.DeserializeObject<List<oPortPlcModel>>(sJson);
+        }
+
         public List<oTaskTypeRouteModel> Select_oTaskTypeRoute(string moveType)
         {
             string sSQL = $@"select * from oTaskTypeRoute where UseFlag = 'Y' and MoveType = '{moveType}' ";

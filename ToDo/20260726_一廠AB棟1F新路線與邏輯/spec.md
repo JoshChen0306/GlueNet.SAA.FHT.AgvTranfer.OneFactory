@@ -115,6 +115,14 @@
 - [ ] 🧪 Given PLC 寫入失敗，When 下一輪輪詢，Then 記 Warning Log 並依最新狀態重寫（自癒），不中斷服務
 - [ ] 現場對測：三色燈狀態與 SCP 顯示一致（斷線恢復後燈號自動追上）
 
+### AC-5a 🧪 PLC 點位表移入 DB（T29，2026-10-20 新增，Given-When-Then）
+
+- [x] Given `oPortPlc` 有啟用（SensorUseFlag=Y）且 SensorAddress 非空的資料，When ACC 啟動，Then sensor 監控使用 DB 的對應（不讀設定檔 SensorMap）
+- [x] Given `oPortPlc` 的某列 SensorUseFlag=N 或 SensorAddress 空白，When 載入，Then 該站不納入 sensor 監控
+- [x] 暫定位址預設不啟用：部署後只有 B1 sensor（M10）啟用、三色燈全部不啟用（LampUseFlag=N），現場行為與部署前相同
+- [x] Given `oPortPlc` 不存在、無資料或讀取失敗，When ACC 啟動，Then 退回設定檔 `SensorMap`（現行 B1=M10 照舊）並記 Log 說明來源
+- [x] `Deploy_oPortPlc_ABBuilding1F.sql` 可重複執行（第二次執行資料不變），填入暫定 sensor 與三色燈位址
+
 ### AC-6 🧪 空搬偵測（T19，Given-When-Then）
 
 > 2026-10-19 調整（使用者確認）：偵測放 ACC，讀 PLC sensor（StockSensorLink）而非 oPort.HaveFlag——end 回呼會無條件把目的站寫成有料，HaveFlag 無法反映實際到料。

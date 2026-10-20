@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Threading;
 
 namespace HikAGVWebAPI.App_Start
@@ -215,6 +216,28 @@ namespace HikAGVWebAPI.App_Start
         }
     }
 
+    /// <summary>sensor 點位載入結果（T29）。Retry=true 表示暫時讀不到（例：DB 連不上），稍後重試；此時 Mappings 為 null。</summary>
+    public sealed class SensorMappingLoad
+    {
+        public List<SensorMapping> Mappings { get; }
+        /// <summary>實際來源與原因，供 Log 使用。</summary>
+        public string Source { get; }
+        /// <summary>使用設定檔 SensorMap（oPortPlc 不存在或沒有任何資料列）。</summary>
+        public bool FellBackToConfig { get; }
+        public bool Retry { get; }
+        /// <summary>載入時略過的資料（例：重複位址），呼叫端記 WARN。</summary>
+        public IReadOnlyList<string> Warnings { get; }
+
+        public SensorMappingLoad(List<SensorMapping> mappings, string source, bool fellBackToConfig, bool retry, IReadOnlyList<string> warnings = null)
+        {
+            Mappings = mappings;
+            Source = source;
+            FellBackToConfig = fellBackToConfig;
+            Retry = retry;
+            Warnings = warnings ?? new string[0];
+        }
+    }
+
     /// <summary>
     /// 庫位 SENSOR 監控：定時掃描 PLC M 暫存器（平板偵測，ON=平板在 / OFF=平板不在）。
     /// 當 bit=OFF 且軟體仍認為庫位佔用（RackId / WorkOrder / HaveFlag 任一），連續達 ConfirmCount 輪後清空該庫位。
@@ -229,7 +252,9 @@ namespace HikAGVWebAPI.App_Start
     /// </summary>
     public class StockSensorLinkManager
     {
-        private readonly IList<SensorMapping> _mappings;
+        /// <summary>sensor 對應；以 loader 建立時於掃描執行緒載入後才指派（WatchArrival 在其他執行緒讀，以 Volatile 存取）。</summary>
+        private IList<SensorMapping> _mappings;
+        private readonly Func<SensorMappingLoad> _mappingLoader;
         private readonly Func<IBitReader> _readerFactory;
         private readonly IPortStateReader _portReader;
         private readonly IStockClearer _clearer;
@@ -291,6 +316,101 @@ namespace HikAGVWebAPI.App_Start
             }
         }
 
+        /// <summary>
+        /// 生產用（T29）：點位由 mappingLoader 於掃描執行緒上載入（DB oPortPlc 優先），
+        /// 讀不到時每 MappingRetryMs 重試，不阻塞 ACC 啟動；載入後無啟用點位則不連 PLC、停止監控。
+        /// </summary>
+        public StockSensorLinkManager(Func<SensorMappingLoad> mappingLoader, Func<IBitReader> readerFactory,
+            IStockClearer clearer, IPortStateReader portReader, Log log,
+            int pollIntervalMs = 1000, int confirmCount = 3,
+            IStockRegistrar registrar = null, ISourceTaskStore taskStore = null, IEnumerable<string> sensorOnStations = null)
+            : this((IList<SensorMapping>)null, readerFactory, clearer, portReader, log, pollIntervalMs, confirmCount, registrar, taskStore, sensorOnStations)
+        {
+            _mappingLoader = mappingLoader;
+        }
+
+        /// <summary>點位讀不到（例：DB 尚未就緒）時的重試間隔。</summary>
+        public int MappingRetryMs { get; set; } = 10000;
+
+        /// <summary>
+        /// 載入點位一次（無 loader 時直接視為已載入）。回傳 false＝暫時讀不到，需重試；true＝已套用（可能為 0 筆）。
+        /// 只應在掃描執行緒（或測試）呼叫。
+        /// </summary>
+        public bool TryLoadMappings()
+        {
+            if (_mappingLoader == null)
+            {
+                return true;
+            }
+
+            SensorMappingLoad load;
+            try
+            {
+                load = _mappingLoader();
+            }
+            catch (Exception ex)
+            {
+                LogLoadFailure($"載入 sensor 點位失敗：{ex.Message}");
+                return false;
+            }
+
+            if (load == null || load.Retry || load.Mappings == null)
+            {
+                LogLoadFailure($"暫時無法載入 sensor 點位（{load?.Source}）");
+                return false;
+            }
+
+            if (_loadFailures > 0)
+            {
+                _log?.TraceOut($"[StockSensorLink] sensor 點位已恢復載入（先前失敗 {_loadFailures} 次）", Log.LogType.WARN);
+                _loadFailures = 0;
+            }
+
+            foreach (var warning in load.Warnings)
+            {
+                _log?.TraceOut($"[StockSensorLink] {warning}", Log.LogType.WARN);
+            }
+
+            ApplyMappings(load.Mappings);
+            string list = string.Join(",", load.Mappings.Select(m => m.Address + ":" + m.StationNo));
+            // 退回設定檔記 WARN：DB 點位未生效，現場改 oPortPlc 不會有作用
+            _log?.TraceOut($"[StockSensorLink] sensor 點位來源：{load.Source}，共 {load.Mappings.Count} 筆：{list}",
+                load.FellBackToConfig ? Log.LogType.WARN : Log.LogType.TRACE);
+            return true;
+        }
+
+        /// <summary>點位載入連續失敗次數（只在掃描執行緒存取）。</summary>
+        private int _loadFailures;
+
+        /// <summary>DB 長時間連不上時避免洗 Log：第 1 次與之後每 30 次記一筆 WARN。</summary>
+        private void LogLoadFailure(string reason)
+        {
+            _loadFailures++;
+            if (_loadFailures == 1 || _loadFailures % 30 == 0)
+            {
+                _log?.TraceOut($"[StockSensorLink] {reason}（連續第 {_loadFailures} 次），{MappingRetryMs / 1000} 秒後重試，期間不監控 sensor", Log.LogType.WARN);
+            }
+        }
+
+        private void ApplyMappings(IList<SensorMapping> mappings)
+        {
+            foreach (var m in mappings)
+            {
+                _counter[m.Address] = 0;
+                _onCounter[m.Address] = 0;
+            }
+            Volatile.Write(ref _mappings, mappings);
+        }
+
+        /// <summary>可被 Stop 中斷的等待。</summary>
+        private void SleepUnlessStopped(int totalMs)
+        {
+            for (int waited = 0; waited < totalMs && !_stop; waited += 200)
+            {
+                Thread.Sleep(200);
+            }
+        }
+
         /// <summary>測試 / 直接用：已有 reader 實例，可不經 Start() 直接呼叫 ScanOnce()。</summary>
         public StockSensorLinkManager(IList<SensorMapping> mappings, IBitReader reader,
             IStockClearer clearer, IPortStateReader portReader, Log log,
@@ -303,7 +423,8 @@ namespace HikAGVWebAPI.App_Start
 
         public void Start()
         {
-            if (_thread != null)
+            // Stop 逾時時保留 _thread：舊執行緒仍在（例：卡在點位查詢）就不重入，避免兩條執行緒同時掃描
+            if (_thread != null && _thread.IsAlive)
             {
                 return;
             }
@@ -318,12 +439,35 @@ namespace HikAGVWebAPI.App_Start
         public void Stop()
         {
             _stop = true;
-            _thread?.Join(3000);
-            _thread = null;
+            if (_thread == null || _thread.Join(3000))
+            {
+                _thread = null;
+                return;
+            }
+            _log?.TraceOut("[StockSensorLink] 掃描執行緒 3 秒內未結束（可能正在查詢 DB），將於查詢返回後自行結束", Log.LogType.WARN);
         }
 
         private void Execute()
         {
+            // 點位載入（T29）：DB 未就緒時重試，不阻塞 Application_Start；載入完成前不監控
+            while (!_stop && !TryLoadMappings())
+            {
+                SleepUnlessStopped(MappingRetryMs);
+            }
+
+            if (_stop)
+            {
+                _scanEnded = true;
+                return;
+            }
+
+            if (Volatile.Read(ref _mappings).Count == 0)
+            {
+                _scanEnded = true;
+                _log?.TraceOut("[StockSensorLink] 沒有啟用的 sensor 點位，停止監控（不連 PLC）", Log.LogType.WARN);
+                return;
+            }
+
             try
             {
                 _reader = _readerFactory();   // 於 STA 執行緒建立 PlcDevice（COM）
@@ -366,7 +510,7 @@ namespace HikAGVWebAPI.App_Start
                 return;
             }
 
-            foreach (var map in _mappings)
+            foreach (var map in Volatile.Read(ref _mappings))
             {
                 // ① 讀 PLC 失敗 → 中斷去抖計數，不動作
                 if (!_reader.TryReadBit(map.Address, out bool on))
@@ -460,7 +604,7 @@ namespace HikAGVWebAPI.App_Start
 
             string station = endStation.Trim();
             bool hasSensor = false;
-            foreach (var m in _mappings)
+            foreach (var m in Volatile.Read(ref _mappings))   // 點位尚未載入時為空清單 → NoSensor
             {
                 if (string.Equals(m.StationNo, station, StringComparison.OrdinalIgnoreCase))
                 {
@@ -628,6 +772,49 @@ namespace HikAGVWebAPI.App_Start
             return hasRack || hasWorkOrder || haveMaterial;
         }
 
+        /// <summary>oPortPlc 資料列轉 sensor 對應：只取 SensorUseFlag=Y 且站號與 SensorAddress 皆非空的列（T29）。</summary>
+        public static List<SensorMapping> BuildSensorMappings(IEnumerable<oPortPlcModel> rows)
+            => BuildSensorMappings(rows, out _);
+
+        /// <summary>同上；同一 PLC 位址被多站使用時保留第一站、略過後者並回傳說明（一個 bit 的 OFF 不可同時清兩個庫位）。</summary>
+        public static List<SensorMapping> BuildSensorMappings(IEnumerable<oPortPlcModel> rows, out List<string> skipped)
+        {
+            var result = new List<SensorMapping>();
+            skipped = new List<string>();
+            if (rows == null)
+            {
+                return result;
+            }
+
+            var usedBy = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in rows)
+            {
+                if (row == null || !string.Equals(row.SensorUseFlag?.Trim(), "Y", StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                var station = row.StationNo?.Trim();
+                var address = row.SensorAddress?.Trim();
+                if (string.IsNullOrEmpty(station) || string.IsNullOrEmpty(address))
+                {
+                    continue;   // 例：只有三色燈、沒有 sensor 的站
+                }
+
+                if (usedBy.TryGetValue(address, out string first))
+                {
+                    skipped.Add($"oPortPlc sensor 位址 {address} 重複：{first} 已使用，略過 {station}，請修正 DB");
+                    continue;
+                }
+
+                usedBy[address] = station;
+                result.Add(new SensorMapping(address, station));
+            }
+
+            return result;
+        }
+
         /// <summary>解析 "M10:B1,M11:B2" 為對應清單。格式錯誤的片段略過。</summary>
         public static List<SensorMapping> ParseSensorMap(string raw)
         {
@@ -669,12 +856,62 @@ namespace HikAGVWebAPI.App_Start
     /// 庫位 SENSOR 監控的組裝點（composition root）：
     /// 讀 FHtSetting.config 的 SectionSensorClear / SectionDB / SectionLog，
     /// 組出 Log + SQLData + PlcDevice factory + SqlPortStateReader + SqlStockClearer，回傳設定好的 manager。
-    /// Enable!=true、Section 缺失或無有效對應時回傳 null（不啟動監控）。
+    /// Enable!=true 或 Section 缺失時回傳 null（不啟動監控）；點位（DB oPortPlc 為準）由 manager 在掃描執行緒載入，
+    /// 載入後沒有啟用點位則 manager 自行停止、不連 PLC（T29）。
     /// </summary>
     public static class StockSensorLinkBootstrap
     {
         /// <summary>執行中的監控（未啟動為 null）；供 end 回呼登記空搬偵測（比照 CgdWcsBootstrap.Current）。</summary>
         public static StockSensorLinkManager Current { get; set; }
+
+        /// <summary>
+        /// 決定 sensor 點位（T29，code review C1 修正後規則）：
+        ///   oPortPlc 有任何資料列 → 以 DB 為準（全部停用就是不監控，不可退回設定檔把現場關掉的 sensor 重新打開）；
+        ///   oPortPlc 不存在（SQL 錯誤 208）或沒有資料列 → 退回設定檔 SensorMap（升級過渡期：尚未執行部署 SQL）；
+        ///   其他讀取失敗（例：DB 連不上）→ Retry，由呼叫端稍後重試，不用設定檔的舊點位頂替。
+        /// </summary>
+        public static SensorMappingLoad ResolveSensorMappings(Func<List<oPortPlcModel>> loadDb, string configSensorMap,
+            Func<Exception, bool> isTableMissing = null)
+        {
+            List<oPortPlcModel> rows;
+            try
+            {
+                rows = loadDb?.Invoke();
+            }
+            catch (Exception ex)
+            {
+                if ((isTableMissing ?? IsTableMissing)(ex))
+                {
+                    return FromConfig(configSensorMap, "oPortPlc 資料表不存在，請執行 Deploy_oPortPlc_ABBuilding1F.sql");
+                }
+                return new SensorMappingLoad(null, $"讀取 oPortPlc 失敗：{ex.Message}", false, retry: true);
+            }
+
+            if (rows == null || rows.Count == 0)
+            {
+                return FromConfig(configSensorMap, "oPortPlc 沒有資料");
+            }
+
+            var mappings = StockSensorLinkManager.BuildSensorMappings(rows, out List<string> skipped);
+            return new SensorMappingLoad(mappings, $"DB oPortPlc（{rows.Count} 列，啟用 {mappings.Count} 筆）", false, false, skipped);
+        }
+
+        private static SensorMappingLoad FromConfig(string configSensorMap, string reason)
+            => new SensorMappingLoad(StockSensorLinkManager.ParseSensorMap(configSensorMap),
+                $"設定檔 SensorMap=\"{configSensorMap}\"（{reason}；DB 點位未生效）", true, false);
+
+        /// <summary>例外鏈中是否有 SqlException 208（Invalid object name：資料表不存在）。</summary>
+        public static bool IsTableMissing(Exception ex)
+        {
+            for (var e = ex; e != null; e = e.InnerException)
+            {
+                if (e is System.Data.SqlClient.SqlException sql && sql.Number == 208)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         public static StockSensorLinkManager Create(string configFilePath)
         {
@@ -701,13 +938,6 @@ namespace HikAGVWebAPI.App_Start
                 return null;   // 明確關閉 → 不啟動
             }
 
-            var mappings = StockSensorLinkManager.ParseSensorMap(settings.SensorMap);
-            if (mappings.Count == 0)
-            {
-                System.Diagnostics.Trace.WriteLine("[StockSensorLink] SensorMap 無有效對應，停用監控");
-                return null;
-            }
-
             var dbSettings = (config.GetSection(nameof(SectionDB)) as SectionDB)?.DBSettings;
             var logSettings = (config.GetSection(nameof(SectionLog)) as SectionLog)?.LogSettings;
 
@@ -719,6 +949,10 @@ namespace HikAGVWebAPI.App_Start
 
             var db = new SQLData(dbSettings?.DBName, dbSettings?.DBIP);
 
+            // 點位以 DB oPortPlc 為準（T29），由掃描執行緒載入（DB 未就緒時重試），不在 Application_Start 同步查 DB
+            string configSensorMap = settings.SensorMap;
+            Func<SensorMappingLoad> mappingLoader = () => ResolveSensorMappings(db.Select_oPortPlc, configSensorMap);
+
             int station = settings.StationNumber;
             Func<IBitReader> readerFactory = () => new PlcDevice(station, log);
             IPortStateReader portReader = new SqlPortStateReader(db, log);
@@ -727,7 +961,7 @@ namespace HikAGVWebAPI.App_Start
             ISourceTaskStore taskStore = new SqlSourceTaskStore(db, log);
             var sensorOnStations = StockSensorLinkManager.ParseStationList(settings.SensorOnStations);
 
-            return new StockSensorLinkManager(mappings, readerFactory, clearer, portReader, log,
+            return new StockSensorLinkManager(mappingLoader, readerFactory, clearer, portReader, log,
                 settings.PollIntervalMs, settings.ConfirmCount, registrar, taskStore, sensorOnStations);
         }
     }
