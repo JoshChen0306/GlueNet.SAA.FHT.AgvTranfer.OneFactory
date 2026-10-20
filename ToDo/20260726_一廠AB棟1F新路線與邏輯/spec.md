@@ -104,7 +104,7 @@
 
 > 2026-10-12：T8 取消，ACC 既有 outbin／end 回呼已實作（outbin 清空起點、end 寫入終點），改於 T20 現場整合驗證。
 
-- [ ] Given 任務完成事件，When 執行轉寫，Then 目的地 oPort 取得來源的 RackId/WorkOrder 並更新 PutTime，來源站清空
+- [x] Given 任務完成事件，When 執行轉寫，Then 目的地 oPort 取得來源的 RackId/WorkOrder 並更新 PutTime，來源站清空（2026-10-20 本機整合測試驗證）
 - [ ] Given 轉寫過程 DB 例外，When 執行轉寫，Then 記 Error Log 且不產生半套資料（來源與目的一致性）
 
 ### AC-5 貨架狀態顯示與 PLC 輸出（T14、T15、T17、T18）
